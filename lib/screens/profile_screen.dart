@@ -40,8 +40,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _logout() {
     setState(() => _showLogoutDialog = false);
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sesión cerrada (demo)')));
-    // Aquí podrías navegar a login o limpiar estado global
+    // Navega a la pantalla de login y reemplaza la ruta actual
+    Navigator.of(context).pushReplacementNamed('/login');
   }
 
   Widget _buildAvatar() {
