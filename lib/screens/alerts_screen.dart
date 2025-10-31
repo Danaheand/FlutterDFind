@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'inventory_screen.dart';
 
 enum AlertPriority { alta, media, baja }
 
@@ -138,6 +139,15 @@ class _AlertsScreenState extends State<AlertsScreen> {
       builder: (_) => _AlertEditDialog(alert: edit),
     );
     if (result != null) {
+      // Palabras clave para detectar compras/comida
+      final keywords = ['comida', 'comprar', 'super', 'mercado', 'pan', 'leche', 'fruta', 'verdura', 'carne', 'huevo', 'banana', 'arroz', 'atun'];
+      final lowerTitle = result.title.toLowerCase();
+      final lowerDesc = result.description.toLowerCase();
+      final isShopping = keywords.any((k) => lowerTitle.contains(k) || lowerDesc.contains(k));
+      if (isShopping && InventoryScreen.addFromAlertGlobal != null) {
+        // Usa el título como nombre del producto
+        InventoryScreen.addFromAlertGlobal!(result.title);
+      }
       setState(() {
         if (edit != null) {
           final idx = alerts.indexWhere((a) => a.id == edit.id);
