@@ -1,28 +1,26 @@
 import 'package:flutter/material.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _userCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   bool _obscure = true;
-  bool _error = false;
 
-  void _login() {
-    setState(() => _error = false);
+  void _register() {
     if (_formKey.currentState?.validate() ?? false) {
-      // Demo: usuario: carlos, pass: 12345
-  if (_userCtrl.text.trim() == 'Carlos' && _passCtrl.text == '12345') {
-        Navigator.of(context).pushReplacementNamed('/');
-      } else {
-        setState(() => _error = true);
-      }
+      // Aquí iría la lógica real de registro
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Usuario registrado (demo)')),
+      );
+      Navigator.of(context).pop(); // Vuelve al login
     }
   }
 
@@ -30,7 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: Colors.blue[50],
+      appBar: AppBar(title: const Text('Registrarse')),
       body: Center(
         child: SingleChildScrollView(
           child: Container(
@@ -47,12 +45,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(height: 8),
-                  Text('DFind', style: theme.textTheme.headlineMedium?.copyWith(color: Colors.blue[700], fontWeight: FontWeight.bold)),
+                  Text('Crear cuenta', style: theme.textTheme.headlineSmall?.copyWith(color: Colors.blue[700], fontWeight: FontWeight.bold)),
                   const SizedBox(height: 24),
                   TextFormField(
                     controller: _userCtrl,
                     decoration: const InputDecoration(labelText: 'Usuario'),
                     validator: (v) => v == null || v.trim().isEmpty ? 'Ingrese usuario' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _emailCtrl,
+                    decoration: const InputDecoration(labelText: 'Email'),
+                    validator: (v) => v == null || !v.contains('@') ? 'Ingrese un email válido' : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
@@ -65,34 +69,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: () => setState(() => _obscure = !_obscure),
                       ),
                     ),
-                    validator: (v) => v == null || v.isEmpty ? 'Ingrese contraseña' : null,
+                    validator: (v) => v == null || v.length < 4 ? 'Mínimo 4 caracteres' : null,
                   ),
-                  if (_error)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12),
-                      child: Text('Usuario o contraseña incorrectos', style: TextStyle(color: Colors.red[700])),
-                    ),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _login,
+                      onPressed: _register,
                       style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-                      child: const Text('Entrar', style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: const Text('Registrarse', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('¿No tienes cuenta?'),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pushNamed('/register');
-                        },
-                        child: const Text('Regístrate'),
-                      ),
-                    ],
                   ),
                 ],
               ),

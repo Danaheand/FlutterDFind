@@ -4,6 +4,7 @@ import 'screens/inventory_screen.dart';
 import 'screens/alerts_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/register_screen.dart';
 import 'screens/properties_screen.dart';
 import 'screens/categories_screen.dart';
 import 'theme/app_theme.dart';
@@ -80,6 +81,7 @@ class MyApp extends StatelessWidget {
         '/properties': (context) => const PropertiesScreen(),
         '/categories': (context) => const CategoriesScreen(),
         '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
         // ...otros screens...
       },
     );
