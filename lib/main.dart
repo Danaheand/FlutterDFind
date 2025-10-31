@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 // import 'package:provider/provider.dart';
-import 'screens/home_screen.dart';
 import 'screens/inventory_screen.dart';
 import 'screens/alerts_screen.dart';
 import 'screens/profile_screen.dart';
@@ -20,9 +19,8 @@ class _MainScaffoldState extends State<MainScaffold> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    HomeScreen(),
-    InventoryScreen(),
     AlertsScreen(),
+    InventoryScreen(), // Usamos InventoryScreen como "Lista de compras"
     ProfileScreen(),
   ];
 
@@ -44,16 +42,12 @@ class _MainScaffoldState extends State<MainScaffold> {
         unselectedItemColor: Colors.grey[600],
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Inicio',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inventory_2),
-            label: 'Inventario',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.notifications),
             label: 'Alertas',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Lista de compras',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
