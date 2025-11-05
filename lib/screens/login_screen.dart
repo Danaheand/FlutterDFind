@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../repository/local_user_repository.dart'; 
+import '../screens/profile_screen.dart'; 
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,15 +19,55 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscure = true;
   bool _error = false;
 
-  void _login() {
+  String _sha256Hash(String input) {
+    final bytes = utf8.encode(input);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
+  Future<void> _login() async {
     setState(() => _error = false);
-    if (_formKey.currentState?.validate() ?? false) {
-      // Demo: usuario: carlos, pass: 12345
-  if (_userCtrl.text.trim() == 'Carlos' && _passCtrl.text == '12345') {
-        Navigator.of(context).pushReplacementNamed('/');
-      } else {
-        setState(() => _error = true);
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    try {
+      final repo = LocalUserRepository.instance;
+
+      // Depuración: listar usuarios guardados
+      final allUsers = await repo.getAll();
+      print('--- Usuarios almacenados (${allUsers.length}) ---');
+      for (var u in allUsers) {
+        print('user id:${u.idUsuario} nombre:"${u.nombreUsuario}" email:"${u.email}" hash:"${u.contrasenaHash}"');
       }
+
+      final inputEmail = _userCtrl.text.trim();
+      final user = await repo.findByEmail(inputEmail);
+
+      if (user == null) {
+        print('Usuario no encontrado para email: "$inputEmail"');
+        setState(() => _error = true);
+        return;
+      }
+
+      // Verificar contraseña (mismo método de hashing que en registro)
+      final inputHash = _sha256Hash(_passCtrl.text);
+      print('Comparando hashes -> esperado: ${user.contrasenaHash}, recibido: $inputHash');
+
+      if (inputHash != user.contrasenaHash) {
+        setState(() => _error = true);
+        return;
+      }
+
+      // Guardar usuario actual (json)
+      final sp = await SharedPreferences.getInstance();
+      await sp.setString('current_user', jsonEncode(user.toJson()));
+
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed('/'); // Esto llevará al MainScaffold que tiene AlertsScreen
+
+    } catch (e, st) {
+      print('Error en login: $e');
+      print(st);
+      setState(() => _error = true);
     }
   }
 
@@ -51,8 +96,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 24),
                   TextFormField(
                     controller: _userCtrl,
-                    decoration: const InputDecoration(labelText: 'Usuario'),
-                    validator: (v) => v == null || v.trim().isEmpty ? 'Ingrese usuario' : null,
+                    keyboardType: TextInputType.emailAddress, // Agregar esto
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      hintText: 'tucorreo@dominio.com',
+                      prefixIcon: Icon(Icons.email_outlined),
+                    ),
+                    validator: (v) => v == null || v.trim().isEmpty 
+                        ? 'Ingrese su email' 
+                        : !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v.trim())
+                            ? 'Email no válido'
+                            : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(

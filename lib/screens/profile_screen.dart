@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../models/user.dart';
 
 
 class ProfileScreen extends StatefulWidget {
@@ -23,6 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _userName = 'Carlos Rodríguez';
   String _userEmail = 'carlos.r@email.com';
   bool _showLogoutDialog = false;
+  User? _currentUser;
 
   void _toggleDarkMode(bool v) {
     setState(() => _darkMode = v);
@@ -38,9 +42,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _showLogoutDialog = false);
   }
 
-  void _logout() {
+  Future<void> _logout() async {
+    final sp = await SharedPreferences.getInstance();
+    await sp.remove('current_user');
     setState(() => _showLogoutDialog = false);
-    // Navega a la pantalla de login y reemplaza la ruta actual
+    if (!mounted) return;
     Navigator.of(context).pushReplacementNamed('/login');
   }
 
@@ -85,6 +91,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         child: child,
       );
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentUser();
+  }
+
+  Future<void> _loadCurrentUser() async {
+    final sp = await SharedPreferences.getInstance();
+    final userJson = sp.getString('current_user');
+    if (userJson != null) {
+      try {
+        final userData = jsonDecode(userJson);
+        setState(() {
+          _currentUser = User.fromJson(userData);
+          _userName = _currentUser?.nombreUsuario ?? _userName;
+          _userEmail = _currentUser?.email ?? _userEmail;
+        });
+      } catch (e) {
+        print('Error loading user: $e');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
