@@ -66,13 +66,13 @@ class _InventoryScreenState extends State<InventoryScreen> {
     });
   }
 
-  void _addItemManually(String name, String placeName, String category) {
+  void _addItemManually(String name, String placeName) {
     setState(() {
       _items.add(ShoppingItem(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: name,
         placeName: placeName,
-        category: category,
+        category: '', // category removed
       ));
     });
   }
@@ -90,7 +90,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: suggestion.name,
         placeName: suggestion.placeName,
-        category: suggestion.category,
+        category: '', // category removed
       ));
     });
 
@@ -156,16 +156,12 @@ class _InventoryScreenState extends State<InventoryScreen> {
   List<ShoppingItem> get _purchasedItems =>
       _items.where((item) => item.isPurchased).toList();
 
-  Map<String, Map<String, List<ShoppingItem>>> _groupItems(
-      List<ShoppingItem> items) {
-    final grouped = <String, Map<String, List<ShoppingItem>>>{};
-
+  Map<String, List<ShoppingItem>> _groupItemsByPlace(List<ShoppingItem> items) {
+    final grouped = <String, List<ShoppingItem>>{};
     for (var item in items) {
-      grouped.putIfAbsent(item.placeName, () => {});
-      grouped[item.placeName]!.putIfAbsent(item.category, () => []);
-      grouped[item.placeName]![item.category]!.add(item);
+      grouped.putIfAbsent(item.placeName, () => []);
+      grouped[item.placeName]!.add(item);
     }
-
     return grouped;
   }
 
@@ -192,16 +188,16 @@ class _InventoryScreenState extends State<InventoryScreen> {
       body: _isShoppingMode
           ? ShoppingModeView(
               pendingItems: _pendingItems,
-              onCategoryTap: (category) {
-                final itemsInCategory = _pendingItems
-                    .where((item) => item.category == category)
+              onPlaceTap: (place) {
+                final itemsInPlace = _pendingItems
+                    .where((item) => item.placeName == place)
                     .toList();
 
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => CategoryFocusScreen(
-                      category: category,
-                      items: itemsInCategory,
+                      place: place,
+                      items: itemsInPlace,
                       onToggleItem: _toggleItem,
                     ),
                   ),
@@ -275,7 +271,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       );
     }
 
-    final grouped = _groupItems(pending);
+  final grouped = _groupItemsByPlace(pending);
     final places = grouped.keys.toList()..sort();
 
     return Column(
@@ -289,16 +285,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        ...places.map((place) => _buildPlaceGroup(place, grouped[place]!)),
+  ...places.map((place) => _buildPlaceGroup(place, grouped[place]!)),
       ],
     );
   }
 
-  Widget _buildPlaceGroup(
-      String place, Map<String, List<ShoppingItem>> categories) {
+  Widget _buildPlaceGroup(String place, List<ShoppingItem> items) {
     final isExpanded = _expandedPlaces[place] ?? true;
-    final totalItems =
-        categories.values.fold(0, (sum, items) => sum + items.length);
+    final totalItems = items.length;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -355,54 +349,23 @@ class _InventoryScreenState extends State<InventoryScreen> {
           ),
           if (isExpanded) ...[
             const Divider(height: 1),
-            ...categories.entries
-                .map((entry) => _buildCategoryGroup(entry.key, entry.value)),
+            ...items.map((item) => ListTile(
+                  leading: Checkbox(
+                    value: item.isPurchased,
+                    onChanged: (_) => _toggleItem(item),
+                  ),
+                  title: Text(item.name),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () => _removeItem(item),
+                  ),
+                )),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildCategoryGroup(String category, List<ShoppingItem> items) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          color: AppTheme.getCategoryHeader(context),
-          child: Row(
-            children: [
-              Icon(
-                Icons.category,
-                size: 16,
-                color: AppTheme.getCategoryIcon(context),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                category,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.getCategoryIcon(context),
-                ),
-              ),
-            ],
-          ),
-        ),
-        ...items.map((item) => ListTile(
-              leading: Checkbox(
-                value: item.isPurchased,
-                onChanged: (_) => _toggleItem(item),
-              ),
-              title: Text(item.name),
-              trailing: IconButton(
-                icon: const Icon(Icons.close, size: 20),
-                onPressed: () => _removeItem(item),
-              ),
-            )),
-      ],
-    );
-  }
 
   Widget _buildPurchasedSection() {
     final purchased = _purchasedItems;

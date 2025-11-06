@@ -6,7 +6,6 @@ import 'screens/profile_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/properties_screen.dart';
-import 'screens/home_screen.dart';
 import 'screens/categories_screen.dart';
 import 'theme/app_theme.dart';
 import 'repository/local_user_repository.dart';

@@ -12,6 +12,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  String _selectedEstablishment = 'Supermercado';
   bool _notifications = true;
   bool _darkMode = false;
   bool _notifPanelOpen = false;
@@ -137,32 +138,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(_userName, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   Text(_userEmail, style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey)),
                   const SizedBox(height: 16),
-                  _buildSectionTitle('Gestión'),
-                  _buildCard(
-                    child: Column(
-                      children: [
-                        ListTile(
-                          leading: const Icon(Icons.home_outlined),
-                          title: const Text('Mis Propiedades'),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () {
-                            // TODO: Navegar a propiedades
-                            Navigator.of(context).pushNamed('/properties');
-                          },
-                        ),
-                        const Divider(height: 0),
-                        ListTile(
-                          leading: const Icon(Icons.category_outlined),
-                          title: const Text('Mis Categorías'),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () {
-                            // TODO: Navegar a categorías
-                            Navigator.of(context).pushNamed('/categories');
-                          },
-                        ),
-                      ],
+                    _buildSectionTitle('Gestión'),
+                    _buildCard(
+                      child: Column(
+                        children: [
+                          ListTile(
+                            leading: const Icon(Icons.category_outlined),
+                            title: const Text('Selección de establecimiento'),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () {
+                              Navigator.of(context).pushNamed('/categories');
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
                   _buildSectionTitle('Configuración'),
                   _buildCard(
                     child: Column(

@@ -3,7 +3,6 @@ import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../repository/local_user_repository.dart'; 
-import '../screens/profile_screen.dart'; 
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

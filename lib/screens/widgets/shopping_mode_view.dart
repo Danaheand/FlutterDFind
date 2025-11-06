@@ -4,28 +4,28 @@ import '../../theme/app_theme.dart';
 
 class ShoppingModeView extends StatelessWidget {
   final List<ShoppingItem> pendingItems;
-  final Function(String category) onCategoryTap;
+  final Function(String place) onPlaceTap;
 
   const ShoppingModeView({
     super.key,
     required this.pendingItems,
-    required this.onCategoryTap,
+    required this.onPlaceTap,
   });
 
-  Map<String, int> _getCategoryCounts() {
+  Map<String, int> _getPlaceCounts() {
     final counts = <String, int>{};
     for (var item in pendingItems) {
-      counts[item.category] = (counts[item.category] ?? 0) + 1;
+      counts[item.placeName] = (counts[item.placeName] ?? 0) + 1;
     }
     return counts;
   }
 
   @override
   Widget build(BuildContext context) {
-    final categoryCounts = _getCategoryCounts();
-    final categories = categoryCounts.keys.toList()..sort();
+  final placeCounts = _getPlaceCounts();
+  final places = placeCounts.keys.toList()..sort();
 
-    if (categories.isEmpty) {
+  if (places.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -74,7 +74,7 @@ class ShoppingModeView extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Selecciona un pasillo para comenzar',
+                      'Selecciona un lugar para comenzar',
                       style: TextStyle(
                         fontSize: 14,
                         color: AppTheme.getTextSecondary(context),
@@ -89,16 +89,18 @@ class ShoppingModeView extends StatelessWidget {
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: categories.length,
+            itemCount: places.length,
             itemBuilder: (context, index) {
-              final category = categories[index];
-              final count = categoryCounts[category]!;
+              final place = places[index];
+              final count = placeCounts[place]!;
+              final itemsInPlace = pendingItems.where((item) => item.placeName == place).toList();
+              final firstItemName = itemsInPlace.isNotEmpty ? itemsInPlace.first.name : '';
 
               return Card(
                 elevation: 2,
                 margin: const EdgeInsets.only(bottom: 12),
                 child: InkWell(
-                  onTap: () => onCategoryTap(category),
+                  onTap: () => onPlaceTap(place),
                   borderRadius: BorderRadius.circular(12),
                   child: Padding(
                     padding: const EdgeInsets.all(20),
@@ -112,7 +114,7 @@ class ShoppingModeView extends StatelessWidget {
                             borderRadius: BorderRadius.circular(28),
                           ),
                           child: Icon(
-                            Icons.category,
+                            Icons.store,
                             size: 32,
                             color:
                                 Theme.of(context).brightness == Brightness.light
@@ -126,12 +128,22 @@ class ShoppingModeView extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                category,
+                                place,
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
+                              if (firstItemName.isNotEmpty) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  firstItemName,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: AppTheme.getTextSecondary(context),
+                                  ),
+                                ),
+                              ],
                               const SizedBox(height: 4),
                               Text(
                                 '$count ${count == 1 ? 'artículo' : 'artículos'}',

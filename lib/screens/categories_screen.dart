@@ -27,7 +27,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         child: Column(
           children: [
             Row(children: [
-              Expanded(child: TextField(controller: _ctrl, decoration: const InputDecoration(labelText: 'New category'))),
+              Expanded(child: TextField(controller: _ctrl, decoration: const InputDecoration(labelText: 'Nuevos Establecimientos'))),
               IconButton(onPressed: _add, icon: const Icon(Icons.add))
             ]),
             const SizedBox(height: 12),
