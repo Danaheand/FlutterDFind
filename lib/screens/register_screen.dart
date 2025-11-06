@@ -127,11 +127,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _confirmCtrl.clear();
       setState(() => _agreeTerms = false);
 
-      // Ir a pantalla con lista de usuarios (opcional)
+      // Ir a la pantalla de login después de crear la cuenta
       if (!mounted) return;
-      await Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const UsersListScreen()),
-      );
+      Navigator.of(context).pushReplacementNamed('/login');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
