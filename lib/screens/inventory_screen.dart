@@ -61,7 +61,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: name,
         placeName: 'Supermercado',
-        category: 'General',
+        category: '',
       ));
     });
   }
@@ -72,7 +72,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: name,
         placeName: placeName,
-        category: '', // category removed
+        category: '',
       ));
     });
   }
@@ -90,7 +90,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: suggestion.name,
         placeName: suggestion.placeName,
-        category: '', // category removed
+        category: '',
       ));
     });
 
@@ -399,7 +399,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         ),
                       ),
                       subtitle: Text(
-                        '${item.placeName} • ${item.category}',
+                        item.placeName,
                         style: TextStyle(
                           fontSize: 12,
                           color: AppTheme.getTextSecondary(context),
