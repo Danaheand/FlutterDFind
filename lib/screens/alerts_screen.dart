@@ -269,13 +269,13 @@ class _AlertsScreenState extends State<AlertsScreen> {
               tooltip: 'Añadir Alerta',
             )
           : null,
-      bottomNavigationBar: _buildTabBar(),
       body: tabIndex == 0
           ? ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
+                _buildTabBar(),
                 _buildSection('Importantes', importantes),
-                _buildSection('Próximas', proximas),
+                _buildSection('Actuales', proximas),
                 _buildSection('Desactivadas', desactivadas),
               ],
             )
@@ -284,6 +284,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                 ListView(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   children: [
+                    _buildTabBar(),
                     _buildSection('Pasadas', pasadas),
                   ],
                 ),
@@ -522,12 +523,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
               controller: TextEditingController(text: location ?? ''),
             ),
             const SizedBox(height: 8),
-            TextField(
-              decoration: const InputDecoration(labelText: 'Objeto asociado (opcional)'),
-              onChanged: (v) => object = v,
-              controller: TextEditingController(text: object ?? ''),
-            ),
-            const SizedBox(height: 8),
+            
             Row(
               children: [
                 Checkbox(
