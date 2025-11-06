@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../repository/local_user_repository.dart';
 import '../models/user.dart';
+import 'terms_screen.dart';
 
 /// Pantalla principal de registro (mejorada UI/UX).
 class RegisterScreen extends StatefulWidget {
@@ -309,21 +310,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 onChanged: (v) =>
                                     setState(() => _agreeTerms = v ?? false)),
                             Expanded(
-                              child: RichText(
-                                text: TextSpan(
-                                  text: 'Acepto los ',
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                  children: [
-                                    TextSpan(
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) => const TermsScreen()),
+                                  );
+                                },
+                                child: RichText(
+                                  text: TextSpan(
+                                    text: 'Acepto los ',
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                    children: [
+                                      TextSpan(
                                         text: 'Términos',
                                         style: TextStyle(
-                                            color: theme.colorScheme.primary)),
-                                    const TextSpan(text: ' y la '),
-                                    TextSpan(
+                                          color: theme.colorScheme.primary,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                      const TextSpan(text: ' y la '),
+                                      TextSpan(
                                         text: 'Política de privacidad',
                                         style: TextStyle(
-                                            color: theme.colorScheme.primary)),
-                                  ],
+                                          color: theme.colorScheme.primary,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),

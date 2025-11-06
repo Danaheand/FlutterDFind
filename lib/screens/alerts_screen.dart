@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'inventory_screen.dart';
@@ -97,7 +96,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
     ),
     AlertData(
       id: 'alert6',
-      title: 'Comprar pienso del perro',
+      title: 'Comprar comida del perro',
       description: 'Se está acabando.',
       date: DateTime(2025, 11, 1),
       priority: AlertPriority.media,
@@ -124,12 +123,22 @@ class _AlertsScreenState extends State<AlertsScreen> {
   bool selectionMode = false;
   Set<String> selectedAlerts = {};
 
-  DateTime get today => DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+  DateTime get today =>
+      DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
 
-  List<AlertData> get importantes => alerts.where((a) => a.active && !isPast(a) && a.priority == AlertPriority.alta).toList()..sort((a, b) => a.date.compareTo(b.date));
-  List<AlertData> get proximas => alerts.where((a) => a.active && !isPast(a) && a.priority != AlertPriority.alta).toList()..sort((a, b) => a.date.compareTo(b.date));
-  List<AlertData> get desactivadas => alerts.where((a) => !a.active).toList()..sort((a, b) => b.date.compareTo(a.date));
-  List<AlertData> get pasadas => alerts.where((a) => a.active && isPast(a)).toList()..sort((a, b) => b.date.compareTo(a.date));
+  List<AlertData> get importantes => alerts
+      .where((a) => a.active && !isPast(a) && a.priority == AlertPriority.alta)
+      .toList()
+    ..sort((a, b) => a.date.compareTo(b.date));
+  List<AlertData> get proximas => alerts
+      .where((a) => a.active && !isPast(a) && a.priority != AlertPriority.alta)
+      .toList()
+    ..sort((a, b) => a.date.compareTo(b.date));
+  List<AlertData> get desactivadas => alerts.where((a) => !a.active).toList()
+    ..sort((a, b) => b.date.compareTo(a.date));
+  List<AlertData> get pasadas =>
+      alerts.where((a) => a.active && isPast(a)).toList()
+        ..sort((a, b) => b.date.compareTo(a.date));
 
   bool isPast(AlertData a) => a.date.isBefore(today);
 
@@ -140,10 +149,25 @@ class _AlertsScreenState extends State<AlertsScreen> {
     );
     if (result != null) {
       // Palabras clave para detectar compras/comida
-      final keywords = ['comida', 'comprar', 'super', 'mercado', 'pan', 'leche', 'fruta', 'verdura', 'carne', 'huevo', 'banana', 'arroz', 'atun'];
+      final keywords = [
+        'comida',
+        'comprar',
+        'super',
+        'mercado',
+        'pan',
+        'leche',
+        'fruta',
+        'verdura',
+        'carne',
+        'huevo',
+        'banana',
+        'arroz',
+        'atun'
+      ];
       final lowerTitle = result.title.toLowerCase();
       final lowerDesc = result.description.toLowerCase();
-      final isShopping = keywords.any((k) => lowerTitle.contains(k) || lowerDesc.contains(k));
+      final isShopping =
+          keywords.any((k) => lowerTitle.contains(k) || lowerDesc.contains(k));
       if (isShopping && InventoryScreen.addFromAlertGlobal != null) {
         // Usa el título como nombre del producto
         InventoryScreen.addFromAlertGlobal!(result.title);
@@ -205,20 +229,32 @@ class _AlertsScreenState extends State<AlertsScreen> {
       children: [
         Expanded(
           child: TextButton(
-            onPressed: () => setState(() { tabIndex = 0; selectionMode = false; }),
-            child: Text('Actuales', style: TextStyle(
-              color: tabIndex == 0 ? Theme.of(context).colorScheme.primary : Colors.grey,
-              fontWeight: FontWeight.bold,
-            )),
+            onPressed: () => setState(() {
+              tabIndex = 0;
+              selectionMode = false;
+            }),
+            child: Text('Actuales',
+                style: TextStyle(
+                  color: tabIndex == 0
+                      ? Theme.of(context).colorScheme.primary
+                      : Colors.grey,
+                  fontWeight: FontWeight.bold,
+                )),
           ),
         ),
         Expanded(
           child: TextButton(
-            onPressed: () => setState(() { tabIndex = 1; selectionMode = false; }),
-            child: Text('Pasadas', style: TextStyle(
-              color: tabIndex == 1 ? Theme.of(context).colorScheme.primary : Colors.grey,
-              fontWeight: FontWeight.bold,
-            )),
+            onPressed: () => setState(() {
+              tabIndex = 1;
+              selectionMode = false;
+            }),
+            child: Text('Pasadas',
+                style: TextStyle(
+                  color: tabIndex == 1
+                      ? Theme.of(context).colorScheme.primary
+                      : Colors.grey,
+                  fontWeight: FontWeight.bold,
+                )),
           ),
         ),
       ],
@@ -232,14 +268,17 @@ class _AlertsScreenState extends State<AlertsScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
-          child: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          child: Text(title,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         ),
         ...list.map((a) => _AlertCard(
-          alert: a,
-          onTap: () => selectionMode && tabIndex == 1 ? _toggleSelection(a.id) : _openAlertView(a),
-          selected: selectedAlerts.contains(a.id),
-          selectionMode: selectionMode && tabIndex == 1,
-        )),
+              alert: a,
+              onTap: () => selectionMode && tabIndex == 1
+                  ? _toggleSelection(a.id)
+                  : _openAlertView(a),
+              selected: selectedAlerts.contains(a.id),
+              selectionMode: selectionMode && tabIndex == 1,
+            )),
         SizedBox(height: 8),
       ],
     );
@@ -319,7 +358,11 @@ class _AlertCard extends StatelessWidget {
   final VoidCallback onTap;
   final bool selected;
   final bool selectionMode;
-  const _AlertCard({required this.alert, required this.onTap, this.selected = false, this.selectionMode = false});
+  const _AlertCard(
+      {required this.alert,
+      required this.onTap,
+      this.selected = false,
+      this.selectionMode = false});
 
   Color get _color {
     if (!alert.active) return Colors.grey.shade400;
@@ -352,7 +395,9 @@ class _AlertCard extends StatelessWidget {
       elevation: selected ? 6 : 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: selected ? BorderSide(color: Colors.blue, width: 2) : BorderSide.none,
+        side: selected
+            ? BorderSide(color: Colors.blue, width: 2)
+            : BorderSide.none,
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -383,30 +428,40 @@ class _AlertCard extends StatelessWidget {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: alert.active ? Colors.black : Colors.grey,
-                              decoration: alert.active ? null : TextDecoration.lineThrough,
+                              decoration: alert.active
+                                  ? null
+                                  : TextDecoration.lineThrough,
                             ),
                           ),
                         ),
                         Text(
                           _formatDate(alert.date),
-                          style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                          style: TextStyle(
+                              fontSize: 13, color: Colors.grey.shade600),
                         ),
                       ],
                     ),
                     if (alert.description.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 2.0),
-                        child: Text(alert.description, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.grey.shade700)),
+                        child: Text(alert.description,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(color: Colors.grey.shade700)),
                       ),
                     if (alert.object != null && alert.object!.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 2.0),
-                        child: Text('Artículo: ${alert.object}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                        child: Text('Artículo: ${alert.object}',
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.grey.shade600)),
                       ),
                     if (alert.location != null && alert.location!.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 2.0),
-                        child: Text('Lugar: ${alert.location}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                        child: Text('Lugar: ${alert.location}',
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.grey.shade600)),
                       ),
                   ],
                 ),
@@ -415,7 +470,9 @@ class _AlertCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(left: 8, top: 8),
                   child: Icon(
-                    selected ? Icons.check_circle : Icons.radio_button_unchecked,
+                    selected
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
                     color: selected ? Colors.blue : Colors.grey,
                   ),
                 ),
@@ -506,11 +563,15 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                   child: DropdownButtonFormField<AlertPriority>(
                     value: priority,
                     items: [
-                      DropdownMenuItem(value: AlertPriority.baja, child: Text('Baja')),
-                      DropdownMenuItem(value: AlertPriority.media, child: Text('Media')),
-                      DropdownMenuItem(value: AlertPriority.alta, child: Text('Alta')),
+                      DropdownMenuItem(
+                          value: AlertPriority.baja, child: Text('Baja')),
+                      DropdownMenuItem(
+                          value: AlertPriority.media, child: Text('Media')),
+                      DropdownMenuItem(
+                          value: AlertPriority.alta, child: Text('Alta')),
                     ],
-                    onChanged: (v) => setState(() => priority = v ?? AlertPriority.baja),
+                    onChanged: (v) =>
+                        setState(() => priority = v ?? AlertPriority.baja),
                     decoration: const InputDecoration(labelText: 'Prioridad'),
                   ),
                 ),
@@ -518,12 +579,12 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
             ),
             const SizedBox(height: 8),
             TextField(
-              decoration: const InputDecoration(labelText: 'Ubicación (opcional)'),
+              decoration:
+                  const InputDecoration(labelText: 'Ubicación (opcional)'),
               onChanged: (v) => location = v,
               controller: TextEditingController(text: location ?? ''),
             ),
             const SizedBox(height: 8),
-            
             Row(
               children: [
                 Checkbox(
@@ -549,7 +610,9 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+        TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar')),
         ElevatedButton(
           onPressed: () {
             if (titleCtrl.text.trim().isEmpty) return;
@@ -564,7 +627,8 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                 location: location,
                 object: object,
                 repetitive: repetitive,
-                repeatFrequency: repetitive ? (repeatFrequency ?? 'semanal') : null,
+                repeatFrequency:
+                    repetitive ? (repeatFrequency ?? 'semanal') : null,
                 active: widget.alert?.active ?? true,
               ),
             );
@@ -588,7 +652,8 @@ class _AlertViewDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isPast = alert.date.isBefore(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day));
+    final isPast = alert.date.isBefore(DateTime(
+        DateTime.now().year, DateTime.now().month, DateTime.now().day));
     return AlertDialog(
       title: Text(alert.title),
       content: SingleChildScrollView(
@@ -600,7 +665,10 @@ class _AlertViewDialog extends StatelessWidget {
               children: [
                 Icon(Icons.calendar_today, size: 18, color: Colors.blueGrey),
                 const SizedBox(width: 6),
-                Text(_formatDate(alert.date) + (alert.repetitive && alert.repeatFrequency != null ? ' (Repite ${alert.repeatFrequency})' : '')),
+                Text(_formatDate(alert.date) +
+                    (alert.repetitive && alert.repeatFrequency != null
+                        ? ' (Repite ${alert.repeatFrequency})'
+                        : '')),
               ],
             ),
             if (alert.description.isNotEmpty) ...[
@@ -609,24 +677,39 @@ class _AlertViewDialog extends StatelessWidget {
             ],
             if (alert.object != null && alert.object!.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Row(children: [Icon(Icons.inventory_2, size: 18, color: Colors.blueGrey), const SizedBox(width: 6), Text('Artículo: ${alert.object}')]),
+              Row(children: [
+                Icon(Icons.inventory_2, size: 18, color: Colors.blueGrey),
+                const SizedBox(width: 6),
+                Text('Artículo: ${alert.object}')
+              ]),
             ],
             if (alert.location != null && alert.location!.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Row(children: [Icon(Icons.place, size: 18, color: Colors.blueGrey), const SizedBox(width: 6), Text('Lugar: ${alert.location}')]),
+              Row(children: [
+                Icon(Icons.place, size: 18, color: Colors.blueGrey),
+                const SizedBox(width: 6),
+                Text('Lugar: ${alert.location}')
+              ]),
             ],
             const SizedBox(height: 12),
             Row(
               children: [
-                Icon(Icons.priority_high, color: alert.priority == AlertPriority.alta ? Colors.red : alert.priority == AlertPriority.media ? Colors.amber : Colors.blue),
+                Icon(Icons.priority_high,
+                    color: alert.priority == AlertPriority.alta
+                        ? Colors.red
+                        : alert.priority == AlertPriority.media
+                            ? Colors.amber
+                            : Colors.blue),
                 const SizedBox(width: 6),
-                Text('Prioridad: ${alert.priority.name[0].toUpperCase()}${alert.priority.name.substring(1)}'),
+                Text(
+                    'Prioridad: ${alert.priority.name[0].toUpperCase()}${alert.priority.name.substring(1)}'),
               ],
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                Icon(alert.active ? Icons.check_circle : Icons.cancel, color: alert.active ? Colors.green : Colors.grey),
+                Icon(alert.active ? Icons.check_circle : Icons.cancel,
+                    color: alert.active ? Colors.green : Colors.grey),
                 const SizedBox(width: 6),
                 Text(alert.active ? 'Activa' : 'Desactivada'),
               ],
@@ -645,13 +728,15 @@ class _AlertViewDialog extends StatelessWidget {
           TextButton.icon(
             icon: Icon(Icons.cancel),
             label: Text('Desactivar'),
-            onPressed: () => Navigator.pop(context, _AlertViewResult('deactivate')),
+            onPressed: () =>
+                Navigator.pop(context, _AlertViewResult('deactivate')),
           ),
         if (!alert.active)
           TextButton.icon(
             icon: Icon(Icons.check_circle),
             label: Text('Reactivar'),
-            onPressed: () => Navigator.pop(context, _AlertViewResult('reactivate')),
+            onPressed: () =>
+                Navigator.pop(context, _AlertViewResult('reactivate')),
           ),
         TextButton.icon(
           icon: Icon(Icons.delete),
