@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 
-
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -12,7 +11,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String _selectedEstablishment = 'Supermercado';
   bool _notifications = true;
   bool _darkMode = false;
   bool _notifPanelOpen = false;
@@ -69,7 +67,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Center(
               child: Text(
                 _userName.isNotEmpty ? _userName[0] : '?',
-                style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.white),
+                style: const TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
               ),
             ),
           ),
@@ -80,15 +81,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildSectionTitle(String text) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        child: Text(text, style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.grey)),
+        child: Text(text,
+            style: const TextStyle(
+                fontWeight: FontWeight.w600, color: Colors.grey)),
       );
 
   Widget _buildCard({required Widget child, EdgeInsets? margin}) => Container(
-        margin: margin ?? const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
+        margin:
+            margin ?? const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))
+          ],
         ),
         child: child,
       );
@@ -135,32 +142,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   _buildAvatar(),
                   const SizedBox(height: 8),
-                  Text(_userName, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                  Text(_userEmail, style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey)),
+                  Text(_userName,
+                      style: theme.textTheme.titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(_userEmail,
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: Colors.grey)),
                   const SizedBox(height: 16),
-                    _buildSectionTitle('Gestión'),
-                    _buildCard(
-                      child: Column(
-                        children: [
-                          ListTile(
-                            leading: const Icon(Icons.category_outlined),
-                            title: const Text('Selección de establecimiento'),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () {
-                              Navigator.of(context).pushNamed('/categories');
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
                   _buildSectionTitle('Configuración'),
                   _buildCard(
                     child: Column(
                       children: [
                         ListTile(
-                          leading: const Icon(Icons.notifications_active_outlined),
+                          leading:
+                              const Icon(Icons.notifications_active_outlined),
                           title: const Text('Notificaciones'),
-                          subtitle: const Text('Controla alertas y avisos de la app'),
+                          subtitle:
+                              const Text('Controla alertas y avisos de la app'),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -168,7 +166,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 IconButton(
                                   icon: const Icon(Icons.settings),
                                   tooltip: 'Configurar notificaciones',
-                                  onPressed: () => setState(() => _notifPanelOpen = !_notifPanelOpen),
+                                  onPressed: () => setState(
+                                      () => _notifPanelOpen = !_notifPanelOpen),
                                 ),
                               Switch(
                                 value: _notifications,
@@ -182,71 +181,88 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         if (_notifPanelOpen && _notifications)
                           Padding(
-                            padding: const EdgeInsets.only(left: 16, right: 8, bottom: 8),
+                            padding: const EdgeInsets.only(
+                                left: 16, right: 8, bottom: 8),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const SizedBox(height: 8),
-                                Text('Importancia Alta', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+                                Text('Importancia Alta',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                        fontWeight: FontWeight.w600)),
                                 Row(
                                   children: [
                                     Expanded(child: Text('Sonido')),
                                     Switch(
                                       value: _notifHighSound,
-                                      onChanged: (v) => setState(() => _notifHighSound = v),
+                                      onChanged: (v) =>
+                                          setState(() => _notifHighSound = v),
                                     ),
                                     Expanded(child: Text('Vibración')),
                                     Switch(
                                       value: _notifHighVibration,
-                                      onChanged: (v) => setState(() => _notifHighVibration = v),
+                                      onChanged: (v) => setState(
+                                          () => _notifHighVibration = v),
                                     ),
                                   ],
                                 ),
                                 const Divider(),
-                                Text('Importancia Media', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+                                Text('Importancia Media',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                        fontWeight: FontWeight.w600)),
                                 Row(
                                   children: [
                                     Expanded(child: Text('Sonido')),
                                     Switch(
                                       value: _notifMediumSound,
-                                      onChanged: (v) => setState(() => _notifMediumSound = v),
+                                      onChanged: (v) =>
+                                          setState(() => _notifMediumSound = v),
                                     ),
                                     Expanded(child: Text('Vibración')),
                                     Switch(
                                       value: _notifMediumVibration,
-                                      onChanged: (v) => setState(() => _notifMediumVibration = v),
+                                      onChanged: (v) => setState(
+                                          () => _notifMediumVibration = v),
                                     ),
                                   ],
                                 ),
                                 const Divider(),
-                                Text('Importancia Baja', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+                                Text('Importancia Baja',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                        fontWeight: FontWeight.w600)),
                                 Row(
                                   children: [
                                     Expanded(child: Text('Sonido')),
                                     Switch(
                                       value: _notifLowSound,
-                                      onChanged: (v) => setState(() => _notifLowSound = v),
+                                      onChanged: (v) =>
+                                          setState(() => _notifLowSound = v),
                                     ),
                                     Expanded(child: Text('Vibración')),
                                     Switch(
                                       value: _notifLowVibration,
-                                      onChanged: (v) => setState(() => _notifLowVibration = v),
+                                      onChanged: (v) => setState(
+                                          () => _notifLowVibration = v),
                                     ),
                                   ],
                                 ),
                                 const Divider(),
-                                Text('Generales de la App', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+                                Text('Generales de la App',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                        fontWeight: FontWeight.w600)),
                                 Row(
                                   children: [
                                     Expanded(child: Text('Sonido')),
                                     Switch(
                                       value: _notifGeneralSound,
-                                      onChanged: (v) => setState(() => _notifGeneralSound = v),
+                                      onChanged: (v) => setState(
+                                          () => _notifGeneralSound = v),
                                     ),
                                     Expanded(child: Text('Vibración')),
                                     Switch(
                                       value: _notifGeneralVibration,
-                                      onChanged: (v) => setState(() => _notifGeneralVibration = v),
+                                      onChanged: (v) => setState(
+                                          () => _notifGeneralVibration = v),
                                     ),
                                   ],
                                 ),
@@ -274,11 +290,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         foregroundColor: Colors.red,
                         side: const BorderSide(color: Colors.redAccent),
                         minimumSize: const Size.fromHeight(48),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         elevation: 0,
                       ),
                       onPressed: _showLogoutConfirm,
-                      child: const Text('Cerrar Sesión', style: TextStyle(fontWeight: FontWeight.w600)),
+                      child: const Text('Cerrar Sesión',
+                          style: TextStyle(fontWeight: FontWeight.w600)),
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -304,9 +322,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       const Icon(Icons.logout, color: Colors.red, size: 48),
                       const SizedBox(height: 12),
-                      const Text('¿Cerrar sesión?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                      const Text('¿Cerrar sesión?',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 18)),
                       const SizedBox(height: 8),
-                      const Text('¿Estás seguro que deseas salir de tu cuenta?', textAlign: TextAlign.center),
+                      const Text('¿Estás seguro que deseas salir de tu cuenta?',
+                          textAlign: TextAlign.center),
                       const SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,

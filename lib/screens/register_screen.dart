@@ -44,15 +44,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _hasUpper(String s) => RegExp(r'[A-Z]').hasMatch(s);
   bool _hasDigit(String s) => RegExp(r'\d').hasMatch(s);
 
-  double _passwordStrength(String v) {
-    int score = 0;
-    if (v.length >= 8) score++;
-    if (_hasLower(v)) score++;
-    if (_hasUpper(v)) score++;
-    if (_hasDigit(v)) score++;
-    return score / 4.0;
-  }
-
   String? _validateName(String? v) {
     if (v == null || v.trim().isEmpty) return 'Ingrese su nombre';
     if (v.trim().length < 3) return 'Mínimo 3 caracteres';
@@ -82,12 +73,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _submit() async {
     if (!mounted) return; // Agregar al inicio del método
-    
+
     final valid = _formKey.currentState?.validate() ?? false;
     if (!valid) return;
     if (!_agreeTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Debes aceptar los Términos y la Política de Privacidad')),
+        const SnackBar(
+            content:
+                Text('Debes aceptar los Términos y la Política de Privacidad')),
       );
       return;
     }
@@ -193,7 +186,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 480),
               child: Card(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
                 elevation: 3,
                 child: Padding(
                   padding: const EdgeInsets.all(20),
@@ -208,15 +202,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: theme.colorScheme.primary.withOpacity(0.12),
+                                color:
+                                    theme.colorScheme.primary.withOpacity(0.12),
                               ),
-                              child: Icon(Icons.person_add_alt_1, color: theme.colorScheme.primary),
+                              child: Icon(Icons.person_add_alt_1,
+                                  color: theme.colorScheme.primary),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 'Regístrate',
-                                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                                style: theme.textTheme.titleLarge
+                                    ?.copyWith(fontWeight: FontWeight.w700),
                               ),
                             ),
                           ],
@@ -271,8 +268,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   labelText: 'Contraseña',
                                   prefixIcon: const Icon(Icons.lock_outline),
                                   suffixIcon: IconButton(
-                                    icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
-                                    onPressed: () => setState(() => _obscure = !_obscure),
+                                    icon: Icon(_obscure
+                                        ? Icons.visibility_off
+                                        : Icons.visibility),
+                                    onPressed: () =>
+                                        setState(() => _obscure = !_obscure),
                                   ),
                                 ),
                                 validator: _validatePassword,
@@ -293,8 +293,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             labelText: 'Confirmar contraseña',
                             prefixIcon: const Icon(Icons.lock_person),
                             suffixIcon: IconButton(
-                              icon: Icon(_obscureConfirm ? Icons.visibility_off : Icons.visibility),
-                              onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                              icon: Icon(_obscureConfirm
+                                  ? Icons.visibility_off
+                                  : Icons.visibility),
+                              onPressed: () => setState(
+                                  () => _obscureConfirm = !_obscureConfirm),
                             ),
                           ),
                           validator: _validateConfirm,
@@ -303,16 +306,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         Row(
                           children: [
-                            Checkbox(value: _agreeTerms, onChanged: (v) => setState(() => _agreeTerms = v ?? false)),
+                            Checkbox(
+                                value: _agreeTerms,
+                                onChanged: (v) =>
+                                    setState(() => _agreeTerms = v ?? false)),
                             Expanded(
                               child: RichText(
                                 text: TextSpan(
                                   text: 'Acepto los ',
                                   style: Theme.of(context).textTheme.bodyMedium,
                                   children: [
-                                    TextSpan(text: 'Términos', style: TextStyle(color: theme.colorScheme.primary)),
+                                    TextSpan(
+                                        text: 'Términos',
+                                        style: TextStyle(
+                                            color: theme.colorScheme.primary)),
                                     const TextSpan(text: ' y la '),
-                                    TextSpan(text: 'Política de privacidad', style: TextStyle(color: theme.colorScheme.primary)),
+                                    TextSpan(
+                                        text: 'Política de privacidad',
+                                        style: TextStyle(
+                                            color: theme.colorScheme.primary)),
                                   ],
                                 ),
                               ),
@@ -325,18 +337,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           height: 48,
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _submit,
-                            style: ElevatedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                            style: ElevatedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12))),
                             child: _isLoading
-                                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                : const Text('Crear cuenta', style: TextStyle(fontWeight: FontWeight.w700)),
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2, color: Colors.white))
+                                : const Text('Crear cuenta',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w700)),
                           ),
                         ),
 
                         const SizedBox(height: 12),
                         TextButton.icon(
-                          onPressed: _isLoading ? null : () => Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const UsersListScreen())
-                          ),
+                          onPressed: _isLoading
+                              ? null
+                              : () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                      builder: (_) => const UsersListScreen())),
                           icon: const Icon(Icons.list),
                           label: const Text('Ver usuarios registrados'),
                         ),
@@ -346,8 +368,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             await LocalUserRepository.instance.clearAll();
                             if (!mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Lista de usuarios limpiada'))
-                            );
+                                const SnackBar(
+                                    content:
+                                        Text('Lista de usuarios limpiada')));
                             setState(() {});
                           },
                           child: const Text('Limpiar lista de usuarios'),
@@ -403,11 +426,14 @@ class _UsersListScreenState extends State<UsersListScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.group_off_outlined, size: 80, color: Colors.grey),
+                  const Icon(Icons.group_off_outlined,
+                      size: 80, color: Colors.grey),
                   const SizedBox(height: 12),
                   const Text('No hay usuarios guardados (demo)'),
                   const SizedBox(height: 12),
-                  ElevatedButton(onPressed: () => Navigator.of(context).maybePop(), child: const Text('Volver')),
+                  ElevatedButton(
+                      onPressed: () => Navigator.of(context).maybePop(),
+                      child: const Text('Volver')),
                 ],
               ),
             );
@@ -421,9 +447,13 @@ class _UsersListScreenState extends State<UsersListScreen> {
               itemBuilder: (_, i) {
                 final u = list[i];
                 return Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   child: ListTile(
-                    leading: CircleAvatar(child: Text(u.nombreUsuario.isNotEmpty ? u.nombreUsuario[0].toUpperCase() : 'U')),
+                    leading: CircleAvatar(
+                        child: Text(u.nombreUsuario.isNotEmpty
+                            ? u.nombreUsuario[0].toUpperCase()
+                            : 'U')),
                     title: Text(u.nombreUsuario),
                     subtitle: Text(u.email),
                     trailing: Text(u.fechaCreacionIso.split('T').first),
@@ -440,13 +470,16 @@ class _UsersListScreenState extends State<UsersListScreen> {
                               const SizedBox(height: 6),
                               Text('Email: ${u.email}'),
                               const SizedBox(height: 6),
-                              Text('Hash (SHA256): ${u.contrasenaHash.substring(0, 12)}...'),
+                              Text(
+                                  'Hash (SHA256): ${u.contrasenaHash.substring(0, 12)}...'),
                               const SizedBox(height: 6),
                               Text('Creado: ${u.fechaCreacionIso}'),
                             ],
                           ),
                           actions: [
-                            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cerrar')),
+                            TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('Cerrar')),
                           ],
                         ),
                       );

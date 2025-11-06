@@ -7,36 +7,19 @@ class LocalUserRepository {
   static final LocalUserRepository instance = LocalUserRepository._();
 
   static const _kUsersStorageKey = 'users_v1';
-  static const _kLegacyKey = 'demo_users_v1'; // antigua key usada en register_screen.dart
+  static const _kLegacyKey =
+      'demo_users_v1'; // antigua key usada en register_screen.dart
 
   Future<List<User>> _loadRaw() async {
     final sp = await SharedPreferences.getInstance();
     String? jsonStr = sp.getString(_kUsersStorageKey);
-
-    // Si no hay en key principal, buscar legacy y migrar automáticamente
-    if (jsonStr == null) {
-      final legacy = sp.getString(_kLegacyKey);
-      if (legacy != null) {
-        try {
-          // validar legacy
-          final listLegacy = jsonDecode(legacy) as List<dynamic>;
-          // migrar a key nueva
-          await sp.setString(_kUsersStorageKey, jsonEncode(listLegacy));
-          // eliminar legacy opcional: comentar si quieres conservarlo
-          // await sp.remove(_kLegacyKey);
-          jsonStr = jsonEncode(listLegacy);
-        } catch (_) {
-          // parse error -> tratar como vacío
-          return [];
-        }
-      } else {
-        return [];
-      }
-    }
+    if (jsonStr == null) return [];
 
     try {
       final list = jsonDecode(jsonStr) as List<dynamic>;
-      return list.map((e) => User.fromJson(Map<String, dynamic>.from(e))).toList();
+      return list
+          .map((e) => User.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
     } catch (e) {
       return [];
     }
@@ -44,7 +27,8 @@ class LocalUserRepository {
 
   Future<void> _saveRaw(List<User> users) async {
     final sp = await SharedPreferences.getInstance();
-    await sp.setString(_kUsersStorageKey, jsonEncode(users.map((u) => u.toJson()).toList()));
+    await sp.setString(
+        _kUsersStorageKey, jsonEncode(users.map((u) => u.toJson()).toList()));
   }
 
   Future<List<User>> getAll() => _loadRaw();
@@ -89,7 +73,8 @@ class LocalUserRepository {
     'id_usuario': 999,
     'nombre_usuario': 'Usuario Demo',
     'email': 'demo@dfind.com',
-    'contrasena_hash': 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', // contraseña: '123'
+    'contrasena_hash':
+        'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', // contraseña: '123'
     'fecha_creacion': '2023-01-01T00:00:00.000Z'
   };
 
