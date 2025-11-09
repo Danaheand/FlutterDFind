@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../providers/font_size_provider.dart';
 import 'dart:math';
 import 'inventory_screen.dart';
@@ -535,6 +536,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
   late TextEditingController descCtrl;
   late DateTime date;
   AlertPriority priority = AlertPriority.baja;
+  Color customColor = Colors.blue.shade400;
   String? location;
   String? object;
   bool repetitive = false;
@@ -596,19 +598,73 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: DropdownButtonFormField<AlertPriority>(
-                    value: priority,
-                    items: const [
-                      DropdownMenuItem(
-                          value: AlertPriority.baja, child: Text('Baja')),
-                      DropdownMenuItem(
-                          value: AlertPriority.media, child: Text('Media')),
-                      DropdownMenuItem(
-                          value: AlertPriority.alta, child: Text('Alta')),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      DropdownButtonFormField<AlertPriority>(
+                        value: priority,
+                        items: const [
+                          DropdownMenuItem(
+                              value: AlertPriority.baja, child: Text('Baja')),
+                          DropdownMenuItem(
+                              value: AlertPriority.media, child: Text('Media')),
+                          DropdownMenuItem(
+                              value: AlertPriority.alta, child: Text('Alta')),
+                        ],
+                        onChanged: (v) {
+                          setState(() {
+                            priority = v ?? AlertPriority.baja;
+                            // Color sugerido según prioridad
+                            if (priority == AlertPriority.baja) customColor = Colors.blue.shade400;
+                            if (priority == AlertPriority.media) customColor = Colors.amber.shade600;
+                            if (priority == AlertPriority.alta) customColor = Colors.red.shade400;
+                          });
+                        },
+                        decoration: const InputDecoration(labelText: 'Prioridad'),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Text('Color:'),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () async {
+                              Color tempColor = customColor;
+                              final picked = await showDialog<Color>(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text('Selecciona color'),
+                                    content: SingleChildScrollView(
+                                      child: BlockPicker(
+                                        pickerColor: tempColor,
+                                        onColorChanged: (c) => tempColor = c,
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context, tempColor),
+                                        child: const Text('Aceptar'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                              if (picked != null) setState(() => customColor = picked);
+                            },
+                            child: Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: customColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.grey.shade400),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
-                    onChanged: (v) =>
-                        setState(() => priority = v ?? AlertPriority.baja),
-                    decoration: const InputDecoration(labelText: 'Prioridad'),
                   ),
                 ),
               ],
