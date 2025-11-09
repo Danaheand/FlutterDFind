@@ -18,6 +18,8 @@ class AlertData {
   bool repetitive;
   String? repeatFrequency; // 'semanal', 'mensual', 'anual'
   bool active;
+  Color? color; // <-- NUEVO
+
   AlertData({
     required this.id,
     required this.title,
@@ -29,6 +31,7 @@ class AlertData {
     this.repetitive = false,
     this.repeatFrequency,
     this.active = true,
+    this.color, // <-- NUEVO
   });
 }
 
@@ -237,7 +240,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
               selectionMode = false;
             }),
             child: Consumer<FontSizeProvider>(
-              builder: (context, fontSizeProvider, _) => Text('Actuales',
+              builder: (context, fontSizeProvider, _) => Text(
+                'Actuales',
                 style: TextStyle(
                   color: tabIndex == 0
                       ? Theme.of(context).colorScheme.primary
@@ -256,7 +260,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
               selectionMode = false;
             }),
             child: Consumer<FontSizeProvider>(
-              builder: (context, fontSizeProvider, _) => Text('Pasadas',
+              builder: (context, fontSizeProvider, _) => Text(
+                'Pasadas',
                 style: TextStyle(
                   color: tabIndex == 1
                       ? Theme.of(context).colorScheme.primary
@@ -281,7 +286,9 @@ class _AlertsScreenState extends State<AlertsScreen> {
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
           child: Consumer<FontSizeProvider>(
             builder: (context, fontSizeProvider, _) => Text(title,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: fontSizeProvider.fontSize + 2)),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: fontSizeProvider.fontSize + 2)),
           ),
         ),
         ...list.map((a) => _AlertCard(
@@ -302,7 +309,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Consumer<FontSizeProvider>(
-          builder: (context, fontSizeProvider, _) => Text('Alertas', style: TextStyle(fontSize: fontSizeProvider.fontSize + 2)),
+          builder: (context, fontSizeProvider, _) => Text('Alertas',
+              style: TextStyle(fontSize: fontSizeProvider.fontSize + 2)),
         ),
         actions: [
           if (tabIndex == 1 && pasadas.isNotEmpty)
@@ -353,7 +361,10 @@ class _AlertsScreenState extends State<AlertsScreen> {
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.delete),
                         label: Consumer<FontSizeProvider>(
-                          builder: (context, fontSizeProvider, _) => Text('Eliminar Seleccionadas', style: TextStyle(fontSize: fontSizeProvider.fontSize)),
+                          builder: (context, fontSizeProvider, _) => Text(
+                              'Eliminar Seleccionadas',
+                              style: TextStyle(
+                                  fontSize: fontSizeProvider.fontSize)),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
@@ -383,14 +394,7 @@ class _AlertCard extends StatelessWidget {
 
   Color get _color {
     if (!alert.active) return Colors.grey.shade400;
-    switch (alert.priority) {
-      case AlertPriority.alta:
-        return Colors.red.shade400;
-      case AlertPriority.media:
-        return Colors.amber.shade600;
-      case AlertPriority.baja:
-        return Colors.blue.shade400;
-    }
+    return alert.color ?? _defaultColorFor(alert.priority);
   }
 
   IconData get _icon {
@@ -416,97 +420,125 @@ class _AlertCard extends StatelessWidget {
             ? const BorderSide(color: Colors.blue, width: 2)
             : BorderSide.none,
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
+      clipBehavior: Clip
+          .antiAlias, // <-- permite que los hijos se recorten con bordes redondeados
+      child: Stack(
+        children: [
+          // Línea de color redondeada al borde
+          Positioned.fill(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                width: 6,
                 decoration: BoxDecoration(
-                  color: _color.withOpacity(0.15),
-                  shape: BoxShape.circle,
+                  color: _color,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
+                  ),
                 ),
-                padding: const EdgeInsets.all(8),
-                child: Icon(_icon, color: _color, size: 28),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Consumer<FontSizeProvider>(
-                            builder: (context, fontSizeProvider, _) => Text(
-                              alert.title,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: alert.active ? Colors.black : Colors.grey,
-                                decoration: alert.active
-                                    ? null
-                                    : TextDecoration.lineThrough,
-                                fontSize: fontSizeProvider.fontSize + 2,
+            ),
+          ),
+          // Contenido de la alerta
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: _color.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  padding: const EdgeInsets.all(8),
+                  child: Icon(_icon, color: _color, size: 28),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Consumer<FontSizeProvider>(
+                              builder: (context, fontSizeProvider, _) => Text(
+                                alert.title,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      alert.active ? Colors.black : Colors.grey,
+                                  decoration: alert.active
+                                      ? null
+                                      : TextDecoration.lineThrough,
+                                  fontSize: fontSizeProvider.fontSize + 2,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        Consumer<FontSizeProvider>(
-                          builder: (context, fontSizeProvider, _) => Text(
-                            _formatDate(alert.date),
-                            style: TextStyle(
-                                fontSize: fontSizeProvider.fontSize - 1, color: Colors.grey.shade600),
+                          Consumer<FontSizeProvider>(
+                            builder: (context, fontSizeProvider, _) => Text(
+                              _formatDate(alert.date),
+                              style: TextStyle(
+                                  fontSize: fontSizeProvider.fontSize - 1,
+                                  color: Colors.grey.shade600),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (alert.description.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2.0),
+                          child: Consumer<FontSizeProvider>(
+                            builder: (context, fontSizeProvider, _) => Text(
+                                alert.description,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    color: Colors.grey.shade700,
+                                    fontSize: fontSizeProvider.fontSize)),
                           ),
                         ),
-                      ],
-                    ),
-                    if (alert.description.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2.0),
-                        child: Consumer<FontSizeProvider>(
-                          builder: (context, fontSizeProvider, _) => Text(alert.description,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: Colors.grey.shade700, fontSize: fontSizeProvider.fontSize)),
+                      if (alert.object != null && alert.object!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2.0),
+                          child: Consumer<FontSizeProvider>(
+                            builder: (context, fontSizeProvider, _) => Text(
+                                'Artículo: ${alert.object}',
+                                style: TextStyle(
+                                    fontSize: fontSizeProvider.fontSize - 2,
+                                    color: Colors.grey.shade600)),
+                          ),
                         ),
-                      ),
-                    if (alert.object != null && alert.object!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2.0),
-            child: Consumer<FontSizeProvider>(
-              builder: (context, fontSizeProvider, _) => Text('Artículo: ${alert.object}',
-                style: TextStyle(
-                  fontSize: fontSizeProvider.fontSize - 2, color: Colors.grey.shade600)),
-            ),
-                      ),
-                    if (alert.location != null && alert.location!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2.0),
-            child: Consumer<FontSizeProvider>(
-              builder: (context, fontSizeProvider, _) => Text('Lugar: ${alert.location}',
-                style: TextStyle(
-                  fontSize: fontSizeProvider.fontSize - 2, color: Colors.grey.shade600)),
-            ),
-                      ),
-                  ],
-                ),
-              ),
-              if (selectionMode)
-                Padding(
-                  padding: const EdgeInsets.only(left: 8, top: 8),
-                  child: Icon(
-                    selected
-                        ? Icons.check_circle
-                        : Icons.radio_button_unchecked,
-                    color: selected ? Colors.blue : Colors.grey,
+                      if (alert.location != null && alert.location!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2.0),
+                          child: Consumer<FontSizeProvider>(
+                            builder: (context, fontSizeProvider, _) => Text(
+                                'Lugar: ${alert.location}',
+                                style: TextStyle(
+                                    fontSize: fontSizeProvider.fontSize - 2,
+                                    color: Colors.grey.shade600)),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
-            ],
+                if (selectionMode)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8, top: 8),
+                    child: Icon(
+                      selected
+                          ? Icons.check_circle
+                          : Icons.radio_button_unchecked,
+                      color: selected ? Colors.blue : Colors.grey,
+                    ),
+                  ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -521,6 +553,18 @@ String _formatDate(DateTime d) {
   if (diff < 0 && diff > -7) return 'Hace ${-diff} días';
   if (diff > 1 && diff <= 7) return 'En $diff días';
   return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+}
+
+Color _defaultColorFor(AlertPriority p) {
+  switch (p) {
+    case AlertPriority.alta:
+      return Colors.red.shade400;
+    case AlertPriority.media:
+      return Colors.amber.shade600;
+    case AlertPriority.baja:
+    default:
+      return Colors.blue.shade400;
+  }
 }
 
 // Modal de edición/creación de alerta
@@ -543,6 +587,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
   String? repeatFrequency;
 
   @override
+  @override
   void initState() {
     super.initState();
     final a = widget.alert;
@@ -554,6 +599,9 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
     object = a?.object;
     repetitive = a?.repetitive ?? false;
     repeatFrequency = a?.repeatFrequency;
+
+    // <-- NUEVO: si la alerta ya tenía color, úsalo; si no, usa el de la prioridad
+    customColor = a?.color ?? _defaultColorFor(priority);
   }
 
   @override
@@ -592,7 +640,9 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                     onTap: () async {
                       final picked = await showDatePicker(
                         context: context,
-                        initialDate: date.isAfter(DateTime.now()) ? date : DateTime.now().add(const Duration(days: 1)),
+                        initialDate: date.isAfter(DateTime.now())
+                            ? date
+                            : DateTime.now().add(const Duration(days: 1)),
                         firstDate: DateTime.now().add(const Duration(days: 1)),
                         lastDate: DateTime(2100),
                         helpText: 'Selecciona la fecha de la alerta',
@@ -607,7 +657,8 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                       decoration: const InputDecoration(
                         labelText: 'Fecha',
                         border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                       child: Text(
                         '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}',
@@ -631,16 +682,14 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                           DropdownMenuItem(
                               value: AlertPriority.alta, child: Text('Alta')),
                         ],
-                        onChanged: (v) {
+                        onChanged: (val) {
                           setState(() {
-                            priority = v ?? AlertPriority.baja;
-                            // Color sugerido según prioridad
-                            if (priority == AlertPriority.baja) customColor = Colors.blue.shade400;
-                            if (priority == AlertPriority.media) customColor = Colors.amber.shade600;
-                            if (priority == AlertPriority.alta) customColor = Colors.red.shade400;
+                            priority = val!;
+                            customColor = _defaultColorFor(priority);
                           });
                         },
-                        decoration: const InputDecoration(labelText: 'Prioridad'),
+                        decoration:
+                            const InputDecoration(labelText: 'Prioridad'),
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -663,14 +712,16 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                                     ),
                                     actions: [
                                       TextButton(
-                                        onPressed: () => Navigator.pop(context, tempColor),
+                                        onPressed: () =>
+                                            Navigator.pop(context, tempColor),
                                         child: const Text('Aceptar'),
                                       ),
                                     ],
                                   );
                                 },
                               );
-                              if (picked != null) setState(() => customColor = picked);
+                              if (picked != null)
+                                setState(() => customColor = picked);
                             },
                             child: Container(
                               width: 28,
@@ -732,7 +783,8 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                     Navigator.pop(
                       context,
                       AlertData(
-                        id: widget.alert?.id ?? 'alert${Random().nextInt(100000)}',
+                        id: widget.alert?.id ??
+                            'alert${Random().nextInt(100000)}',
                         title: titleCtrl.text.trim(),
                         description: descCtrl.text.trim(),
                         date: date,
@@ -743,6 +795,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                         repeatFrequency:
                             repetitive ? (repeatFrequency ?? 'semanal') : null,
                         active: widget.alert?.active ?? true,
+                        color: customColor, // <-- NUEVO
                       ),
                     );
                   },
@@ -780,7 +833,8 @@ class _AlertViewDialog extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.calendar_today, size: 18, color: Colors.blueGrey),
+                const Icon(Icons.calendar_today,
+                    size: 18, color: Colors.blueGrey),
                 const SizedBox(width: 6),
                 Text(_formatDate(alert.date) +
                     (alert.repetitive && alert.repeatFrequency != null
@@ -844,24 +898,28 @@ class _AlertViewDialog extends StatelessWidget {
                 TextButton.icon(
                   icon: const Icon(Icons.edit),
                   label: const Text('Modificar'),
-                  onPressed: () => Navigator.pop(context, _AlertViewResult('edit')),
+                  onPressed: () =>
+                      Navigator.pop(context, _AlertViewResult('edit')),
                 ),
               if (alert.active && !isPast)
                 TextButton.icon(
                   icon: const Icon(Icons.cancel),
                   label: const Text('Desactivar'),
-                  onPressed: () => Navigator.pop(context, _AlertViewResult('deactivate')),
+                  onPressed: () =>
+                      Navigator.pop(context, _AlertViewResult('deactivate')),
                 ),
               if (!alert.active)
                 TextButton.icon(
                   icon: const Icon(Icons.check_circle),
                   label: const Text('Reactivar'),
-                  onPressed: () => Navigator.pop(context, _AlertViewResult('reactivate')),
+                  onPressed: () =>
+                      Navigator.pop(context, _AlertViewResult('reactivate')),
                 ),
               TextButton.icon(
                 icon: const Icon(Icons.delete),
                 label: const Text('Eliminar'),
-                onPressed: () => Navigator.pop(context, _AlertViewResult('delete')),
+                onPressed: () =>
+                    Navigator.pop(context, _AlertViewResult('delete')),
               ),
               TextButton(
                 child: const Text('Cerrar'),
