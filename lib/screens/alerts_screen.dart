@@ -556,24 +556,33 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.alert == null ? 'Añadir Alerta' : 'Editar Alerta'),
-      content: SingleChildScrollView(
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+      child: Container(
+        width: 400,
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Text(
+              widget.alert == null ? 'Añadir Alerta' : 'Editar Alerta',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 18),
             TextField(
               controller: titleCtrl,
               decoration: const InputDecoration(labelText: 'Título*'),
               autofocus: true,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 14),
             TextField(
               controller: descCtrl,
               decoration: const InputDecoration(labelText: 'Descripción'),
               maxLines: 2,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 14),
             Row(
               children: [
                 Expanded(
@@ -585,7 +594,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                     onDateSaved: (d) => setState(() => date = d),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Expanded(
                   child: DropdownButtonFormField<AlertPriority>(
                     value: priority,
@@ -604,14 +613,14 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 14),
             TextField(
               decoration:
                   const InputDecoration(labelText: 'Ubicación (opcional)'),
               onChanged: (v) => location = v,
               controller: TextEditingController(text: location ?? ''),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 14),
             Row(
               children: [
                 Checkbox(
@@ -633,36 +642,41 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                 ]
               ],
             ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancelar'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (titleCtrl.text.trim().isEmpty) return;
+                    Navigator.pop(
+                      context,
+                      AlertData(
+                        id: widget.alert?.id ?? 'alert${Random().nextInt(100000)}',
+                        title: titleCtrl.text.trim(),
+                        description: descCtrl.text.trim(),
+                        date: date,
+                        priority: priority,
+                        location: location,
+                        object: object,
+                        repetitive: repetitive,
+                        repeatFrequency:
+                            repetitive ? (repeatFrequency ?? 'semanal') : null,
+                        active: widget.alert?.active ?? true,
+                      ),
+                    );
+                  },
+                  child: const Text('Guardar'),
+                ),
+              ],
+            ),
           ],
         ),
       ),
-      actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar')),
-        ElevatedButton(
-          onPressed: () {
-            if (titleCtrl.text.trim().isEmpty) return;
-            Navigator.pop(
-              context,
-              AlertData(
-                id: widget.alert?.id ?? 'alert${Random().nextInt(100000)}',
-                title: titleCtrl.text.trim(),
-                description: descCtrl.text.trim(),
-                date: date,
-                priority: priority,
-                location: location,
-                object: object,
-                repetitive: repetitive,
-                repeatFrequency:
-                    repetitive ? (repeatFrequency ?? 'semanal') : null,
-                active: widget.alert?.active ?? true,
-              ),
-            );
-          },
-          child: const Text('Guardar'),
-        ),
-      ],
     );
   }
 }
