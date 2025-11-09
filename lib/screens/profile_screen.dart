@@ -13,7 +13,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _notifications = true;
   bool _darkMode = false;
-  bool _notifPanelOpen = false;
+  bool _showLogoutDialog = false;
   bool _notifHighSound = true;
   bool _notifHighVibration = true;
   bool _notifMediumSound = false;
@@ -24,7 +24,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _notifGeneralVibration = true;
   String _userName = 'Carlos Rodríguez';
   String _userEmail = 'carlos.r@email.com';
-  bool _showLogoutDialog = false;
   User? _currentUser;
 
   void _toggleDarkMode(bool v) {
@@ -74,9 +73,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
-        ),
-      ),
-    );
+        ), // cierre de Image.asset
+      ), // cierre de ClipOval
+    ); // cierre de Container
   }
 
   Widget _buildSectionTitle(String text) => Padding(
@@ -159,27 +158,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           title: const Text('Notificaciones'),
                           subtitle:
                               const Text('Controla alertas y avisos de la app'),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (_notifications)
-                                IconButton(
-                                  icon: const Icon(Icons.settings),
-                                  tooltip: 'Configurar notificaciones',
-                                  onPressed: () => setState(
-                                      () => _notifPanelOpen = !_notifPanelOpen),
-                                ),
-                              Switch(
-                                value: _notifications,
-                                onChanged: (v) => setState(() {
-                                  _notifications = v;
-                                  if (!v) _notifPanelOpen = false;
-                                }),
-                              ),
-                            ],
+                          trailing: Switch(
+                            value: _notifications,
+                            onChanged: (v) => setState(() {
+                              _notifications = v;
+                            }),
                           ),
                         ),
-                        if (_notifPanelOpen && _notifications)
+                        // Ajustes de notificaciones SIEMPRE visibles
+                        if (_notifications)
                           Padding(
                             padding: const EdgeInsets.only(
                                 left: 16, right: 8, bottom: 8),
@@ -304,7 +291,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ],
-        ),
+        ), // cierre de ListView
         if (_showLogoutDialog)
           Positioned.fill(
             child: Container(

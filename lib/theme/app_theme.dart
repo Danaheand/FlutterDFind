@@ -78,7 +78,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      colorScheme: ColorScheme.light(
+      colorScheme: const ColorScheme.light(
         primary: primaryLight,
         secondary: secondaryLight,
         surface: surfaceLight,
@@ -170,7 +170,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      colorScheme: ColorScheme.dark(
+      colorScheme: const ColorScheme.dark(
         primary: primaryDark,
         secondary: secondaryDark,
         surface: surfaceDark,
@@ -188,7 +188,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
         ),
       ),
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: cardDark,
         foregroundColor: textPrimaryDark,
         elevation: 0,

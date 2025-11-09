@@ -83,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 12)],
+              boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 12)],
             ),
             child: Form(
               key: _formKey,

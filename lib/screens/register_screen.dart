@@ -1,11 +1,13 @@
 // lib/register_screen.dart
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../repository/local_user_repository.dart';
 import '../models/user.dart';
 import 'terms_screen.dart';
+import 'privacy_policy_screen.dart';
 
 /// Pantalla principal de registro (mejorada UI/UX).
 class RegisterScreen extends StatefulWidget {
@@ -330,6 +332,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           color: theme.colorScheme.primary,
                                           decoration: TextDecoration.underline,
                                         ),
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap = () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) => const TermsScreen(),
+                                              ),
+                                            );
+                                          },
                                       ),
                                       const TextSpan(text: ' y la '),
                                       TextSpan(
@@ -338,6 +349,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           color: theme.colorScheme.primary,
                                           decoration: TextDecoration.underline,
                                         ),
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap = () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) => const PrivacyPolicyScreen(),
+                                              ),
+                                            );
+                                          },
                                       ),
                                     ],
                                   ),

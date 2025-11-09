@@ -21,9 +21,9 @@ class _MainScaffoldState extends State<MainScaffold> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    AlertsScreen(),
-    InventoryScreen(),
-    ProfileScreen(),
+    const AlertsScreen(),
+    const InventoryScreen(),
+    const ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {

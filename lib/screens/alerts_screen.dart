@@ -262,14 +262,14 @@ class _AlertsScreenState extends State<AlertsScreen> {
   }
 
   Widget _buildSection(String title, List<AlertData> list) {
-    if (list.isEmpty) return SizedBox();
+    if (list.isEmpty) return const SizedBox();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
           child: Text(title,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         ),
         ...list.map((a) => _AlertCard(
               alert: a,
@@ -279,7 +279,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
               selected: selectedAlerts.contains(a.id),
               selectionMode: selectionMode && tabIndex == 1,
             )),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
       ],
     );
   }
@@ -304,8 +304,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
       floatingActionButton: tabIndex == 0
           ? FloatingActionButton(
               onPressed: () => _openAlertDialog(),
-              child: const Icon(Icons.add_alert),
               tooltip: 'Añadir Alerta',
+              child: const Icon(Icons.add_alert),
             )
           : null,
       body: tabIndex == 0
@@ -336,8 +336,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
                       color: Theme.of(context).colorScheme.surface,
                       padding: const EdgeInsets.all(12),
                       child: ElevatedButton.icon(
-                        icon: Icon(Icons.delete),
-                        label: Text('Eliminar Seleccionadas'),
+                        icon: const Icon(Icons.delete),
+                        label: const Text('Eliminar Seleccionadas'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
@@ -396,7 +396,7 @@ class _AlertCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: selected
-            ? BorderSide(color: Colors.blue, width: 2)
+            ? const BorderSide(color: Colors.blue, width: 2)
             : BorderSide.none,
       ),
       child: InkWell(
@@ -562,7 +562,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                 Expanded(
                   child: DropdownButtonFormField<AlertPriority>(
                     value: priority,
-                    items: [
+                    items: const [
                       DropdownMenuItem(
                           value: AlertPriority.baja, child: Text('Baja')),
                       DropdownMenuItem(
@@ -596,7 +596,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                   const SizedBox(width: 8),
                   DropdownButton<String>(
                     value: repeatFrequency ?? 'semanal',
-                    items: [
+                    items: const [
                       DropdownMenuItem(value: 'semanal', child: Text('Semana')),
                       DropdownMenuItem(value: 'mensual', child: Text('Mes')),
                       DropdownMenuItem(value: 'anual', child: Text('Año')),
@@ -663,7 +663,7 @@ class _AlertViewDialog extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.calendar_today, size: 18, color: Colors.blueGrey),
+                const Icon(Icons.calendar_today, size: 18, color: Colors.blueGrey),
                 const SizedBox(width: 6),
                 Text(_formatDate(alert.date) +
                     (alert.repetitive && alert.repeatFrequency != null
@@ -678,7 +678,7 @@ class _AlertViewDialog extends StatelessWidget {
             if (alert.object != null && alert.object!.isNotEmpty) ...[
               const SizedBox(height: 8),
               Row(children: [
-                Icon(Icons.inventory_2, size: 18, color: Colors.blueGrey),
+                const Icon(Icons.inventory_2, size: 18, color: Colors.blueGrey),
                 const SizedBox(width: 6),
                 Text('Artículo: ${alert.object}')
               ]),
@@ -686,7 +686,7 @@ class _AlertViewDialog extends StatelessWidget {
             if (alert.location != null && alert.location!.isNotEmpty) ...[
               const SizedBox(height: 8),
               Row(children: [
-                Icon(Icons.place, size: 18, color: Colors.blueGrey),
+                const Icon(Icons.place, size: 18, color: Colors.blueGrey),
                 const SizedBox(width: 6),
                 Text('Lugar: ${alert.location}')
               ]),
@@ -720,27 +720,27 @@ class _AlertViewDialog extends StatelessWidget {
       actions: [
         if (alert.active && !isPast)
           TextButton.icon(
-            icon: Icon(Icons.edit),
-            label: Text('Modificar'),
+            icon: const Icon(Icons.edit),
+            label: const Text('Modificar'),
             onPressed: () => Navigator.pop(context, _AlertViewResult('edit')),
           ),
         if (alert.active && !isPast)
           TextButton.icon(
-            icon: Icon(Icons.cancel),
-            label: Text('Desactivar'),
+            icon: const Icon(Icons.cancel),
+            label: const Text('Desactivar'),
             onPressed: () =>
                 Navigator.pop(context, _AlertViewResult('deactivate')),
           ),
         if (!alert.active)
           TextButton.icon(
-            icon: Icon(Icons.check_circle),
-            label: Text('Reactivar'),
+            icon: const Icon(Icons.check_circle),
+            label: const Text('Reactivar'),
             onPressed: () =>
                 Navigator.pop(context, _AlertViewResult('reactivate')),
           ),
         TextButton.icon(
-          icon: Icon(Icons.delete),
-          label: Text('Eliminar'),
+          icon: const Icon(Icons.delete),
+          label: const Text('Eliminar'),
           onPressed: () => Navigator.pop(context, _AlertViewResult('delete')),
         ),
         TextButton(
