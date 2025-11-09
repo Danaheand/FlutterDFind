@@ -52,33 +52,134 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildAvatar() {
-    return Container(
-      width: 96,
-      height: 96,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 4),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
-      ),
-      child: ClipOval(
-        child: Image.asset(
-          'assets/img/profile_placeholder.png',
-          fit: BoxFit.cover,
-          errorBuilder: (c, e, s) => Container(
-            color: Colors.blue[100],
-            child: Center(
-              child: Text(
-                _userName.isNotEmpty ? _userName[0] : '?',
-                style: const TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white),
+    return GestureDetector(
+      onTap: _showProfileModal,
+      child: Container(
+        width: 96,
+        height: 96,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 4),
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
+        ),
+        child: ClipOval(
+          child: Image.asset(
+            'assets/img/profile_placeholder.png',
+            fit: BoxFit.cover,
+            errorBuilder: (c, e, s) => Container(
+              color: Colors.blue[100],
+              child: Center(
+                child: Text(
+                  _userName.isNotEmpty ? _userName[0] : '?',
+                  style: const TextStyle(
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
+                ),
               ),
             ),
           ),
-        ), // cierre de Image.asset
-      ), // cierre de ClipOval
-    ); // cierre de Container
+        ),
+      ),
+    );
+  }
+
+  void _showProfileModal() async {
+    final nameController = TextEditingController(text: _userName);
+    final phoneController = TextEditingController(text: _currentUser?.telefono ?? '+593 96 711 1360');
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ClipOval(
+                  child: Image.asset(
+                    'assets/img/profile_placeholder.png',
+                    width: 160,
+                    height: 160,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 160,
+                      height: 160,
+                      color: Colors.blue[100],
+                      child: Center(
+                        child: Text(
+                          nameController.text.isNotEmpty ? nameController.text[0] : '?',
+                          style: const TextStyle(fontSize: 60, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: nameController,
+                  textAlign: TextAlign.center,
+                  decoration: const InputDecoration(
+                    labelText: 'Nombre',
+                    border: OutlineInputBorder(),
+                  ),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: phoneController,
+                  textAlign: TextAlign.center,
+                  decoration: const InputDecoration(
+                    labelText: 'Teléfono',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.phone,
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () async {
+                        final newName = nameController.text.trim();
+                        final newPhone = phoneController.text.trim();
+                        bool changed = false;
+                        setState(() {
+                          if (newName.isNotEmpty && newName != _userName) {
+                            _userName = newName;
+                            changed = true;
+                          }
+                          if (_currentUser != null) {
+                            _currentUser = _currentUser!.copyWith(
+                              nombreUsuario: newName.isNotEmpty ? newName : _userName,
+                              telefono: newPhone,
+                            );
+                            changed = true;
+                          }
+                        });
+                        if (changed && _currentUser != null) {
+                          final sp = await SharedPreferences.getInstance();
+                          await sp.setString('current_user', jsonEncode(_currentUser!.toJson()));
+                        }
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Guardar'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cerrar'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildSectionTitle(String text) => Padding(
