@@ -54,32 +54,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildAvatar() {
     return GestureDetector(
       onTap: _showProfileModal,
-      child: Container(
-        width: 96,
-        height: 96,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 4),
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
-        ),
-        child: ClipOval(
-          child: Image.asset(
-            'assets/img/profile_placeholder.png',
-            fit: BoxFit.cover,
-            errorBuilder: (c, e, s) => Container(
-              color: Colors.blue[100],
-              child: Center(
-                child: Text(
-                  _userName.isNotEmpty ? _userName[0] : '?',
-                  style: const TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 96,
+            height: 96,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 4),
+              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
+            ),
+            child: ClipOval(
+              child: Image.asset(
+                'assets/img/profile_placeholder.png',
+                fit: BoxFit.cover,
+                errorBuilder: (c, e, s) => Container(
+                  color: Colors.blue[100],
+                  child: Center(
+                    child: Text(
+                      _userName.isNotEmpty ? _userName[0] : '?',
+                      style: const TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
+          Positioned(
+            bottom: 8,
+            right: 8,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
+              ),
+              padding: const EdgeInsets.all(4),
+              child: const Icon(Icons.edit, size: 20, color: Colors.blueAccent),
+            ),
+          ),
+        ],
       ),
     );
   }
