@@ -618,7 +618,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                   value: repetitive,
                   onChanged: (v) => setState(() => repetitive = v ?? false),
                 ),
-                const Text('¿Repetitiva?'),
+                const Text('Periodicidad de repetición'),
                 if (repetitive) ...[
                   const SizedBox(width: 8),
                   DropdownButton<String>(
