@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
+import 'package:provider/provider.dart';
+import 'providers/font_size_provider.dart';
 import 'screens/inventory_screen.dart';
 import 'screens/alerts_screen.dart';
 import 'screens/profile_screen.dart';
@@ -72,21 +73,24 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Inventory Management',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      initialRoute: '/login',
-      routes: {
-        '/': (context) => const MainScaffold(), // Cambiar esto
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterScreen(),
-        '/alerts': (context) => const AlertsScreen(), // Agregar esta ruta
-        '/profile': (context) => const ProfileScreen(),
-        '/properties': (context) => const PropertiesScreen(),
-        '/categories': (context) => const CategoriesScreen(),
-      },
+    return ChangeNotifierProvider<FontSizeProvider>(
+      create: (_) => FontSizeProvider(),
+      child: MaterialApp(
+        title: 'Inventory Management',
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
+        initialRoute: '/login',
+        routes: {
+          '/': (context) => const MainScaffold(),
+          '/login': (context) => const LoginScreen(),
+          '/register': (context) => const RegisterScreen(),
+          '/alerts': (context) => const AlertsScreen(),
+          '/profile': (context) => const ProfileScreen(),
+          '/properties': (context) => const PropertiesScreen(),
+          '/categories': (context) => const CategoriesScreen(),
+        },
+      ),
     );
   }
 }

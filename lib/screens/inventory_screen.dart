@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/font_size_provider.dart';
 import '../models/shopping_item.dart';
 import '../models/suggestion_item.dart';
 import '../theme/app_theme.dart';
@@ -246,13 +248,15 @@ class _InventoryScreenState extends State<InventoryScreen> {
               color: AppTheme.getTextSecondary(context),
             ),
             const SizedBox(height: 8),
-            Text(
-              '¡Tu lista de compras está vacía!',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppTheme.getTextSecondary(context),
+            Consumer<FontSizeProvider>(
+              builder: (context, fontSizeProvider, _) => Text(
+                '¡Tu lista de compras está vacía!',
+                style: TextStyle(
+                  fontSize: fontSizeProvider.fontSize,
+                  color: AppTheme.getTextSecondary(context),
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -265,11 +269,13 @@ class _InventoryScreenState extends State<InventoryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Por Comprar',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+        Consumer<FontSizeProvider>(
+          builder: (context, fontSizeProvider, _) => Text(
+            'Por Comprar',
+            style: TextStyle(
+              fontSize: fontSizeProvider.fontSize + 4,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -306,11 +312,13 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   Icon(Icons.store, color: AppTheme.getPlaceIcon(context)),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(
-                      place,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    child: Consumer<FontSizeProvider>(
+                      builder: (context, fontSizeProvider, _) => Text(
+                        place,
+                        style: TextStyle(
+                          fontSize: fontSizeProvider.fontSize + 2,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -342,13 +350,20 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     value: item.isPurchased,
                     onChanged: (_) => _toggleItem(item),
                   ),
-                  title: Text(item.name),
+                  title: Consumer<FontSizeProvider>(
+                    builder: (context, fontSizeProvider, _) => Text(
+                      item.name,
+                      style: TextStyle(fontSize: fontSizeProvider.fontSize + 2),
+                    ),
+                  ),
                   subtitle: item.quantity != null && item.quantity! > 1
-                      ? Text(
-                          'Cantidad: ${item.quantity}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppTheme.getTextSecondary(context),
+                      ? Consumer<FontSizeProvider>(
+                          builder: (context, fontSizeProvider, _) => Text(
+                            'Cantidad: ${item.quantity}',
+                            style: TextStyle(
+                              fontSize: fontSizeProvider.fontSize - 2,
+                              color: AppTheme.getTextSecondary(context),
+                            ),
                           ),
                         )
                       : null,
@@ -371,11 +386,13 @@ class _InventoryScreenState extends State<InventoryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Comprados',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+        Consumer<FontSizeProvider>(
+          builder: (context, fontSizeProvider, _) => Text(
+            'Comprados',
+            style: TextStyle(
+              fontSize: fontSizeProvider.fontSize + 4,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -387,20 +404,25 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         value: item.isPurchased,
                         onChanged: (_) => _toggleItem(item),
                       ),
-                      title: Text(
-                        item.name,
-                        style: TextStyle(
-                          decoration: TextDecoration.lineThrough,
-                          color: AppTheme.getPurchasedColor(context),
+                      title: Consumer<FontSizeProvider>(
+                        builder: (context, fontSizeProvider, _) => Text(
+                          item.name,
+                          style: TextStyle(
+                            decoration: TextDecoration.lineThrough,
+                            color: AppTheme.getPurchasedColor(context),
+                            fontSize: fontSizeProvider.fontSize + 2,
+                          ),
                         ),
                       ),
-                      subtitle: Text(
-                        item.quantity != null && item.quantity! > 1
-                            ? '${item.placeName} • Cantidad: ${item.quantity}'
-                            : item.placeName,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppTheme.getTextSecondary(context),
+                      subtitle: Consumer<FontSizeProvider>(
+                        builder: (context, fontSizeProvider, _) => Text(
+                          item.quantity != null && item.quantity! > 1
+                              ? '${item.placeName} • Cantidad: ${item.quantity}'
+                              : item.placeName,
+                          style: TextStyle(
+                            fontSize: fontSizeProvider.fontSize - 2,
+                            color: AppTheme.getTextSecondary(context),
+                          ),
                         ),
                       ),
                       trailing: IconButton(

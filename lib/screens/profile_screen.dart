@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+
 import '../models/user.dart';
+import '../providers/font_size_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -125,6 +128,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
     return Stack(
       children: [
         ListView(
@@ -142,11 +146,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _buildAvatar(),
                   const SizedBox(height: 8),
                   Text(_userName,
-                      style: theme.textTheme.titleLarge
-                          ?.copyWith(fontWeight: FontWeight.bold)),
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: fontSizeProvider.fontSize + 4,
+                      )),
                   Text(_userEmail,
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: Colors.grey)),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.grey,
+                        fontSize: fontSizeProvider.fontSize,
+                      )),
                   const SizedBox(height: 16),
                   _buildSectionTitle('Configuración'),
                   _buildCard(
@@ -265,6 +273,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             onChanged: _toggleDarkMode,
                           ),
                         ),
+                        ListTile(
+                          leading: const Icon(Icons.format_size),
+                          title: const Text('Ajustar tamaño de letra'),
+                          trailing: Switch(
+                            value: fontSizeProvider.enabled,
+                            onChanged: (v) {
+                              fontSizeProvider.setEnabled(v);
+                            },
+                          ),
+                        ),
+                        if (fontSizeProvider.enabled)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: Row(
+                              children: [
+                                const Text('A-', style: TextStyle(fontWeight: FontWeight.bold)),
+                                Expanded(
+                                  child: Slider(
+                                    min: 12.0,
+                                    max: 28.0,
+                                    divisions: 8,
+                                    value: fontSizeProvider.fontSize,
+                                    label: '${fontSizeProvider.fontSize.toInt()}',
+                                    onChanged: (v) {
+                                      fontSizeProvider.setFontSize(v);
+                                    },
+                                  ),
+                                ),
+                                const Text('A+', style: TextStyle(fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
                       ],
                     ),
                   ),

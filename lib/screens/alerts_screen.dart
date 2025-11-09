@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/font_size_provider.dart';
 import 'dart:math';
 import 'inventory_screen.dart';
 
@@ -233,13 +235,17 @@ class _AlertsScreenState extends State<AlertsScreen> {
               tabIndex = 0;
               selectionMode = false;
             }),
-            child: Text('Actuales',
+            child: Consumer<FontSizeProvider>(
+              builder: (context, fontSizeProvider, _) => Text('Actuales',
                 style: TextStyle(
                   color: tabIndex == 0
                       ? Theme.of(context).colorScheme.primary
                       : Colors.grey,
                   fontWeight: FontWeight.bold,
-                )),
+                  fontSize: fontSizeProvider.fontSize,
+                ),
+              ),
+            ),
           ),
         ),
         Expanded(
@@ -248,13 +254,17 @@ class _AlertsScreenState extends State<AlertsScreen> {
               tabIndex = 1;
               selectionMode = false;
             }),
-            child: Text('Pasadas',
+            child: Consumer<FontSizeProvider>(
+              builder: (context, fontSizeProvider, _) => Text('Pasadas',
                 style: TextStyle(
                   color: tabIndex == 1
                       ? Theme.of(context).colorScheme.primary
                       : Colors.grey,
                   fontWeight: FontWeight.bold,
-                )),
+                  fontSize: fontSizeProvider.fontSize,
+                ),
+              ),
+            ),
           ),
         ),
       ],
@@ -268,8 +278,10 @@ class _AlertsScreenState extends State<AlertsScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
-          child: Text(title,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          child: Consumer<FontSizeProvider>(
+            builder: (context, fontSizeProvider, _) => Text(title,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: fontSizeProvider.fontSize + 2)),
+          ),
         ),
         ...list.map((a) => _AlertCard(
               alert: a,
@@ -288,7 +300,9 @@ class _AlertsScreenState extends State<AlertsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Alertas'),
+        title: Consumer<FontSizeProvider>(
+          builder: (context, fontSizeProvider, _) => Text('Alertas', style: TextStyle(fontSize: fontSizeProvider.fontSize + 2)),
+        ),
         actions: [
           if (tabIndex == 1 && pasadas.isNotEmpty)
             IconButton(
@@ -337,7 +351,9 @@ class _AlertsScreenState extends State<AlertsScreen> {
                       padding: const EdgeInsets.all(12),
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.delete),
-                        label: const Text('Eliminar Seleccionadas'),
+                        label: Consumer<FontSizeProvider>(
+                          builder: (context, fontSizeProvider, _) => Text('Eliminar Seleccionadas', style: TextStyle(fontSize: fontSizeProvider.fontSize)),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
@@ -423,45 +439,56 @@ class _AlertCard extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: Text(
-                            alert.title,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: alert.active ? Colors.black : Colors.grey,
-                              decoration: alert.active
-                                  ? null
-                                  : TextDecoration.lineThrough,
+                          child: Consumer<FontSizeProvider>(
+                            builder: (context, fontSizeProvider, _) => Text(
+                              alert.title,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: alert.active ? Colors.black : Colors.grey,
+                                decoration: alert.active
+                                    ? null
+                                    : TextDecoration.lineThrough,
+                                fontSize: fontSizeProvider.fontSize + 2,
+                              ),
                             ),
                           ),
                         ),
-                        Text(
-                          _formatDate(alert.date),
-                          style: TextStyle(
-                              fontSize: 13, color: Colors.grey.shade600),
+                        Consumer<FontSizeProvider>(
+                          builder: (context, fontSizeProvider, _) => Text(
+                            _formatDate(alert.date),
+                            style: TextStyle(
+                                fontSize: fontSizeProvider.fontSize - 1, color: Colors.grey.shade600),
+                          ),
                         ),
                       ],
                     ),
                     if (alert.description.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 2.0),
-                        child: Text(alert.description,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: Colors.grey.shade700)),
+                        child: Consumer<FontSizeProvider>(
+                          builder: (context, fontSizeProvider, _) => Text(alert.description,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(color: Colors.grey.shade700, fontSize: fontSizeProvider.fontSize)),
+                        ),
                       ),
                     if (alert.object != null && alert.object!.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 2.0),
-                        child: Text('Artículo: ${alert.object}',
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.grey.shade600)),
+            child: Consumer<FontSizeProvider>(
+              builder: (context, fontSizeProvider, _) => Text('Artículo: ${alert.object}',
+                style: TextStyle(
+                  fontSize: fontSizeProvider.fontSize - 2, color: Colors.grey.shade600)),
+            ),
                       ),
                     if (alert.location != null && alert.location!.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 2.0),
-                        child: Text('Lugar: ${alert.location}',
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.grey.shade600)),
+            child: Consumer<FontSizeProvider>(
+              builder: (context, fontSizeProvider, _) => Text('Lugar: ${alert.location}',
+                style: TextStyle(
+                  fontSize: fontSizeProvider.fontSize - 2, color: Colors.grey.shade600)),
+            ),
                       ),
                   ],
                 ),
