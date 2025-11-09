@@ -588,12 +588,32 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
             Row(
               children: [
                 Expanded(
-                  child: InputDatePickerFormField(
-                    initialDate: date,
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime(2100),
-                    onDateSubmitted: (d) => setState(() => date = d),
-                    onDateSaved: (d) => setState(() => date = d),
+                  child: GestureDetector(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: date.isAfter(DateTime.now()) ? date : DateTime.now().add(const Duration(days: 1)),
+                        firstDate: DateTime.now().add(const Duration(days: 1)),
+                        lastDate: DateTime(2100),
+                        helpText: 'Selecciona la fecha de la alerta',
+                        cancelText: 'Cancelar',
+                        confirmText: 'Aceptar',
+                      );
+                      if (picked != null && picked.isAfter(DateTime.now())) {
+                        setState(() => date = picked);
+                      }
+                    },
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Fecha',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      child: Text(
+                        '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
