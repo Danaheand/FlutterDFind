@@ -116,24 +116,94 @@ class _ProfileScreenState extends State<ProfileScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                ClipOval(
-                  child: Image.asset(
-                    'assets/img/profile_placeholder.png',
-                    width: 160,
-                    height: 160,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      width: 160,
-                      height: 160,
-                      color: Colors.blue[100],
-                      child: Center(
-                        child: Text(
-                          nameController.text.isNotEmpty ? nameController.text[0] : '?',
-                          style: const TextStyle(fontSize: 60, fontWeight: FontWeight.bold, color: Colors.white),
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    ClipOval(
+                      child: Image.asset(
+                        'assets/img/profile_placeholder.png',
+                        width: 160,
+                        height: 160,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          width: 160,
+                          height: 160,
+                          color: Colors.blue[100],
+                          child: Center(
+                            child: Text(
+                              nameController.text.isNotEmpty ? nameController.text[0] : '?',
+                              style: const TextStyle(fontSize: 60, fontWeight: FontWeight.bold, color: Colors.white),
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                    Positioned(
+                      bottom: 12,
+                      right: 12,
+                      child: GestureDetector(
+                        onTap: () {
+                          showModalBottomSheet(
+                            context: context,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                            ),
+                            builder: (context) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    ListTile(
+                                      leading: const Icon(Icons.camera_alt, color: Colors.blueAccent),
+                                      title: const Text('Abrir cámara'),
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        // Aquí iría la lógica para abrir la cámara
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                            title: const Text('Funcionalidad'),
+                                            content: const Text('Abrir cámara (demo)'),
+                                            actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cerrar'))],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    ListTile(
+                                      leading: const Icon(Icons.photo_library, color: Colors.green),
+                                      title: const Text('Abrir galería'),
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        // Aquí iría la lógica para abrir la galería
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                            title: const Text('Funcionalidad'),
+                                            content: const Text('Abrir galería (demo)'),
+                                            actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cerrar'))],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
+                          ),
+                          padding: const EdgeInsets.all(8),
+                          child: const Icon(Icons.edit, size: 28, color: Colors.blueAccent),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 TextField(
