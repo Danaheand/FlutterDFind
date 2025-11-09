@@ -159,7 +159,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lista de Compras'),
+        title: const Text('Pendientes'),
         actions: [
           Row(
             children: [

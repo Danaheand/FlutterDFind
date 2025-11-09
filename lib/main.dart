@@ -50,7 +50,7 @@ class _MainScaffoldState extends State<MainScaffold> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
-            label: 'Lista de compras',
+            label: 'Pendientes',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
