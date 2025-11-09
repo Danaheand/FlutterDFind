@@ -6,8 +6,7 @@ import '../models/suggestion_item.dart';
 import '../theme/app_theme.dart';
 import 'widgets/add_item_modal_v2.dart';
 import 'widgets/suggestions_section.dart';
-import 'widgets/shopping_mode_view.dart';
-import 'category_focus_screen.dart';
+// ...existing code...
 
 typedef AddToShoppingList = void Function(String name);
 
@@ -23,7 +22,6 @@ class InventoryScreen extends StatefulWidget {
 class _InventoryScreenState extends State<InventoryScreen> {
   final List<ShoppingItem> _items = [];
   final Map<String, bool> _expandedPlaces = {};
-  bool _isShoppingMode = false;
 
   // Sugerencias de ejemplo (en producción vendrían del inventario)
   final List<SuggestionItem> _suggestions = [
@@ -160,47 +158,12 @@ class _InventoryScreenState extends State<InventoryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pendientes'),
-        actions: [
-          Row(
-            children: [
-              const Text('Modo Compras'),
-              Switch(
-                value: _isShoppingMode,
-                onChanged: (value) {
-                  setState(() => _isShoppingMode = value);
-                },
-              ),
-            ],
-          ),
-          const SizedBox(width: 8),
-        ],
       ),
-      body: _isShoppingMode
-          ? ShoppingModeView(
-              pendingItems: _pendingItems,
-              onPlaceTap: (place) {
-                final itemsInPlace = _pendingItems
-                    .where((item) => item.placeName == place)
-                    .toList();
-
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => CategoryFocusScreen(
-                      place: place,
-                      items: itemsInPlace,
-                      onToggleItem: _toggleItem,
-                    ),
-                  ),
-                );
-              },
-            )
-          : _buildNormalView(),
-      floatingActionButton: !_isShoppingMode
-          ? FloatingActionButton(
-              onPressed: _showAddItemModal,
-              child: const Icon(Icons.add),
-            )
-          : null,
+      body: _buildNormalView(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddItemModal,
+        child: const Icon(Icons.add),
+      ),
     );
   }
 
