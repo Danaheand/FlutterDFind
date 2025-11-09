@@ -745,34 +745,40 @@ class _AlertViewDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        if (alert.active && !isPast)
-          TextButton.icon(
-            icon: const Icon(Icons.edit),
-            label: const Text('Modificar'),
-            onPressed: () => Navigator.pop(context, _AlertViewResult('edit')),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              if (alert.active && !isPast)
+                TextButton.icon(
+                  icon: const Icon(Icons.edit),
+                  label: const Text('Modificar'),
+                  onPressed: () => Navigator.pop(context, _AlertViewResult('edit')),
+                ),
+              if (alert.active && !isPast)
+                TextButton.icon(
+                  icon: const Icon(Icons.cancel),
+                  label: const Text('Desactivar'),
+                  onPressed: () => Navigator.pop(context, _AlertViewResult('deactivate')),
+                ),
+              if (!alert.active)
+                TextButton.icon(
+                  icon: const Icon(Icons.check_circle),
+                  label: const Text('Reactivar'),
+                  onPressed: () => Navigator.pop(context, _AlertViewResult('reactivate')),
+                ),
+              TextButton.icon(
+                icon: const Icon(Icons.delete),
+                label: const Text('Eliminar'),
+                onPressed: () => Navigator.pop(context, _AlertViewResult('delete')),
+              ),
+              TextButton(
+                child: const Text('Cerrar'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
           ),
-        if (alert.active && !isPast)
-          TextButton.icon(
-            icon: const Icon(Icons.cancel),
-            label: const Text('Desactivar'),
-            onPressed: () =>
-                Navigator.pop(context, _AlertViewResult('deactivate')),
-          ),
-        if (!alert.active)
-          TextButton.icon(
-            icon: const Icon(Icons.check_circle),
-            label: const Text('Reactivar'),
-            onPressed: () =>
-                Navigator.pop(context, _AlertViewResult('reactivate')),
-          ),
-        TextButton.icon(
-          icon: const Icon(Icons.delete),
-          label: const Text('Eliminar'),
-          onPressed: () => Navigator.pop(context, _AlertViewResult('delete')),
-        ),
-        TextButton(
-          child: const Text('Cerrar'),
-          onPressed: () => Navigator.pop(context),
         ),
       ],
     );
