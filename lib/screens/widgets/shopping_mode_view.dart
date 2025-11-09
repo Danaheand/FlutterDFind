@@ -22,10 +22,10 @@ class ShoppingModeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  final placeCounts = _getPlaceCounts();
-  final places = placeCounts.keys.toList()..sort();
+    final placeCounts = _getPlaceCounts();
+    final places = placeCounts.keys.toList()..sort();
 
-  if (places.isEmpty) {
+    if (places.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -93,8 +93,11 @@ class ShoppingModeView extends StatelessWidget {
             itemBuilder: (context, index) {
               final place = places[index];
               final count = placeCounts[place]!;
-              final itemsInPlace = pendingItems.where((item) => item.placeName == place).toList();
-              final firstItemName = itemsInPlace.isNotEmpty ? itemsInPlace.first.name : '';
+              final itemsInPlace = pendingItems
+                  .where((item) => item.placeName == place)
+                  .toList();
+              final firstItemName =
+                  itemsInPlace.isNotEmpty ? itemsInPlace.first.name : '';
 
               return Card(
                 elevation: 2,

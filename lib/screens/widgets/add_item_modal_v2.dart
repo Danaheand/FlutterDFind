@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AddItemModalV2 extends StatefulWidget {
-  final Function(String name, String placeName) onAdd;
+  final Function(String name, String placeName, int quantity) onAdd;
 
   const AddItemModalV2({
     super.key,
@@ -14,7 +15,7 @@ class AddItemModalV2 extends StatefulWidget {
 
 class _AddItemModalV2State extends State<AddItemModalV2> {
   final _nameController = TextEditingController();
-  // final _categoryController = TextEditingController(); // Eliminado
+  final _quantityController = TextEditingController(text: '1');
   String _selectedPlace = 'Supermercado';
 
   final List<String> _places = [
@@ -29,19 +30,31 @@ class _AddItemModalV2State extends State<AddItemModalV2> {
 
   @override
   void dispose() {
-  _nameController.dispose();
-  super.dispose();
+    _nameController.dispose();
+    _quantityController.dispose();
+    super.dispose();
   }
 
   void _handleAdd() {
     final name = _nameController.text.trim();
+    final quantityText = _quantityController.text.trim();
+    final quantity = int.tryParse(quantityText);
+
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor ingresa un nombre')),
       );
       return;
     }
-    widget.onAdd(name, _selectedPlace);
+
+    if (quantity == null || quantity <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor ingresa una cantidad válida')),
+      );
+      return;
+    }
+
+    widget.onAdd(name, _selectedPlace, quantity);
     Navigator.of(context).pop();
   }
 
@@ -102,7 +115,19 @@ class _AddItemModalV2State extends State<AddItemModalV2> {
                 }
               },
             ),
-            // Campo de categoría eliminado
+            const SizedBox(height: 16),
+            TextField(
+              controller: _quantityController,
+              decoration: const InputDecoration(
+                labelText: 'Cantidad',
+                hintText: 'Ej: 1, 2, 3...',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.numbers),
+                suffixText: 'unidades',
+              ),
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            ),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,

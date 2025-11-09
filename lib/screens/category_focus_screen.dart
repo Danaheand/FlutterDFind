@@ -92,6 +92,27 @@ class _CategoryFocusScreenState extends State<CategoryFocusScreen> {
                                       color: AppTheme.getTextSecondary(context),
                                     ),
                                   ),
+                                  if (item.quantity != null &&
+                                      item.quantity! > 1) ...[
+                                    const SizedBox(width: 8),
+                                    const Text('•'),
+                                    const SizedBox(width: 8),
+                                    Icon(
+                                      Icons.numbers,
+                                      size: 16,
+                                      color: AppTheme.getTextSecondary(context),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${item.quantity}',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color:
+                                            AppTheme.getTextSecondary(context),
+                                      ),
+                                    ),
+                                  ],
                                 ],
                               ),
                             ],

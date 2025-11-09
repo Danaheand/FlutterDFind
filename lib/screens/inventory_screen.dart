@@ -3,7 +3,6 @@ import '../models/shopping_item.dart';
 import '../models/suggestion_item.dart';
 import '../theme/app_theme.dart';
 import 'widgets/add_item_modal_v2.dart';
-import 'widgets/update_inventory_modal_v2.dart';
 import 'widgets/suggestions_section.dart';
 import 'widgets/shopping_mode_view.dart';
 import 'category_focus_screen.dart';
@@ -66,13 +65,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
     });
   }
 
-  void _addItemManually(String name, String placeName) {
+  void _addItemManually(String name, String placeName, int quantity) {
     setState(() {
       _items.add(ShoppingItem(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: name,
         placeName: placeName,
         category: '',
+        quantity: quantity,
       ));
     });
   }
@@ -100,39 +100,27 @@ class _InventoryScreenState extends State<InventoryScreen> {
   }
 
   void _toggleItem(ShoppingItem item) {
-    final wasNotPurchased = !item.isPurchased;
-
     setState(() {
       item.isPurchased = !item.isPurchased;
     });
 
-    if (wasNotPurchased) {
-      // Marcar como comprado -> mostrar modal
-      _showUpdateInventoryModal(item);
+    // Mostrar solo un SnackBar de confirmación
+    if (item.isPurchased) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('✓ ${item.name} marcado como comprado'),
+          duration: const Duration(seconds: 2),
+          action: SnackBarAction(
+            label: 'Deshacer',
+            onPressed: () {
+              setState(() {
+                item.isPurchased = false;
+              });
+            },
+          ),
+        ),
+      );
     }
-    // Si se desmarca, solo vuelve a "Por Comprar" sin modal
-  }
-
-  void _showUpdateInventoryModal(ShoppingItem item) {
-    showDialog(
-      context: context,
-      builder: (context) => UpdateInventoryModalV2(
-        itemName: item.name,
-        onUpdate: (quantity, expirationDate) {
-          // Aquí se conectaría con el sistema de inventario
-          setState(() {
-            item.quantity = quantity;
-            item.expirationDate = expirationDate;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Inventario actualizado')),
-          );
-        },
-        onSkip: () {
-          // Solo marcar, no actualizar inventario
-        },
-      ),
-    );
   }
 
   void _removeItem(ShoppingItem item) {
@@ -271,7 +259,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       );
     }
 
-  final grouped = _groupItemsByPlace(pending);
+    final grouped = _groupItemsByPlace(pending);
     final places = grouped.keys.toList()..sort();
 
     return Column(
@@ -285,7 +273,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
           ),
         ),
         const SizedBox(height: 12),
-  ...places.map((place) => _buildPlaceGroup(place, grouped[place]!)),
+        ...places.map((place) => _buildPlaceGroup(place, grouped[place]!)),
       ],
     );
   }
@@ -355,6 +343,15 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     onChanged: (_) => _toggleItem(item),
                   ),
                   title: Text(item.name),
+                  subtitle: item.quantity != null && item.quantity! > 1
+                      ? Text(
+                          'Cantidad: ${item.quantity}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.getTextSecondary(context),
+                          ),
+                        )
+                      : null,
                   trailing: IconButton(
                     icon: const Icon(Icons.close, size: 20),
                     onPressed: () => _removeItem(item),
@@ -365,7 +362,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
       ),
     );
   }
-
 
   Widget _buildPurchasedSection() {
     final purchased = _purchasedItems;
@@ -399,7 +395,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         ),
                       ),
                       subtitle: Text(
-                        item.placeName,
+                        item.quantity != null && item.quantity! > 1
+                            ? '${item.placeName} • Cantidad: ${item.quantity}'
+                            : item.placeName,
                         style: TextStyle(
                           fontSize: 12,
                           color: AppTheme.getTextSecondary(context),
