@@ -375,80 +375,96 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                         fontWeight: FontWeight.w600)),
                                 Row(
-                                  children: [
-                                    Expanded(child: Text('Sonido')),
-                                    Switch(
-                                      value: _notifHighSound,
-                                      onChanged: (v) =>
-                                          setState(() => _notifHighSound = v),
-                                    ),
-                                    Expanded(child: Text('Vibración')),
-                                    Switch(
-                                      value: _notifHighVibration,
-                                      onChanged: (v) => setState(
-                                          () => _notifHighVibration = v),
-                                    ),
-                                  ],
+                                    children: [
+                                      Expanded(child: Text('Sonido')),
+                                      Switch(
+                                        value: _notifHighSound,
+                                        onChanged: (v) =>
+                                            setState(() => _notifHighSound = v),
+                                      ),
+                                      SizedBox(width: 32),
+                                      Expanded(child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text('Vibración'),
+                                      )),
+                                      Switch(
+                                        value: _notifHighVibration,
+                                        onChanged: (v) => setState(
+                                            () => _notifHighVibration = v),
+                                      ),
+                                    ],
                                 ),
                                 const Divider(),
                                 Text('Importancia Media',
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                         fontWeight: FontWeight.w600)),
                                 Row(
-                                  children: [
-                                    Expanded(child: Text('Sonido')),
-                                    Switch(
-                                      value: _notifMediumSound,
-                                      onChanged: (v) =>
-                                          setState(() => _notifMediumSound = v),
-                                    ),
-                                    Expanded(child: Text('Vibración')),
-                                    Switch(
-                                      value: _notifMediumVibration,
-                                      onChanged: (v) => setState(
-                                          () => _notifMediumVibration = v),
-                                    ),
-                                  ],
+                                    children: [
+                                      Expanded(child: Text('Sonido')),
+                                      Switch(
+                                        value: _notifMediumSound,
+                                        onChanged: (v) =>
+                                            setState(() => _notifMediumSound = v),
+                                      ),
+                                      SizedBox(width: 32),
+                                      Expanded(child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text('Vibración'),
+                                      )),
+                                      Switch(
+                                        value: _notifMediumVibration,
+                                        onChanged: (v) => setState(
+                                            () => _notifMediumVibration = v),
+                                      ),
+                                    ],
                                 ),
                                 const Divider(),
                                 Text('Importancia Baja',
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                         fontWeight: FontWeight.w600)),
                                 Row(
-                                  children: [
-                                    Expanded(child: Text('Sonido')),
-                                    Switch(
-                                      value: _notifLowSound,
-                                      onChanged: (v) =>
-                                          setState(() => _notifLowSound = v),
-                                    ),
-                                    Expanded(child: Text('Vibración')),
-                                    Switch(
-                                      value: _notifLowVibration,
-                                      onChanged: (v) => setState(
-                                          () => _notifLowVibration = v),
-                                    ),
-                                  ],
+                                    children: [
+                                      Expanded(child: Text('Sonido')),
+                                      Switch(
+                                        value: _notifLowSound,
+                                        onChanged: (v) =>
+                                            setState(() => _notifLowSound = v),
+                                      ),
+                                      SizedBox(width: 32),
+                                      Expanded(child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text('Vibración'),
+                                      )),
+                                      Switch(
+                                        value: _notifLowVibration,
+                                        onChanged: (v) => setState(
+                                            () => _notifLowVibration = v),
+                                      ),
+                                    ],
                                 ),
                                 const Divider(),
                                 Text('Generales de la App',
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                         fontWeight: FontWeight.w600)),
                                 Row(
-                                  children: [
-                                    Expanded(child: Text('Sonido')),
-                                    Switch(
-                                      value: _notifGeneralSound,
-                                      onChanged: (v) => setState(
-                                          () => _notifGeneralSound = v),
-                                    ),
-                                    Expanded(child: Text('Vibración')),
-                                    Switch(
-                                      value: _notifGeneralVibration,
-                                      onChanged: (v) => setState(
-                                          () => _notifGeneralVibration = v),
-                                    ),
-                                  ],
+                                    children: [
+                                      Expanded(child: Text('Sonido')),
+                                      Switch(
+                                        value: _notifGeneralSound,
+                                        onChanged: (v) => setState(
+                                            () => _notifGeneralSound = v),
+                                      ),
+                                      SizedBox(width: 32),
+                                      Expanded(child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text('Vibración'),
+                                      )),
+                                      Switch(
+                                        value: _notifGeneralVibration,
+                                        onChanged: (v) => setState(
+                                            () => _notifGeneralVibration = v),
+                                      ),
+                                    ],
                                 ),
                               ],
                             ),
