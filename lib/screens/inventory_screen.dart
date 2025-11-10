@@ -128,13 +128,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
   }
 
   Widget _buildNormalView() {
+    final pending = _pendingItems;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Sección de Tips
-          const TipsSection(),
+          // Sección de Tips solo si no hay pendientes
+          if (pending.isEmpty) const TipsSection(),
 
           // Lista "Por Comprar"
           _buildPendingSection(),
