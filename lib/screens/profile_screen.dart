@@ -32,15 +32,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   User? _currentUser;
   String? _profileImagePath;
   Future<void> _pickProfileImage(ImageSource source) async {
-    // Import image_picker in pubspec.yaml if not present
-    // import 'package:image_picker/image_picker.dart';
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: source, maxWidth: 1024);
     if (picked != null) {
       setState(() {
         _profileImagePath = picked.path;
       });
-      // Optionally save path in SharedPreferences for persistence
       final sp = await SharedPreferences.getInstance();
       await sp.setString('profile_image_path', picked.path);
     }
@@ -188,7 +185,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       onTap: () async {
                                         Navigator.pop(context);
                                         await _pickProfileImage(ImageSource.camera);
-                                        setState(() {});
                                       },
                                     ),
                                     ListTile(
@@ -197,7 +193,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       onTap: () async {
                                         Navigator.pop(context);
                                         await _pickProfileImage(ImageSource.gallery);
-                                        setState(() {});
                                       },
                                     ),
                                   ],
@@ -230,7 +225,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const SizedBox(height: 12),
-
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -238,7 +232,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ElevatedButton(
                       onPressed: () async {
                         final newName = nameController.text.trim();
-
                         bool changed = false;
                         setState(() {
                           if (newName.isNotEmpty && newName != _userName) {
