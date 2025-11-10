@@ -126,7 +126,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _showProfileModal() async {
     final nameController = TextEditingController(text: _userName);
-    final phoneController = TextEditingController(text: _currentUser?.telefono ?? '+593 96 711 1360');
     await showDialog(
       context: context,
       builder: (context) {
@@ -231,16 +230,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const SizedBox(height: 12),
-                TextField(
-                  controller: phoneController,
-                  textAlign: TextAlign.center,
-                  decoration: const InputDecoration(
-                    labelText: 'Teléfono',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.phone,
-                  style: const TextStyle(fontSize: 16),
-                ),
+
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -248,7 +238,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ElevatedButton(
                       onPressed: () async {
                         final newName = nameController.text.trim();
-                        final newPhone = phoneController.text.trim();
+
                         bool changed = false;
                         setState(() {
                           if (newName.isNotEmpty && newName != _userName) {
@@ -258,7 +248,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           if (_currentUser != null) {
                             _currentUser = _currentUser!.copyWith(
                               nombreUsuario: newName.isNotEmpty ? newName : _userName,
-                              telefono: newPhone,
                             );
                             changed = true;
                           }
