@@ -167,7 +167,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
 
   void _deleteSelected() {
     setState(() {
-      _alerts.removeWhere((a) => a.active == false);
+      _alerts.removeWhere((a) => selectedAlerts.contains(a.id));
+      selectedAlerts.clear();
       selectionMode = false;
     });
   }
@@ -227,7 +228,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
     );
   }
 
-  Widget _buildSection(String title, List<AlertData> alerts) {
+  Widget _buildSection(String title, List<AlertData> alerts, {bool showSelection = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -235,11 +236,23 @@ class _AlertsScreenState extends State<AlertsScreen> {
           _sectionHeader(title),
           ...alerts.map((a) => _AlertCard(
                 alert: a,
-                onTap: () {},
+                onTap: () {
+                  if (showSelection && selectionMode) {
+                    setState(() {
+                      if (selectedAlerts.contains(a.id)) {
+                        selectedAlerts.remove(a.id);
+                      } else {
+                        selectedAlerts.add(a.id);
+                      }
+                    });
+                  }
+                },
                 onToggleActive: () => _deactivateAlert(a),
                 onDelete: () {
                   setState(() => _alerts.remove(a));
                 },
+                showCheckbox: showSelection && selectionMode,
+                checked: selectedAlerts.contains(a.id),
               )),
           const SizedBox(height: 16),
         ],
@@ -287,7 +300,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   children: [
                     _buildTabBar(),
-                    _buildSection('Pasadas', pasadas),
+                    _buildSection('Pasadas', pasadas, showSelection: true),
                   ],
                 ),
                 if (selectionMode && selectedAlerts.isNotEmpty)
@@ -321,12 +334,16 @@ class _AlertCard extends StatelessWidget {
     required this.onTap,
     required this.onToggleActive,
     required this.onDelete,
+    this.showCheckbox = false,
+    this.checked = false,
   });
 
   final AlertData alert;
   final VoidCallback onTap;
   final VoidCallback onToggleActive;
   final VoidCallback onDelete;
+  final bool showCheckbox;
+  final bool checked;
 
   Color get _color {
     if (!alert.active) return Colors.grey.shade400;
@@ -382,6 +399,12 @@ class _AlertCard extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  if (showCheckbox)
+                    Checkbox(
+                      value: checked,
+                      onChanged: (_) => onTap(),
+                    ),
+                  if (showCheckbox) const SizedBox(width: 8),
                   CircleAvatar(
                     radius: 20,
                     backgroundColor: (_color.withOpacity(0.15)),
