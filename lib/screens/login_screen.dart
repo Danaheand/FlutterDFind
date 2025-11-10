@@ -61,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await sp.setString('current_user', jsonEncode(user.toJson()));
 
       if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed('/'); // Esto llevará al MainScaffold que tiene AlertsScreen
+      Navigator.of(context).pushReplacementNamed('/main'); // Esto llevará al MainScaffold que tiene AlertsScreen
 
     } catch (e, st) {
       print('Error en login: $e');

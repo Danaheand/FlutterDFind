@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'alert_detail_screen.dart' as detail;
+import '../services/notification_service.dart';
 
 // Variable global eliminada, se declara dentro de la clase correspondiente
 
@@ -833,8 +834,16 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                           cancelText: 'Cancelar',
                           confirmText: 'Aceptar',
                         );
-                        if (picked != null && picked.isAfter(DateTime.now())) {
-                          setState(() => date = picked);
+                        if (picked != null) {
+                          setState(() {
+                            date = DateTime(
+                              picked.year,
+                              picked.month,
+                              picked.day,
+                              date.hour,
+                              date.minute,
+                            );
+                          });
                         }
                       },
                       child: InputDecorator(
@@ -846,6 +855,43 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                         ),
                         child: Text(
                           '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                        final picked = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.fromDateTime(date),
+                          helpText: 'Selecciona la hora de la alerta',
+                          cancelText: 'Cancelar',
+                          confirmText: 'Aceptar',
+                        );
+                        if (picked != null) {
+                          setState(() {
+                            date = DateTime(
+                              date.year,
+                              date.month,
+                              date.day,
+                              picked.hour,
+                              picked.minute,
+                            );
+                          });
+                        }
+                      },
+                      child: InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: 'Hora',
+                          border: OutlineInputBorder(),
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                        child: Text(
+                          '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
                           style: const TextStyle(fontSize: 16),
                         ),
                       ),
@@ -977,7 +1023,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
           child: const Text('Cancelar'),
         ),
         ElevatedButton.icon(
-          onPressed: () {
+          onPressed: () async {
             final trimmedTitle = titleCtrl.text.trim();
             if (trimmedTitle.isEmpty) return;
 
@@ -996,6 +1042,25 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
               color: customColor,
               imagePath: _pickedImage?.path ?? widget.alert?.imagePath,
             );
+
+            // Programar la notificación/alarma
+            if (date.isAfter(DateTime.now())) {
+              try {
+                await NotificationService().scheduleAlarmNotification(
+                  id: result.id.hashCode,
+                  title: 'Alarma: ${result.title}',
+                  body: result.description.isNotEmpty ? result.description : 'Es hora de tu alarma',
+                  scheduledDate: result.date,
+                );
+              } catch (e) {
+                // Si hay error con las notificaciones, mostrar mensaje
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error al programar alarma: $e')),
+                  );
+                }
+              }
+            }
 
             Navigator.pop(context, result);
           },

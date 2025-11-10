@@ -10,6 +10,7 @@ import 'screens/properties_screen.dart';
 import 'screens/categories_screen.dart';
 import 'theme/app_theme.dart';
 import 'repository/local_user_repository.dart';
+import 'services/notification_service.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -64,8 +65,15 @@ class _MainScaffoldState extends State<MainScaffold> {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await LocalUserRepository.instance.init(); // Asegura usuario de prueba
-  runApp(const MyApp());
+  
+  // Solo inicializar notificaciones en dispositivos móviles (no en web)
+  try {
+    await NotificationService().initialize();
+  } catch (e) {
+    print('Error inicializando notificaciones (probablemente web): $e');
+  }
+  
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -80,9 +88,9 @@ class MyApp extends StatelessWidget {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
-        initialRoute: '/login',
+        home: const LoginScreen(),
         routes: {
-          '/': (context) => const MainScaffold(),
+          '/main': (context) => const MainScaffold(),
           '/login': (context) => const LoginScreen(),
           '/register': (context) => const RegisterScreen(),
           '/alerts': (context) => const AlertsScreen(),
