@@ -1,11 +1,41 @@
-import 'dart:math';
-import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+  import 'dart:math';
+  import 'dart:typed_data';
+  import 'package:flutter/material.dart';
+  import 'package:image_picker/image_picker.dart';
+  import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+
+  // Variable global eliminada, se declara dentro de la clase correspondiente
 
 enum AlertPriority { baja, media, alta }
+
+Color _defaultColorFor(AlertPriority p) {
+  switch (p) {
+    case AlertPriority.alta:
+      return Colors.red.shade400;
+    case AlertPriority.media:
+      return Colors.amber.shade600;
+    case AlertPriority.baja:
+      return Colors.blue.shade400;
+  }
+}
+
+String _dateLabel(DateTime date) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final target = DateTime(date.year, date.month, date.day);
+  final diff = target.difference(today).inDays;
+
+  if (diff == 0) return 'Hoy';
+  if (diff == 1) return 'Mañana';
+  if (diff == -1) return 'Ayer';
+  if (diff > 1 && diff <= 7) return 'En $diff días';
+  if (diff < -1 && diff >= -7) return 'Hace ${diff.abs()} días';
+  final d = date.day.toString().padLeft(2, '0');
+  final m = date.month.toString().padLeft(2, '0');
+  final y = date.year.toString();
+  return '$d/$m/$y';
+}
 
 class AlertData {
   String id;
@@ -16,10 +46,10 @@ class AlertData {
   String? location;
   String? object;
   bool repetitive;
-  String? repeatFrequency; // 'semanal', 'mensual', 'anual'
+  String? repeatFrequency;
   bool active;
-  Color? color; // color elegido por el usuario (opcional)
-  String? imagePath; // ruta/URL (XFile.path) de la imagen opcional
+  Color? color;
+  String? imagePath;
 
   AlertData({
     required this.id,
@@ -37,46 +67,16 @@ class AlertData {
   });
 }
 
-/// Color por defecto según prioridad (si la alerta no tiene color propio)
-Color _defaultColorFor(AlertPriority p) {
-  switch (p) {
-    case AlertPriority.alta:
-      return Colors.red.shade400;
-    case AlertPriority.media:
-      return Colors.amber.shade600;
-    case AlertPriority.baja:
-    default:
-      return Colors.blue.shade400;
-  }
-}
-
-/// Etiqueta de fecha amigable: "Hoy", "Mañana", "En X días", "Ayer", o dd/MM/yyyy
-String _dateLabel(DateTime date) {
-  final now = DateTime.now();
-  final today = DateTime(now.year, now.month, now.day);
-  final target = DateTime(date.year, date.month, date.day);
-  final diff = target.difference(today).inDays;
-
-  if (diff == 0) return 'Hoy';
-  if (diff == 1) return 'Mañana';
-  if (diff == -1) return 'Ayer';
-  if (diff > 1 && diff <= 7) return 'En $diff días';
-  if (diff < -1 && diff >= -7) return 'Hace ${diff.abs()} días';
-  // formato corto dd/MM/yyyy
-  final d = date.day.toString().padLeft(2, '0');
-  final m = date.month.toString().padLeft(2, '0');
-  final y = date.year.toString();
-  return '$d/$m/$y';
-}
-
 class AlertsScreen extends StatefulWidget {
   const AlertsScreen({super.key});
-
   @override
   State<AlertsScreen> createState() => _AlertsScreenState();
 }
 
 class _AlertsScreenState extends State<AlertsScreen> {
+  Set<String> selectedAlerts = {};
+  int tabIndex = 0;
+  bool selectionMode = false;
   final List<AlertData> _alerts = [
     AlertData(
       id: 'a1',
@@ -108,78 +108,16 @@ class _AlertsScreenState extends State<AlertsScreen> {
     ),
   ];
 
-  @override
-  Widget build(BuildContext context) {
-    final importantes = _alerts
-        .where((a) => a.active && a.priority == AlertPriority.alta)
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
+  List<AlertData> get actuales => _alerts.where((a) => a.active && a.date.isAfter(DateTime.now())).toList();
+  List<AlertData> get pasadas => _alerts.where((a) => a.active && a.date.isBefore(DateTime.now())).toList();
+  List<AlertData> get importantes => _alerts.where((a) => a.priority == AlertPriority.alta && a.active && a.date.isAfter(DateTime.now())).toList();
+  List<AlertData> get proximas => _alerts.where((a) => a.active && a.date.isAfter(DateTime.now()) && a.priority != AlertPriority.alta).toList();
+  List<AlertData> get desactivadas => _alerts.where((a) => !a.active).toList();
 
-    final actuales = _alerts
-        .where((a) => a.active && a.priority != AlertPriority.alta)
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Alertas'),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final created = await _openEditor(context, null);
-          if (created != null) {
-            setState(() => _alerts.add(created));
-          }
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('Nueva'),
-      ),
-      body: ListView(
-        children: [
-          const SizedBox(height: 8),
-          _sectionHeader('Importantes'),
-          ...importantes.map((a) => _AlertCard(
-                alert: a,
-                onTap: () async {
-                  final edited = await _openEditor(context, a);
-                  if (edited != null) {
-                    setState(() {
-                      final idx = _alerts.indexWhere((x) => x.id == a.id);
-                      if (idx >= 0) _alerts[idx] = edited;
-                    });
-                  }
-                },
-                onToggleActive: () {
-                  setState(() => a.active = !a.active);
-                },
-                onDelete: () {
-                  setState(() => _alerts.removeWhere((x) => x.id == a.id));
-                },
-              )),
-          const SizedBox(height: 16),
-          _sectionHeader('Actuales'),
-          ...actuales.map((a) => _AlertCard(
-                alert: a,
-                onTap: () async {
-                  final edited = await _openEditor(context, a);
-                  if (edited != null) {
-                    setState(() {
-                      final idx = _alerts.indexWhere((x) => x.id == a.id);
-                      if (idx >= 0) _alerts[idx] = edited;
-                    });
-                  }
-                },
-                onToggleActive: () {
-                  setState(() => a.active = !a.active);
-                },
-                onDelete: () {
-                  setState(() => _alerts.removeWhere((x) => x.id == a.id));
-                },
-              )),
-          const SizedBox(height: 32),
-        ],
-      ),
-    );
+  void _deactivateAlert(AlertData alert) {
+    setState(() {
+      alert.active = false;
+    });
   }
 
   Widget _sectionHeader(String text) {
@@ -192,12 +130,168 @@ class _AlertsScreenState extends State<AlertsScreen> {
     );
   }
 
-  Future<AlertData?> _openEditor(
-      BuildContext context, AlertData? existing) async {
+  Future<AlertData?> _openEditor(BuildContext context, AlertData? existing) async {
     return showDialog<AlertData>(
       context: context,
       builder: (_) => _AlertEditDialog(alert: existing),
       barrierDismissible: false,
+    );
+  }
+
+  void _openAlertDialog() async {
+    final created = await _openEditor(context, null);
+    if (created != null) {
+      setState(() => _alerts.add(created));
+    }
+  }
+
+  void _deleteSelected() {
+    setState(() {
+      _alerts.removeWhere((a) => a.active == false);
+      selectionMode = false;
+    });
+  }
+
+  Widget _buildTabBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: InkWell(
+              onTap: () => setState(() => tabIndex = 0),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: tabIndex == 0 ? Colors.blue.shade50 : Colors.transparent,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Center(
+                  child: Text(
+                    'Actuales',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: tabIndex == 0 ? Colors.blue.shade800 : Colors.black54,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: InkWell(
+              onTap: () => setState(() => tabIndex = 1),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: tabIndex == 1 ? Colors.blue.shade50 : Colors.transparent,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Center(
+                  child: Text(
+                    'Pasadas',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: tabIndex == 1 ? Colors.blue.shade800 : Colors.black54,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSection(String title, List<AlertData> alerts) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (alerts.isNotEmpty) ...[
+          _sectionHeader(title),
+          ...alerts.map((a) => _AlertCard(
+                alert: a,
+                onTap: () {},
+                onToggleActive: () => _deactivateAlert(a),
+                onDelete: () {
+                  setState(() => _alerts.remove(a));
+                },
+              )),
+          const SizedBox(height: 16),
+        ],
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text('Alertas'),
+        actions: [
+          if (tabIndex == 1 && pasadas.isNotEmpty)
+            IconButton(
+              icon: Icon(selectionMode ? Icons.close : Icons.select_all),
+              tooltip: selectionMode ? 'Cancelar selección' : 'Seleccionar',
+              onPressed: () => setState(() {
+                selectionMode = !selectionMode;
+                if (!selectionMode) selectedAlerts.clear();
+              }),
+            ),
+        ],
+      ),
+      floatingActionButton: tabIndex == 0
+          ? FloatingActionButton(
+              onPressed: () => _openAlertDialog(),
+              tooltip: 'Añadir Alerta',
+              child: const Icon(Icons.add_alert),
+            )
+          : null,
+      body: tabIndex == 0
+          ? ListView(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              children: [
+                _buildTabBar(),
+                _buildSection('Importantes', importantes),
+                _buildSection('Actuales', proximas),
+                _buildSection('Desactivadas', desactivadas),
+              ],
+            )
+          : Stack(
+              children: [
+                ListView(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  children: [
+                    _buildTabBar(),
+                    _buildSection('Pasadas', pasadas),
+                  ],
+                ),
+                if (selectionMode && selectedAlerts.isNotEmpty)
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      color: Theme.of(context).colorScheme.surface,
+                      padding: const EdgeInsets.all(12),
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.delete),
+                        label: const Text('Eliminar Seleccionadas'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: _deleteSelected,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
     );
   }
 }
@@ -228,7 +322,6 @@ class _AlertCard extends StatelessWidget {
       case AlertPriority.media:
         return Icons.notifications_active_rounded;
       case AlertPriority.baja:
-      default:
         return Icons.check_circle_rounded;
     }
   }
@@ -238,18 +331,16 @@ class _AlertCard extends StatelessWidget {
     final dateText = _dateLabel(alert.date);
 
     return Card(
-      margin: const EdgeInsets.symmetric(
-          horizontal: 12, vertical: 6), // antes: vertical: 6
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      clipBehavior: Clip.antiAlias, // permite recorte con esquinas redondeadas
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: Stack(
           children: [
-            // Barra lateral de color redondeada
             Positioned.fill(
               child: Align(
                 alignment: Alignment.centerLeft,
@@ -265,27 +356,21 @@ class _AlertCard extends StatelessWidget {
                 ),
               ),
             ),
-
-            // Contenido
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Ícono circular con el mismo color
                   CircleAvatar(
                     radius: 20,
                     backgroundColor: (_color.withOpacity(0.15)),
                     child: Icon(_icon, color: _color),
                   ),
                   const SizedBox(width: 12),
-
-                  // Texto
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Título + fecha
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -295,9 +380,7 @@ class _AlertCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
-                                  color: alert.active
-                                      ? Colors.black87
-                                      : Colors.black38,
+                                  color: alert.active ? Colors.black87 : Colors.black38,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -314,7 +397,6 @@ class _AlertCard extends StatelessWidget {
                             ),
                           ],
                         ),
-
                         if (alert.description.isNotEmpty) ...[
                           const SizedBox(height: 4),
                           Text(
@@ -327,10 +409,7 @@ class _AlertCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
-
-                        // Chips (opcional): objeto/lugar
-                        if ((alert.object?.isNotEmpty ?? false) ||
-                            (alert.location?.isNotEmpty ?? false)) ...[
+                        if ((alert.object?.isNotEmpty ?? false) || (alert.location?.isNotEmpty ?? false)) ...[
                           const SizedBox(height: 6),
                           Wrap(
                             spacing: 6,
@@ -340,15 +419,13 @@ class _AlertCard extends StatelessWidget {
                                 Chip(
                                   label: Text('Artículo: ${alert.object}'),
                                   visualDensity: VisualDensity.compact,
-                                  side: BorderSide(
-                                      color: _color.withOpacity(0.4)),
+                                  side: BorderSide(color: _color.withOpacity(0.4)),
                                 ),
                               if (alert.location?.isNotEmpty ?? false)
                                 Chip(
                                   label: Text('Lugar: ${alert.location}'),
                                   visualDensity: VisualDensity.compact,
-                                  side: BorderSide(
-                                      color: _color.withOpacity(0.4)),
+                                  side: BorderSide(color: _color.withOpacity(0.4)),
                                 ),
                             ],
                           ),
@@ -356,17 +433,11 @@ class _AlertCard extends StatelessWidget {
                       ],
                     ),
                   ),
-
-                  // Miniatura (opcional)
-                  if (alert.imagePath != null &&
-                      alert.imagePath!.isNotEmpty) ...[
+                  if (alert.imagePath != null && alert.imagePath!.isNotEmpty) ...[
                     const SizedBox(width: 10),
                     _MiniThumb(path: alert.imagePath!),
                   ],
-
                   const SizedBox(width: 6),
-
-                  // Menú acciones
                   PopupMenuButton<String>(
                     onSelected: (v) {
                       switch (v) {
@@ -399,10 +470,8 @@ class _AlertCard extends StatelessWidget {
   }
 }
 
-/// Miniatura que carga bytes desde XFile sin usar dart:io (sirve para Web)
 class _MiniThumb extends StatelessWidget {
   const _MiniThumb({required this.path});
-
   final String path;
 
   @override
@@ -433,7 +502,6 @@ class _MiniThumb extends StatelessWidget {
   }
 }
 
-/// Visor de imagen a pantalla completa
 class _ImageViewer extends StatelessWidget {
   const _ImageViewer({required this.path});
   final String path;
@@ -480,7 +548,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
 
   Color? customColor;
   final _picker = ImagePicker();
-  XFile? _pickedImage; // imagen nueva seleccionada (si aplica)
+  XFile? _pickedImage;
 
   @override
   void initState() {
@@ -494,10 +562,8 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
     object = a?.object;
     repetitive = a?.repetitive ?? false;
     repeatFrequency = a?.repeatFrequency;
-
-    // si ya tenía color, úsalo; si no, toma el de prioridad
     customColor = a?.color ?? _defaultColorFor(priority);
-    _pickedImage = null; // mantenemos la imagen previa vía imagePath al guardar
+    _pickedImage = null;
   }
 
   @override
@@ -508,14 +574,12 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
   }
 
   Future<void> _pickFromGallery() async {
-    final img =
-        await _picker.pickImage(source: ImageSource.gallery, maxWidth: 1920);
+    final img = await _picker.pickImage(source: ImageSource.gallery, maxWidth: 1920);
     if (img != null) setState(() => _pickedImage = img);
   }
 
   Future<void> _pickFromCamera() async {
-    final img =
-        await _picker.pickImage(source: ImageSource.camera, maxWidth: 1920);
+    final img = await _picker.pickImage(source: ImageSource.camera, maxWidth: 1920);
     if (img != null) setState(() => _pickedImage = img);
   }
 
@@ -523,17 +587,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
     setState(() => _pickedImage = null);
   }
 
-  Future<void> _pickDate() async {
-    final r = await showDatePicker(
-      context: context,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-      initialDate: date,
-    );
-    if (r != null) {
-      setState(() => date = r);
-    }
-  }
+  // Removed unused _pickDate method
 
   void _openColorPicker() {
     showDialog(
@@ -556,9 +610,8 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
     );
   }
 
-  static const _vGap = SizedBox(height: 16); // gap estándar entre campos
-  static const _sectionDivider =
-      Divider(height: 30, thickness: 0.1); // separa secciones
+  static const _vGap = SizedBox(height: 16);
+  static const _sectionDivider = Divider(height: 30, thickness: 0.1);
 
   @override
   Widget build(BuildContext context) {
@@ -578,7 +631,6 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // --- Datos básicos ---
               TextField(
                 controller: titleCtrl,
                 decoration: const InputDecoration(
@@ -595,9 +647,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                   prefixIcon: Icon(Icons.notes),
                 ),
               ),
-
               _sectionDivider,
-
               Row(
                 children: [
                   Expanded(
@@ -605,11 +655,8 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                       onTap: () async {
                         final picked = await showDatePicker(
                           context: context,
-                          initialDate: date.isAfter(DateTime.now())
-                              ? date
-                              : DateTime.now().add(const Duration(days: 1)),
-                          firstDate:
-                              DateTime.now().add(const Duration(days: 1)),
+                          initialDate: date.isAfter(DateTime.now()) ? date : DateTime.now().add(const Duration(days: 1)),
+                          firstDate: DateTime.now().add(const Duration(days: 1)),
                           lastDate: DateTime(2100),
                           helpText: 'Selecciona la fecha de la alerta',
                           cancelText: 'Cancelar',
@@ -623,8 +670,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                         decoration: const InputDecoration(
                           labelText: 'Fecha',
                           border: OutlineInputBorder(),
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         ),
                         child: Text(
                           '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}',
@@ -636,8 +682,6 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                 ],
               ),
               _vGap,
-
-              // --- Prioridad ---
               DropdownButtonFormField<AlertPriority>(
                 value: priority,
                 decoration: const InputDecoration(
@@ -645,12 +689,9 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                   prefixIcon: Icon(Icons.priority_high_rounded),
                 ),
                 items: const [
-                  DropdownMenuItem(
-                      value: AlertPriority.baja, child: Text('Baja')),
-                  DropdownMenuItem(
-                      value: AlertPriority.media, child: Text('Media')),
-                  DropdownMenuItem(
-                      value: AlertPriority.alta, child: Text('Alta')),
+                  DropdownMenuItem(value: AlertPriority.baja, child: Text('Baja')),
+                  DropdownMenuItem(value: AlertPriority.media, child: Text('Media')),
+                  DropdownMenuItem(value: AlertPriority.alta, child: Text('Alta')),
                 ],
                 onChanged: (val) {
                   setState(() {
@@ -660,8 +701,6 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                 },
               ),
               _vGap,
-
-              // --- Color ---
               Row(
                 children: [
                   const Text('Color:  '),
@@ -682,10 +721,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                   ),
                 ],
               ),
-
               _sectionDivider,
-
-              // --- Lugar / Artículo ---
               TextField(
                 decoration: const InputDecoration(
                   labelText: 'Lugar (opcional)',
@@ -695,22 +731,19 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                 controller: TextEditingController(text: location),
               ),
               _sectionDivider,
-
-              // --- Imagen (opcional) ---
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Imagen (opcional)',
-                    style: Theme.of(context).textTheme.titleMedium),
+                child: Text('Imagen (opcional)', style: Theme.of(context).textTheme.titleMedium),
               ),
               _vGap,
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   _thumbPreview(existingPath: existingPath),
-                  const SizedBox(width: 16), // más aire horizontal
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Wrap(
-                      spacing: 12, // más separación entre botones
+                      spacing: 12,
                       runSpacing: 12,
                       children: [
                         OutlinedButton.icon(
@@ -723,8 +756,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                           icon: const Icon(Icons.photo_camera_outlined),
                           label: const Text('Cámara'),
                         ),
-                        if (_pickedImage != null ||
-                            (existingPath?.isNotEmpty ?? false))
+                        if (_pickedImage != null || (existingPath?.isNotEmpty ?? false))
                           TextButton.icon(
                             onPressed: _clearImage,
                             icon: const Icon(Icons.delete_outline),
@@ -735,16 +767,12 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                   ),
                 ],
               ),
-
               _sectionDivider,
-
-              // --- Repetición ---
               SwitchListTile(
                 value: repetitive,
                 onChanged: (v) => setState(() => repetitive = v),
                 title: const Text('Repetir'),
-                contentPadding:
-                    EdgeInsets.zero, // evita sumar padding lateral extra
+                contentPadding: EdgeInsets.zero,
               ),
               if (repetitive) ...[
                 _vGap,
@@ -785,8 +813,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
               location: location,
               object: object,
               repetitive: repetitive,
-              repeatFrequency:
-                  repetitive ? (repeatFrequency ?? 'semanal') : null,
+              repeatFrequency: repetitive ? (repeatFrequency ?? 'semanal') : null,
               active: widget.alert?.active ?? true,
               color: customColor,
               imagePath: _pickedImage?.path ?? widget.alert?.imagePath,
@@ -801,7 +828,6 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
     );
   }
 
-  /// Miniatura dentro del editor (acepta imagen existente o la elegida en esta sesión)
   Widget _thumbPreview({String? existingPath}) {
     final path = _pickedImage?.path ?? existingPath;
     if (path == null) {

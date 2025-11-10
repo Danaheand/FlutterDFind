@@ -63,7 +63,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white, width: 4),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
+              boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8)],
             ),
             child: ClipOval(
               child: Image.asset(
@@ -88,7 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             bottom: 8,
             right: 8,
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
                 boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
@@ -193,7 +193,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           );
                         },
                         child: Container(
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: Colors.white,
                             shape: BoxShape.circle,
                             boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
@@ -283,7 +283,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
                 color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))
           ],
@@ -376,14 +376,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         fontWeight: FontWeight.w600)),
                                 Row(
                                     children: [
-                                      Expanded(child: Text('Sonido')),
+                                      const Expanded(child: Text('Sonido')),
                                       Switch(
                                         value: _notifHighSound,
                                         onChanged: (v) =>
                                             setState(() => _notifHighSound = v),
                                       ),
-                                      SizedBox(width: 32),
-                                      Expanded(child: Align(
+                                      const SizedBox(width: 32),
+                                      const Expanded(child: Align(
                                         alignment: Alignment.centerLeft,
                                         child: Text('Vibración'),
                                       )),
@@ -400,14 +400,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         fontWeight: FontWeight.w600)),
                                 Row(
                                     children: [
-                                      Expanded(child: Text('Sonido')),
+                                      const Expanded(child: Text('Sonido')),
                                       Switch(
                                         value: _notifMediumSound,
                                         onChanged: (v) =>
                                             setState(() => _notifMediumSound = v),
                                       ),
-                                      SizedBox(width: 32),
-                                      Expanded(child: Align(
+                                      const SizedBox(width: 32),
+                                      const Expanded(child: Align(
                                         alignment: Alignment.centerLeft,
                                         child: Text('Vibración'),
                                       )),
@@ -424,14 +424,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         fontWeight: FontWeight.w600)),
                                 Row(
                                     children: [
-                                      Expanded(child: Text('Sonido')),
+                                      const Expanded(child: Text('Sonido')),
                                       Switch(
                                         value: _notifLowSound,
                                         onChanged: (v) =>
                                             setState(() => _notifLowSound = v),
                                       ),
-                                      SizedBox(width: 32),
-                                      Expanded(child: Align(
+                                      const SizedBox(width: 32),
+                                      const Expanded(child: Align(
                                         alignment: Alignment.centerLeft,
                                         child: Text('Vibración'),
                                       )),
@@ -448,14 +448,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         fontWeight: FontWeight.w600)),
                                 Row(
                                     children: [
-                                      Expanded(child: Text('Sonido')),
+                                      const Expanded(child: Text('Sonido')),
                                       Switch(
                                         value: _notifGeneralSound,
                                         onChanged: (v) => setState(
                                             () => _notifGeneralSound = v),
                                       ),
-                                      SizedBox(width: 32),
-                                      Expanded(child: Align(
+                                      const SizedBox(width: 32),
+                                      const Expanded(child: Align(
                                         alignment: Alignment.centerLeft,
                                         child: Text('Vibración'),
                                       )),
