@@ -1,11 +1,10 @@
+import 'dart:math';
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
-  import 'dart:math';
-  import 'dart:typed_data';
-  import 'package:flutter/material.dart';
-  import 'package:image_picker/image_picker.dart';
-  import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-
-  // Variable global eliminada, se declara dentro de la clase correspondiente
+// Variable global eliminada, se declara dentro de la clase correspondiente
 
 enum AlertPriority { baja, media, alta }
 
@@ -264,6 +263,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false, // <- quita la flecha de retroceso
         title: const Text('Alertas'),
         actions: [
           if (tabIndex == 1 && pasadas.isNotEmpty)
