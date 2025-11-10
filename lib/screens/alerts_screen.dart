@@ -78,6 +78,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
   int tabIndex = 0;
   bool selectionMode = false;
   final List<AlertData> _alerts = [
+    // Actuales
     AlertData(
       id: 'a1',
       title: 'Garantía del portátil vence',
@@ -92,19 +93,38 @@ class _AlertsScreenState extends State<AlertsScreen> {
       id: 'a2',
       title: 'test',
       description: '',
-      date: DateTime.now(),
+      date: DateTime.now().add(const Duration(days: 4)),
       priority: AlertPriority.alta,
       active: true,
       color: Colors.purple.shade400,
     ),
+    // Pasadas
     AlertData(
-      id: 'a3',
-      title: 'Test',
-      description: 'test',
-      date: DateTime.now().add(const Duration(days: 4)),
+      id: 'p1',
+      title: 'Alerta vencida 1',
+      description: 'Descripción de alerta pasada 1',
+      date: DateTime.now().subtract(const Duration(days: 2)),
       priority: AlertPriority.media,
       active: true,
-      color: Colors.purple.shade400,
+      color: Colors.red.shade200,
+    ),
+    AlertData(
+      id: 'p2',
+      title: 'Alerta vencida 2',
+      description: 'Descripción de alerta pasada 2',
+      date: DateTime.now().subtract(const Duration(days: 5)),
+      priority: AlertPriority.baja,
+      active: true,
+      color: Colors.blue.shade200,
+    ),
+    AlertData(
+      id: 'p3',
+      title: 'Alerta vencida 3',
+      description: 'Descripción de alerta pasada 3',
+      date: DateTime.now().subtract(const Duration(days: 10)),
+      priority: AlertPriority.alta,
+      active: true,
+      color: Colors.amber.shade200,
     ),
   ];
 
@@ -231,7 +251,6 @@ class _AlertsScreenState extends State<AlertsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         title: const Text('Alertas'),
         actions: [
           if (tabIndex == 1 && pasadas.isNotEmpty)
@@ -329,6 +348,8 @@ class _AlertCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateText = _dateLabel(alert.date);
+    // Detect if this alert is in 'pasadas' tab
+    final isPasada = alert.date.isBefore(DateTime.now());
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -440,25 +461,36 @@ class _AlertCard extends StatelessWidget {
                   const SizedBox(width: 6),
                   PopupMenuButton<String>(
                     onSelected: (v) {
-                      switch (v) {
-                        case 'toggle':
-                          onToggleActive();
-                          break;
-                        case 'delete':
-                          onDelete();
-                          break;
+                      if (isPasada) {
+                        if (v == 'delete') onDelete();
+                      } else {
+                        switch (v) {
+                          case 'toggle':
+                            onToggleActive();
+                            break;
+                          case 'delete':
+                            onDelete();
+                            break;
+                        }
                       }
                     },
-                    itemBuilder: (ctx) => [
-                      PopupMenuItem(
-                        value: 'toggle',
-                        child: Text(alert.active ? 'Desactivar' : 'Activar'),
-                      ),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Text('Eliminar'),
-                      ),
-                    ],
+                    itemBuilder: (ctx) => isPasada
+                        ? [
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Text('Eliminar'),
+                            ),
+                          ]
+                        : [
+                            PopupMenuItem(
+                              value: 'toggle',
+                              child: Text(alert.active ? 'Desactivar' : 'Activar'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Text('Eliminar'),
+                            ),
+                          ],
                   ),
                 ],
               ),
