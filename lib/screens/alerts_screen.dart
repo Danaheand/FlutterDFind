@@ -51,6 +51,7 @@ class AlertData {
   bool active;
   Color? color;
   String? imagePath;
+  List<int>? selectedWeekdays;
 
   AlertData({
     required this.id,
@@ -65,6 +66,7 @@ class AlertData {
     this.active = true,
     this.color,
     this.imagePath,
+    this.selectedWeekdays,
   });
 }
 
@@ -712,6 +714,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
   String? object;
   bool repetitive = false;
   String? repeatFrequency;
+  List<int> selectedWeekdays = []; // Días de la semana seleccionados (1=Lunes, 7=Domingo)
 
   Color? customColor;
   final _picker = ImagePicker();
@@ -729,6 +732,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
     object = a?.object;
     repetitive = a?.repetitive ?? false;
     repeatFrequency = a?.repeatFrequency;
+    selectedWeekdays = a?.selectedWeekdays ?? [];
     customColor = a?.color ?? _defaultColorFor(priority);
     _pickedImage = null;
   }
@@ -781,6 +785,76 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
 
   static const _vGap = SizedBox(height: 16);
   static const _sectionDivider = Divider(height: 30, thickness: 0.1);
+
+  Widget _buildWeekdaySelector() {
+    final weekdays = [
+      {'name': 'L', 'fullName': 'Lunes', 'value': 1},
+      {'name': 'M', 'fullName': 'Martes', 'value': 2},
+      {'name': 'X', 'fullName': 'Miércoles', 'value': 3},
+      {'name': 'J', 'fullName': 'Jueves', 'value': 4},
+      {'name': 'V', 'fullName': 'Viernes', 'value': 5},
+      {'name': 'S', 'fullName': 'Sábado', 'value': 6},
+      {'name': 'D', 'fullName': 'Domingo', 'value': 7},
+    ];
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: weekdays.map((day) {
+        final isSelected = selectedWeekdays.contains(day['value']);
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              if (isSelected) {
+                selectedWeekdays.remove(day['value']);
+              } else {
+                selectedWeekdays.add(day['value'] as int);
+              }
+            });
+          },
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: isSelected ? Colors.blue : Colors.grey.shade200,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isSelected ? Colors.blue : Colors.grey.shade400,
+                width: 1,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                day['name'] as String,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.black87,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  String _getSelectedDaysText() {
+    if (selectedWeekdays.isEmpty) return '';
+    
+    final dayNames = {
+      1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves',
+      5: 'Viernes', 6: 'Sábado', 7: 'Domingo'
+    };
+    
+    selectedWeekdays.sort();
+    final names = selectedWeekdays.map((day) => dayNames[day]).toList();
+    
+    if (names.length <= 2) {
+      return names.join(' y ');
+    } else {
+      return '${names.sublist(0, names.length - 1).join(', ')} y ${names.last}';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -999,17 +1073,17 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
               ),
               if (repetitive) ...[
                 _vGap,
-                DropdownButtonFormField<String>(
-                  value: repeatFrequency ?? 'semanal',
-                  items: const [
-                    DropdownMenuItem(value: 'semanal', child: Text('Semanal')),
-                    DropdownMenuItem(value: 'mensual', child: Text('Mensual')),
-                    DropdownMenuItem(value: 'anual', child: Text('Anual')),
-                  ],
-                  onChanged: (v) => setState(() => repeatFrequency = v),
-                  decoration: const InputDecoration(
-                    labelText: 'Frecuencia',
-                    prefixIcon: Icon(Icons.repeat),
+                Text('Selecciona los días que se repetirá:', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 12),
+                _buildWeekdaySelector(),
+                const SizedBox(height: 8),
+                Text(
+                  selectedWeekdays.isEmpty 
+                    ? 'Selecciona al menos un día' 
+                    : 'Se repetirá: ${_getSelectedDaysText()}',
+                  style: TextStyle(
+                    color: selectedWeekdays.isEmpty ? Colors.red : Colors.green,
+                    fontSize: 12,
                   ),
                 ),
               ],
@@ -1041,17 +1115,30 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
               active: widget.alert?.active ?? true,
               color: customColor,
               imagePath: _pickedImage?.path ?? widget.alert?.imagePath,
+              selectedWeekdays: selectedWeekdays.isNotEmpty ? selectedWeekdays : null,
             );
 
             // Programar la notificación/alarma
             if (date.isAfter(DateTime.now())) {
               try {
-                await NotificationService().scheduleAlarmNotification(
-                  id: result.id.hashCode,
-                  title: 'Alarma: ${result.title}',
-                  body: result.description.isNotEmpty ? result.description : 'Es hora de tu alarma',
-                  scheduledDate: result.date,
-                );
+                if (repetitive && selectedWeekdays.isNotEmpty) {
+                  // Alarma repetitiva para días específicos
+                  await NotificationService().scheduleRepeatingAlarmNotification(
+                    baseId: result.id.hashCode,
+                    title: 'Alarma: ${result.title}',
+                    body: result.description.isNotEmpty ? result.description : 'Es hora de tu alarma',
+                    scheduledDate: result.date,
+                    weekdays: selectedWeekdays,
+                  );
+                } else {
+                  // Alarma única
+                  await NotificationService().scheduleAlarmNotification(
+                    id: result.id.hashCode,
+                    title: 'Alarma: ${result.title}',
+                    body: result.description.isNotEmpty ? result.description : 'Es hora de tu alarma',
+                    scheduledDate: result.date,
+                  );
+                }
               } catch (e) {
                 // Si hay error con las notificaciones, mostrar mensaje
                 if (mounted) {
