@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 import '../models/user.dart';
 import '../providers/font_size_provider.dart';
@@ -28,6 +30,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _userName = 'Carlos Rodríguez';
   String _userEmail = 'carlos.r@email.com';
   User? _currentUser;
+  String? _profileImagePath;
+  Future<void> _pickProfileImage(ImageSource source) async {
+    // Import image_picker in pubspec.yaml if not present
+    // import 'package:image_picker/image_picker.dart';
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: source, maxWidth: 1024);
+    if (picked != null) {
+      setState(() {
+        _profileImagePath = picked.path;
+      });
+      // Optionally save path in SharedPreferences for persistence
+      final sp = await SharedPreferences.getInstance();
+      await sp.setString('profile_image_path', picked.path);
+    }
+  }
 
   void _toggleDarkMode(bool v) {
     setState(() => _darkMode = v);
@@ -66,22 +83,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
               boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8)],
             ),
             child: ClipOval(
-              child: Image.asset(
-                'assets/img/profile_placeholder.png',
-                fit: BoxFit.cover,
-                errorBuilder: (c, e, s) => Container(
-                  color: Colors.blue[100],
-                  child: Center(
-                    child: Text(
-                      _userName.isNotEmpty ? _userName[0] : '?',
-                      style: const TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
+              child: _profileImagePath != null
+                  ? Image.file(
+                      File(_profileImagePath!),
+                      fit: BoxFit.cover,
+                    )
+                  : Image.asset(
+                      'assets/img/profile_placeholder.png',
+                      fit: BoxFit.cover,
+                      errorBuilder: (c, e, s) => Container(
+                        color: Colors.blue[100],
+                        child: Center(
+                          child: Text(
+                            _userName.isNotEmpty ? _userName[0] : '?',
+                            style: const TextStyle(
+                                fontSize: 40,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
             ),
           ),
           Positioned(
@@ -120,23 +142,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   alignment: Alignment.center,
                   children: [
                     ClipOval(
-                      child: Image.asset(
-                        'assets/img/profile_placeholder.png',
-                        width: 160,
-                        height: 160,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          width: 160,
-                          height: 160,
-                          color: Colors.blue[100],
-                          child: Center(
-                            child: Text(
-                              nameController.text.isNotEmpty ? nameController.text[0] : '?',
-                              style: const TextStyle(fontSize: 60, fontWeight: FontWeight.bold, color: Colors.white),
+                      child: _profileImagePath != null
+                          ? Image.file(
+                              File(_profileImagePath!),
+                              width: 160,
+                              height: 160,
+                              fit: BoxFit.cover,
+                            )
+                          : Image.asset(
+                              'assets/img/profile_placeholder.png',
+                              width: 160,
+                              height: 160,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                width: 160,
+                                height: 160,
+                                color: Colors.blue[100],
+                                child: Center(
+                                  child: Text(
+                                    nameController.text.isNotEmpty ? nameController.text[0] : '?',
+                                    style: const TextStyle(fontSize: 60, fontWeight: FontWeight.bold, color: Colors.white),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
                     ),
                     Positioned(
                       bottom: 12,
@@ -157,33 +186,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ListTile(
                                       leading: const Icon(Icons.camera_alt, color: Colors.blueAccent),
                                       title: const Text('Abrir cámara'),
-                                      onTap: () {
+                                      onTap: () async {
                                         Navigator.pop(context);
-                                        // Aquí iría la lógica para abrir la cámara
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) => AlertDialog(
-                                            title: const Text('Funcionalidad'),
-                                            content: const Text('Abrir cámara (demo)'),
-                                            actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cerrar'))],
-                                          ),
-                                        );
+                                        await _pickProfileImage(ImageSource.camera);
+                                        setState(() {});
                                       },
                                     ),
                                     ListTile(
                                       leading: const Icon(Icons.photo_library, color: Colors.green),
                                       title: const Text('Abrir galería'),
-                                      onTap: () {
+                                      onTap: () async {
                                         Navigator.pop(context);
-                                        // Aquí iría la lógica para abrir la galería
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) => AlertDialog(
-                                            title: const Text('Funcionalidad'),
-                                            content: const Text('Abrir galería (demo)'),
-                                            actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cerrar'))],
-                                          ),
-                                        );
+                                        await _pickProfileImage(ImageSource.gallery);
+                                        setState(() {});
                                       },
                                     ),
                                   ],
@@ -295,6 +310,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _loadCurrentUser();
+    _loadProfileImage();
   }
 
   Future<void> _loadCurrentUser() async {
@@ -311,6 +327,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       } catch (e) {
         print('Error loading user: $e');
       }
+    }
+  }
+
+  Future<void> _loadProfileImage() async {
+    final sp = await SharedPreferences.getInstance();
+    final path = sp.getString('profile_image_path');
+    if (path != null && path.isNotEmpty) {
+      setState(() {
+        _profileImagePath = path;
+      });
     }
   }
 
