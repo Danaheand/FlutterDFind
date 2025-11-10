@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/font_size_provider.dart';
 import '../models/shopping_item.dart';
-import '../models/suggestion_item.dart';
 import '../theme/app_theme.dart';
 import 'widgets/add_item_modal_v2.dart';
-import 'widgets/suggestions_section.dart';
+import 'widgets/tips_section.dart';
 // ...existing code...
 
 typedef AddToShoppingList = void Function(String name);
@@ -22,24 +21,6 @@ class InventoryScreen extends StatefulWidget {
 class _InventoryScreenState extends State<InventoryScreen> {
   final List<ShoppingItem> _items = [];
   final Map<String, bool> _expandedPlaces = {};
-
-  // Sugerencias de ejemplo (en producción vendrían del inventario)
-  final List<SuggestionItem> _suggestions = [
-    SuggestionItem(
-      id: 's1',
-      name: 'Leche',
-      placeName: 'Supermercado',
-      category: 'Lácteos',
-      reason: 'Stock bajo',
-    ),
-    SuggestionItem(
-      id: 's2',
-      name: 'Pan',
-      placeName: 'Panadería',
-      category: 'Panadería',
-      reason: 'Compra frecuente',
-    ),
-  ];
 
   @override
   void initState() {
@@ -75,28 +56,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
         quantity: quantity,
       ));
     });
-  }
-
-  void _addFromSuggestion(SuggestionItem suggestion) {
-    if (_items.any((e) => e.name == suggestion.name)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${suggestion.name} ya está en tu lista')),
-      );
-      return;
-    }
-
-    setState(() {
-      _items.add(ShoppingItem(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: suggestion.name,
-        placeName: suggestion.placeName,
-        category: '',
-      ));
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${suggestion.name} añadido a la lista')),
-    );
   }
 
   void _toggleItem(ShoppingItem item) {
@@ -158,6 +117,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pendientes'),
+        automaticallyImplyLeading: false,
       ),
       body: _buildNormalView(),
       floatingActionButton: FloatingActionButton(
@@ -173,11 +133,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Sección de Sugerencias
-          SuggestionsSection(
-            suggestions: _suggestions,
-            onAddToList: _addFromSuggestion,
-          ),
+          // Sección de Tips
+          const TipsSection(),
 
           // Lista "Por Comprar"
           _buildPendingSection(),

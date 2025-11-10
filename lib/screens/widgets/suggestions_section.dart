@@ -39,7 +39,7 @@ class SuggestionsSection extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Sugerencias',
+                  'Tips para el uso',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
