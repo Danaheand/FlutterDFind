@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'alert_detail_screen.dart' as detail;
 
 // Variable global eliminada, se declara dentro de la clase correspondiente
 
@@ -77,60 +78,133 @@ class _AlertsScreenState extends State<AlertsScreen> {
   int tabIndex = 0;
   bool selectionMode = false;
   final List<AlertData> _alerts = [
-    // Actuales
+    // Actuales con todos los campos
     AlertData(
       id: 'a1',
       title: 'Garantía del portátil vence',
-      description: 'Artículo: MacBook Pro 14"\nLugar: Oficina',
-      date: DateTime.now().add(const Duration(days: 45)),
-      priority: AlertPriority.baja,
+      description:
+          'Recuerda renovar la garantía extendida antes de que caduque para seguir protegido',
+      date: DateTime.now().add(const Duration(days: 45, hours: 14)),
+      priority: AlertPriority.media,
       active: true,
       color: Colors.lightBlue.shade400,
-      imagePath: null,
+      location: 'Oficina - Escritorio principal',
+      object: 'MacBook Pro 14"',
+      repetitive: false,
     ),
     AlertData(
       id: 'a2',
-      title: 'test',
-      description: '',
-      date: DateTime.now().add(const Duration(days: 4)),
+      title: 'Cambiar filtros del aire',
+      description:
+          'Los filtros del sistema de aire acondicionado necesitan ser reemplazados cada 3 meses',
+      date: DateTime.now().add(const Duration(days: 7, hours: 9)),
       priority: AlertPriority.alta,
       active: true,
-      color: Colors.purple.shade400,
+      color: Colors.red.shade400,
+      location: 'Casa - Sala de estar',
+      object: 'Aire acondicionado Samsung',
+      repetitive: true,
+      repeatFrequency: 'Cada 3 meses',
+    ),
+    AlertData(
+      id: 'a3',
+      title: 'Revisar extintores',
+      description:
+          'Inspección anual obligatoria de los extintores de incendios',
+      date:
+          DateTime.now().add(const Duration(days: 15, hours: 10, minutes: 30)),
+      priority: AlertPriority.alta,
+      active: true,
+      color: Colors.orange.shade600,
+      location: 'Oficina - Área común',
+      object: 'Extintor ABC 6kg',
+      repetitive: true,
+      repeatFrequency: 'Anual',
+    ),
+    AlertData(
+      id: 'a4',
+      title: 'Mantenimiento coche',
+      description: 'Cambio de aceite y revisión general del vehículo',
+      date: DateTime.now().add(const Duration(days: 3, hours: 16)),
+      priority: AlertPriority.media,
+      active: true,
+      color: Colors.blue.shade500,
+      location: 'Garaje',
+      object: 'Toyota Corolla 2020',
+      repetitive: true,
+      repeatFrequency: 'Cada 6 meses',
     ),
     // Pasadas
     AlertData(
       id: 'p1',
-      title: 'Alerta vencida 1',
-      description: 'Descripción de alerta pasada 1',
-      date: DateTime.now().subtract(const Duration(days: 2)),
-      priority: AlertPriority.media,
+      title: 'Pago de servicios',
+      description: 'Pagar facturas de luz, agua e internet del mes',
+      date: DateTime.now().subtract(const Duration(days: 2, hours: 5)),
+      priority: AlertPriority.alta,
       active: true,
-      color: Colors.red.shade200,
+      color: Colors.red.shade300,
+      location: 'Casa',
+      object: null,
+      repetitive: true,
+      repeatFrequency: 'Mensual',
     ),
     AlertData(
       id: 'p2',
-      title: 'Alerta vencida 2',
-      description: 'Descripción de alerta pasada 2',
-      date: DateTime.now().subtract(const Duration(days: 5)),
+      title: 'Regar plantas',
+      description: 'Regar todas las plantas del jardín',
+      date: DateTime.now().subtract(const Duration(days: 1, hours: 8)),
       priority: AlertPriority.baja,
       active: true,
-      color: Colors.blue.shade200,
+      color: Colors.green.shade300,
+      location: 'Casa - Jardín',
+      object: 'Plantas ornamentales',
+      repetitive: true,
+      repeatFrequency: 'Cada 2 días',
     ),
     AlertData(
       id: 'p3',
-      title: 'Alerta vencida 3',
-      description: 'Descripción de alerta pasada 3',
-      date: DateTime.now().subtract(const Duration(days: 10)),
-      priority: AlertPriority.alta,
+      title: 'Renovar suscripción',
+      description: 'Renovar suscripción premium de streaming',
+      date: DateTime.now().subtract(const Duration(days: 5, hours: 12)),
+      priority: AlertPriority.media,
       active: true,
-      color: Colors.amber.shade200,
+      color: Colors.purple.shade300,
+      location: null,
+      object: null,
+      repetitive: false,
+    ),
+    // Desactivada
+    AlertData(
+      id: 'd1',
+      title: 'Alerta desactivada',
+      description: 'Esta alerta fue desactivada temporalmente',
+      date: DateTime.now().add(const Duration(days: 20)),
+      priority: AlertPriority.baja,
+      active: false,
+      color: Colors.grey.shade400,
+      location: 'Casa',
+      object: 'Artículo de prueba',
+      repetitive: false,
     ),
   ];
 
-  List<AlertData> get actuales => _alerts.where((a) => a.active && a.date.isAfter(DateTime.now())).toList();
-  List<AlertData> get pasadas => _alerts.where((a) => a.active && a.date.isBefore(DateTime.now())).toList();
-  List<AlertData> get importantes => _alerts.where((a) => a.priority == AlertPriority.alta && a.active && a.date.isAfter(DateTime.now())).toList();
-  List<AlertData> get proximas => _alerts.where((a) => a.active && a.date.isAfter(DateTime.now()) && a.priority != AlertPriority.alta).toList();
+  List<AlertData> get actuales =>
+      _alerts.where((a) => a.active && a.date.isAfter(DateTime.now())).toList();
+  List<AlertData> get pasadas => _alerts
+      .where((a) => a.active && a.date.isBefore(DateTime.now()))
+      .toList();
+  List<AlertData> get importantes => _alerts
+      .where((a) =>
+          a.priority == AlertPriority.alta &&
+          a.active &&
+          a.date.isAfter(DateTime.now()))
+      .toList();
+  List<AlertData> get proximas => _alerts
+      .where((a) =>
+          a.active &&
+          a.date.isAfter(DateTime.now()) &&
+          a.priority != AlertPriority.alta)
+      .toList();
   List<AlertData> get desactivadas => _alerts.where((a) => !a.active).toList();
 
   void _deactivateAlert(AlertData alert) {
@@ -149,7 +223,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
     );
   }
 
-  Future<AlertData?> _openEditor(BuildContext context, AlertData? existing) async {
+  Future<AlertData?> _openEditor(
+      BuildContext context, AlertData? existing) async {
     return showDialog<AlertData>(
       context: context,
       builder: (_) => _AlertEditDialog(alert: existing),
@@ -183,7 +258,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: tabIndex == 0 ? Colors.blue.shade50 : Colors.transparent,
+                  color:
+                      tabIndex == 0 ? Colors.blue.shade50 : Colors.transparent,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Center(
@@ -192,7 +268,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: tabIndex == 0 ? Colors.blue.shade800 : Colors.black54,
+                      color:
+                          tabIndex == 0 ? Colors.blue.shade800 : Colors.black54,
                     ),
                   ),
                 ),
@@ -206,7 +283,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: tabIndex == 1 ? Colors.blue.shade50 : Colors.transparent,
+                  color:
+                      tabIndex == 1 ? Colors.blue.shade50 : Colors.transparent,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Center(
@@ -215,7 +293,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: tabIndex == 1 ? Colors.blue.shade800 : Colors.black54,
+                      color:
+                          tabIndex == 1 ? Colors.blue.shade800 : Colors.black54,
                     ),
                   ),
                 ),
@@ -227,7 +306,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
     );
   }
 
-  Widget _buildSection(String title, List<AlertData> alerts, {bool showSelection = false}) {
+  Widget _buildSection(String title, List<AlertData> alerts,
+      {bool showSelection = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -235,7 +315,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
           _sectionHeader(title),
           ...alerts.map((a) => _AlertCard(
                 alert: a,
-                onTap: () async {
+                onTap: () {
                   if (showSelection && selectionMode) {
                     setState(() {
                       if (selectedAlerts.contains(a.id)) {
@@ -244,15 +324,30 @@ class _AlertsScreenState extends State<AlertsScreen> {
                         selectedAlerts.add(a.id);
                       }
                     });
-                  } else if (title == 'Importantes' || title == 'Actuales') {
-                    // Permitir editar alerta en 'Actuales' o 'Importantes'
-                    final edited = await _openEditor(context, a);
-                    if (edited != null) {
-                      setState(() {
-                        final idx = _alerts.indexWhere((al) => al.id == a.id);
-                        if (idx != -1) _alerts[idx] = edited;
-                      });
-                    }
+                  } else {
+                    // Navegar al detalle de la alerta
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => detail.AlertDetailScreen(
+                          alert: detail.AlertData(
+                            id: a.id,
+                            title: a.title,
+                            description: a.description,
+                            date: a.date,
+                            priority:
+                                detail.AlertPriority.values[a.priority.index],
+                            location: a.location,
+                            object: a.object,
+                            repetitive: a.repetitive,
+                            repeatFrequency: a.repeatFrequency,
+                            active: a.active,
+                            color: a.color,
+                            imagePath: a.imagePath,
+                          ),
+                        ),
+                      ),
+                    );
                   }
                 },
                 onToggleActive: () => _deactivateAlert(a),
@@ -433,7 +528,9 @@ class _AlertCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
-                                  color: alert.active ? Colors.black87 : Colors.black38,
+                                  color: alert.active
+                                      ? Colors.black87
+                                      : Colors.black38,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -462,7 +559,8 @@ class _AlertCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
-                        if ((alert.object?.isNotEmpty ?? false) || (alert.location?.isNotEmpty ?? false)) ...[
+                        if ((alert.object?.isNotEmpty ?? false) ||
+                            (alert.location?.isNotEmpty ?? false)) ...[
                           const SizedBox(height: 6),
                           Wrap(
                             spacing: 6,
@@ -472,13 +570,15 @@ class _AlertCard extends StatelessWidget {
                                 Chip(
                                   label: Text('Artículo: ${alert.object}'),
                                   visualDensity: VisualDensity.compact,
-                                  side: BorderSide(color: _color.withOpacity(0.4)),
+                                  side: BorderSide(
+                                      color: _color.withOpacity(0.4)),
                                 ),
                               if (alert.location?.isNotEmpty ?? false)
                                 Chip(
                                   label: Text('Lugar: ${alert.location}'),
                                   visualDensity: VisualDensity.compact,
-                                  side: BorderSide(color: _color.withOpacity(0.4)),
+                                  side: BorderSide(
+                                      color: _color.withOpacity(0.4)),
                                 ),
                             ],
                           ),
@@ -486,7 +586,8 @@ class _AlertCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (alert.imagePath != null && alert.imagePath!.isNotEmpty) ...[
+                  if (alert.imagePath != null &&
+                      alert.imagePath!.isNotEmpty) ...[
                     const SizedBox(width: 10),
                     _MiniThumb(path: alert.imagePath!),
                   ],
@@ -516,7 +617,8 @@ class _AlertCard extends StatelessWidget {
                         : [
                             PopupMenuItem(
                               value: 'toggle',
-                              child: Text(alert.active ? 'Desactivar' : 'Activar'),
+                              child:
+                                  Text(alert.active ? 'Desactivar' : 'Activar'),
                             ),
                             const PopupMenuItem(
                               value: 'delete',
@@ -638,12 +740,14 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
   }
 
   Future<void> _pickFromGallery() async {
-    final img = await _picker.pickImage(source: ImageSource.gallery, maxWidth: 1920);
+    final img =
+        await _picker.pickImage(source: ImageSource.gallery, maxWidth: 1920);
     if (img != null) setState(() => _pickedImage = img);
   }
 
   Future<void> _pickFromCamera() async {
-    final img = await _picker.pickImage(source: ImageSource.camera, maxWidth: 1920);
+    final img =
+        await _picker.pickImage(source: ImageSource.camera, maxWidth: 1920);
     if (img != null) setState(() => _pickedImage = img);
   }
 
@@ -719,8 +823,11 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                       onTap: () async {
                         final picked = await showDatePicker(
                           context: context,
-                          initialDate: date.isAfter(DateTime.now()) ? date : DateTime.now().add(const Duration(days: 1)),
-                          firstDate: DateTime.now().add(const Duration(days: 1)),
+                          initialDate: date.isAfter(DateTime.now())
+                              ? date
+                              : DateTime.now().add(const Duration(days: 1)),
+                          firstDate:
+                              DateTime.now().add(const Duration(days: 1)),
                           lastDate: DateTime(2100),
                           helpText: 'Selecciona la fecha de la alerta',
                           cancelText: 'Cancelar',
@@ -734,7 +841,8 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                         decoration: const InputDecoration(
                           labelText: 'Fecha',
                           border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         ),
                         child: Text(
                           '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}',
@@ -753,9 +861,12 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                   prefixIcon: Icon(Icons.priority_high_rounded),
                 ),
                 items: const [
-                  DropdownMenuItem(value: AlertPriority.baja, child: Text('Baja')),
-                  DropdownMenuItem(value: AlertPriority.media, child: Text('Media')),
-                  DropdownMenuItem(value: AlertPriority.alta, child: Text('Alta')),
+                  DropdownMenuItem(
+                      value: AlertPriority.baja, child: Text('Baja')),
+                  DropdownMenuItem(
+                      value: AlertPriority.media, child: Text('Media')),
+                  DropdownMenuItem(
+                      value: AlertPriority.alta, child: Text('Alta')),
                 ],
                 onChanged: (val) {
                   setState(() {
@@ -797,7 +908,8 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
               _sectionDivider,
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Imagen (opcional)', style: Theme.of(context).textTheme.titleMedium),
+                child: Text('Imagen (opcional)',
+                    style: Theme.of(context).textTheme.titleMedium),
               ),
               _vGap,
               Row(
@@ -820,7 +932,8 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                           icon: const Icon(Icons.photo_camera_outlined),
                           label: const Text('Cámara'),
                         ),
-                        if (_pickedImage != null || (existingPath?.isNotEmpty ?? false))
+                        if (_pickedImage != null ||
+                            (existingPath?.isNotEmpty ?? false))
                           TextButton.icon(
                             onPressed: _clearImage,
                             icon: const Icon(Icons.delete_outline),
@@ -877,7 +990,8 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
               location: location,
               object: object,
               repetitive: repetitive,
-              repeatFrequency: repetitive ? (repeatFrequency ?? 'semanal') : null,
+              repeatFrequency:
+                  repetitive ? (repeatFrequency ?? 'semanal') : null,
               active: widget.alert?.active ?? true,
               color: customColor,
               imagePath: _pickedImage?.path ?? widget.alert?.imagePath,
@@ -908,12 +1022,12 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
       );
     }
 
-    Future<Uint8List> loadBytes() => XFile(path).readAsBytes();
+    Future<Uint8List> _loadBytes() => XFile(path).readAsBytes();
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: FutureBuilder<Uint8List>(
-        future: loadBytes(),
+        future: _loadBytes(),
         builder: (context, snap) {
           if (snap.connectionState != ConnectionState.done || !snap.hasData) {
             return Container(
