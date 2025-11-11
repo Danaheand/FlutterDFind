@@ -797,44 +797,79 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
       {'name': 'D', 'fullName': 'Domingo', 'value': 7},
     ];
 
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: weekdays.map((day) {
-        final isSelected = selectedWeekdays.contains(day['value']);
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              if (isSelected) {
-                selectedWeekdays.remove(day['value']);
-              } else {
-                selectedWeekdays.add(day['value'] as int);
-              }
-            });
-          },
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: isSelected ? Colors.blue : Colors.grey.shade200,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isSelected ? Colors.blue : Colors.grey.shade400,
-                width: 1,
-              ),
-            ),
-            child: Center(
-              child: Text(
-                day['name'] as String,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.black87,
-                  fontWeight: FontWeight.bold,
+    final allDaysSelected = selectedWeekdays.length == 7;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Botón de marcar todos
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            children: [
+              TextButton.icon(
+                onPressed: () {
+                  setState(() {
+                    if (allDaysSelected) {
+                      selectedWeekdays.clear();
+                    } else {
+                      selectedWeekdays = [1, 2, 3, 4, 5, 6, 7];
+                    }
+                  });
+                },
+                icon: Icon(
+                  allDaysSelected ? Icons.check_circle : Icons.circle_outlined,
+                  color: Colors.blue,
+                ),
+                label: Text(
+                  allDaysSelected ? 'Desmarcar todos' : 'Marcar todos los días',
+                  style: const TextStyle(color: Colors.blue),
                 ),
               ),
-            ),
+            ],
           ),
-        );
-      }).toList(),
+        ),
+        // Selector de días individuales
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: weekdays.map((day) {
+            final isSelected = selectedWeekdays.contains(day['value']);
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  if (isSelected) {
+                    selectedWeekdays.remove(day['value']);
+                  } else {
+                    selectedWeekdays.add(day['value'] as int);
+                  }
+                });
+              },
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.blue : Colors.grey.shade200,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected ? Colors.blue : Colors.grey.shade400,
+                    width: 1,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    day['name'] as String,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black87,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
