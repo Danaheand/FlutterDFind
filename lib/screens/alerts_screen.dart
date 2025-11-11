@@ -900,9 +900,8 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                           context: context,
                           initialDate: date.isAfter(DateTime.now())
                               ? date
-                              : DateTime.now().add(const Duration(days: 1)),
-                          firstDate:
-                              DateTime.now().add(const Duration(days: 1)),
+                              : DateTime.now(),
+                          firstDate: DateTime.now(),
                           lastDate: DateTime(2100),
                           helpText: 'Selecciona la fecha de la alerta',
                           cancelText: 'Cancelar',
