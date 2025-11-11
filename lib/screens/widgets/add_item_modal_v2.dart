@@ -16,6 +16,7 @@ class AddItemModalV2 extends StatefulWidget {
 class _AddItemModalV2State extends State<AddItemModalV2> {
   final _nameController = TextEditingController();
   final _quantityController = TextEditingController(text: '1');
+  final _customPlaceController = TextEditingController();
   String _selectedPlace = 'Supermercado';
 
   final List<String> _places = [
@@ -32,6 +33,7 @@ class _AddItemModalV2State extends State<AddItemModalV2> {
   void dispose() {
     _nameController.dispose();
     _quantityController.dispose();
+    _customPlaceController.dispose();
     super.dispose();
   }
 
@@ -54,7 +56,20 @@ class _AddItemModalV2State extends State<AddItemModalV2> {
       return;
     }
 
-    widget.onAdd(name, _selectedPlace, quantity);
+    // Validar lugar personalizado si se selecciona "Otro"
+    String finalPlace = _selectedPlace;
+    if (_selectedPlace == 'Otro') {
+      final customPlace = _customPlaceController.text.trim();
+      if (customPlace.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Por favor ingresa un nombre para el lugar')),
+        );
+        return;
+      }
+      finalPlace = customPlace;
+    }
+
+    widget.onAdd(name, finalPlace, quantity);
     Navigator.of(context).pop();
   }
 
@@ -115,6 +130,20 @@ class _AddItemModalV2State extends State<AddItemModalV2> {
                 }
               },
             ),
+            // Campo para lugar personalizado
+            if (_selectedPlace == 'Otro') ...[
+              const SizedBox(height: 16),
+              TextField(
+                controller: _customPlaceController,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre del lugar',
+                  hintText: 'Ej: Costco, Carrefour, Mercadona...',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.edit_location),
+                ),
+                textCapitalization: TextCapitalization.words,
+              ),
+            ],
             const SizedBox(height: 16),
             TextField(
               controller: _quantityController,
