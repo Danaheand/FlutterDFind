@@ -16,17 +16,10 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _notifications = true;
   bool _darkMode = false;
   bool _showLogoutDialog = false;
-  bool _notifHighSound = true;
-  bool _notifHighVibration = true;
-  bool _notifMediumSound = false;
-  bool _notifMediumVibration = true;
-  bool _notifLowSound = false;
-  bool _notifLowVibration = true;
-  bool _notifGeneralSound = false;
-  bool _notifGeneralVibration = true;
+  bool _notifSound = true;
+  bool _notifVibration = true;
   String _userName = 'Carlos Rodríguez';
   String _userEmail = 'carlos.r@email.com';
   User? _currentUser;
@@ -119,6 +112,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                   ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cerrar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showNotificationsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Notificaciones'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.volume_up_outlined),
+                  title: const Text('Sonido'),
+                  trailing: Switch(
+                    value: _notifSound,
+                    onChanged: (v) {
+                      setState(() => _notifSound = v);
+                    },
+                  ),
+                ),
+                const Divider(),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.vibration),
+                  title: const Text('Vibración'),
+                  trailing: Switch(
+                    value: _notifVibration,
+                    onChanged: (v) {
+                      setState(() => _notifVibration = v);
+                    },
+                  ),
+                ),
               ],
             ),
           ),
@@ -351,13 +391,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildSectionTitle(String text) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        child: Text(text,
-            style: const TextStyle(
-                fontWeight: FontWeight.w600, color: Colors.grey)),
-      );
-
   Widget _buildCard({required Widget child, EdgeInsets? margin}) => Container(
         margin:
             margin ?? const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
@@ -438,131 +471,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       )),
                   const SizedBox(height: 16),
                   // NOTIFICACIONES
-                  _buildSectionTitle('Notificaciones'),
-                  _buildCard(
-                    child: Column(
-                      children: [
-                        ListTile(
-                          leading:
-                              const Icon(Icons.notifications_active_outlined),
-                          title: const Text('Notificaciones'),
-                          subtitle:
-                              const Text('Controla recordatorios y avisos de la app'),
-                          trailing: Switch(
-                            value: _notifications,
-                            onChanged: (v) => setState(() {
-                              _notifications = v;
-                            }),
-                          ),
-                        ),
-                        // Ajustes de notificaciones
-                        if (_notifications)
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 16, right: 8, bottom: 8),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 8),
-                                Text('Importancia Alta',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                        fontWeight: FontWeight.w600)),
-                                Row(
-                                    children: [
-                                      const Expanded(child: Text('Sonido')),
-                                      Switch(
-                                        value: _notifHighSound,
-                                        onChanged: (v) =>
-                                            setState(() => _notifHighSound = v),
-                                      ),
-                                      const SizedBox(width: 32),
-                                      const Expanded(child: Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: Text('Vibración'),
-                                      )),
-                                      Switch(
-                                        value: _notifHighVibration,
-                                        onChanged: (v) => setState(
-                                            () => _notifHighVibration = v),
-                                      ),
-                                    ],
-                                ),
-                                const Divider(),
-                                Text('Importancia Media',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                        fontWeight: FontWeight.w600)),
-                                Row(
-                                    children: [
-                                      const Expanded(child: Text('Sonido')),
-                                      Switch(
-                                        value: _notifMediumSound,
-                                        onChanged: (v) =>
-                                            setState(() => _notifMediumSound = v),
-                                      ),
-                                      const SizedBox(width: 32),
-                                      const Expanded(child: Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: Text('Vibración'),
-                                      )),
-                                      Switch(
-                                        value: _notifMediumVibration,
-                                        onChanged: (v) => setState(
-                                            () => _notifMediumVibration = v),
-                                      ),
-                                    ],
-                                ),
-                                const Divider(),
-                                Text('Importancia Baja',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                        fontWeight: FontWeight.w600)),
-                                Row(
-                                    children: [
-                                      const Expanded(child: Text('Sonido')),
-                                      Switch(
-                                        value: _notifLowSound,
-                                        onChanged: (v) =>
-                                            setState(() => _notifLowSound = v),
-                                      ),
-                                      const SizedBox(width: 32),
-                                      const Expanded(child: Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: Text('Vibración'),
-                                      )),
-                                      Switch(
-                                        value: _notifLowVibration,
-                                        onChanged: (v) => setState(
-                                            () => _notifLowVibration = v),
-                                      ),
-                                    ],
-                                ),
-                                const Divider(),
-                                Text('Generales de la App',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                        fontWeight: FontWeight.w600)),
-                                Row(
-                                    children: [
-                                      const Expanded(child: Text('Sonido')),
-                                      Switch(
-                                        value: _notifGeneralSound,
-                                        onChanged: (v) => setState(
-                                            () => _notifGeneralSound = v),
-                                      ),
-                                      const SizedBox(width: 32),
-                                      const Expanded(child: Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: Text('Vibración'),
-                                      )),
-                                      Switch(
-                                        value: _notifGeneralVibration,
-                                        onChanged: (v) => setState(
-                                            () => _notifGeneralVibration = v),
-                                      ),
-                                    ],
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: _buildCard(
+                      margin: EdgeInsets.zero,
+                      child: ListTile(
+                        leading: const Icon(Icons.notifications_active_outlined),
+                        title: const Text('Notificaciones'),
+                        subtitle: const Text('Controla recordatorios y avisos de la app'),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: _showNotificationsDialog,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
