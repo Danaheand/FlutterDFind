@@ -136,14 +136,14 @@ class AlertDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detalle de Alerta'),
+        title: const Text('Detalle del Recordatorio'),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
-              // TODO: Abrir editor de alerta
+              // TODO: Abrir editor de Recordatorio
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Editar alerta (proximamente)')),
+                const SnackBar(content: Text('Editar Recordatorio (proximamente)')),
               );
             },
           ),
@@ -395,7 +395,7 @@ class AlertDetailScreen extends StatelessWidget {
                           const SizedBox(width: 6),
                           Consumer<FontSizeProvider>(
                             builder: (context, fontSizeProvider, _) => Text(
-                              'Alerta desactivada',
+                              'Recordatorio desactivado',
                               style: TextStyle(
                                 fontSize: fontSizeProvider.fontSize - 2,
                                 fontWeight: FontWeight.w600,
@@ -453,7 +453,7 @@ class AlertDetailScreen extends StatelessWidget {
                         // Título de la sección
                         Consumer<FontSizeProvider>(
                           builder: (context, fontSizeProvider, _) => Text(
-                            'Detalles de la alerta',
+                            'Detalles del Recordatorio',
                             style: TextStyle(
                               fontSize: fontSizeProvider.fontSize + 2,
                               fontWeight: FontWeight.bold,
@@ -544,13 +544,13 @@ class AlertDetailScreen extends StatelessWidget {
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Alerta desactivada'),
+                            content: Text('Recordatorio desactivado'),
                           ),
                         );
                         Navigator.pop(context);
                       },
                       icon: const Icon(Icons.pause_circle_filled),
-                      label: const Text('Desactivar alerta'),
+                      label: const Text('Desactivar Recordatorio'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isLight
                             ? AppTheme.warningLight
@@ -578,11 +578,11 @@ class AlertDetailScreen extends StatelessWidget {
                                     : AppTheme.errorDark,
                               ),
                               const SizedBox(width: 8),
-                              const Text('Eliminar alerta'),
+                              const Text('Eliminar Recordatorio'),
                             ],
                           ),
                           content: const Text(
-                            '¿Estás seguro de que quieres eliminar esta alerta? Esta acción no se puede deshacer.',
+                            '¿Estás seguro de que quieres eliminar este Recordatorio? Esta acción no se puede deshacer.',
                           ),
                           actions: [
                             TextButton(
@@ -596,7 +596,7 @@ class AlertDetailScreen extends StatelessWidget {
                                     context); // Cierra la pantalla de detalle
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: const Text('Alerta eliminada'),
+                                    content: const Text('Recordatorio eliminado'),
                                     backgroundColor: isLight
                                         ? AppTheme.errorLight
                                         : AppTheme.errorDark,
@@ -617,7 +617,7 @@ class AlertDetailScreen extends StatelessWidget {
                       );
                     },
                     icon: const Icon(Icons.delete_outline),
-                    label: const Text('Eliminar alerta'),
+                    label: const Text('Eliminar Recordatorio'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor:
                           isLight ? AppTheme.errorLight : AppTheme.errorDark,
@@ -847,7 +847,7 @@ class _ImageViewer extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Imagen de la alerta'),
+        title: const Text('Imagen del Recordatorio'),
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
       ),

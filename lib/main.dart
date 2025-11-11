@@ -47,7 +47,7 @@ class _MainScaffoldState extends State<MainScaffold> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.notifications),
-            label: 'Alertas',
+            label: 'Recordatorios',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
@@ -84,7 +84,7 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider<FontSizeProvider>(
       create: (_) => FontSizeProvider(),
       child: MaterialApp(
-        title: 'Inventory Management',
+        title: 'DFind',
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
