@@ -210,9 +210,9 @@ class _AlertsScreenState extends State<AlertsScreen> {
       .toList();
   List<AlertData> get desactivadas => _alerts.where((a) => !a.active).toList();
 
-  void _deactivateAlert(AlertData alert) {
+  void _toggleAlertActive(AlertData alert) {
     setState(() {
-      alert.active = false;
+      alert.active = !alert.active;
     });
   }
 
@@ -353,7 +353,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                     );
                   }
                 },
-                onToggleActive: () => _deactivateAlert(a),
+                onToggleActive: () => _toggleAlertActive(a),
                 onDelete: () {
                   setState(() => _alerts.remove(a));
                 },
