@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/font_size_provider.dart';
-import 'screens/inventory_screen.dart';
-import 'screens/alerts_screen.dart';
-import 'screens/profile_screen.dart';
+import 'screens/pendientes_screen.dart';
+import 'screens/recordatorios_screen.dart';
+import 'screens/perfil_screen.dart';
 import 'screens/login_screen.dart';
-import 'screens/register_screen.dart';
+import 'screens/registro_screen.dart';
 
 
 import 'theme/app_theme.dart';
-import 'repository/local_user_repository.dart';
 import 'services/notification_service.dart';
 
 class MainScaffold extends StatefulWidget {
@@ -73,7 +72,7 @@ void main() async {
     print('Error inicializando notificaciones (probablemente web): $e');
   }
   
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {

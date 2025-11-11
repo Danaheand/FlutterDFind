@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../repository/local_user_repository.dart';
 import '../models/user.dart';
-import 'terms_screen.dart';
-import 'privacy_policy_screen.dart';
+import 'terminos_screen.dart';
+import 'politicas_privacidad_screen.dart';
 
 /// Pantalla principal de registro (mejorada UI/UX).
 class RegisterScreen extends StatefulWidget {

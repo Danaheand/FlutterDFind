@@ -13,7 +13,7 @@ class TipsSection extends StatefulWidget {
 class _TipsSectionState extends State<TipsSection> {
   bool _expandNewItems = false;
   bool _expandTips = true;  // Tips expandidos por defecto
-  List<String> _newItems = [];
+  final List<String> _newItems = [];
 
   @override
   Widget build(BuildContext context) {

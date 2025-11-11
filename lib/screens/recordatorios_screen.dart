@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'alert_detail_screen.dart' as detail;
+import 'recordatorios_detalle_screen.dart' as detail;
 import '../services/notification_service.dart';
 
 // Variable global eliminada, se declara dentro de la clase correspondiente
@@ -1208,12 +1208,12 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
       );
     }
 
-    Future<Uint8List> _loadBytes() => XFile(path).readAsBytes();
+    Future<Uint8List> loadBytes() => XFile(path).readAsBytes();
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: FutureBuilder<Uint8List>(
-        future: _loadBytes(),
+        future: loadBytes(),
         builder: (context, snap) {
           if (snap.connectionState != ConnectionState.done || !snap.hasData) {
             return Container(

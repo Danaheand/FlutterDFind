@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/font_size_provider.dart';
 import '../models/shopping_item.dart';
 import '../theme/app_theme.dart';
-import 'widgets/add_item_modal_v2.dart';
+import 'widgets/modal_pendientes.dart';
 import 'widgets/tips_section.dart';
 // ...existing code...
 
@@ -91,7 +91,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
   void _showAddItemModal() {
     showDialog(
       context: context,
-      builder: (context) => AddItemModalV2(
+      builder: (context) => ModalPendientes(
         onAdd: _addItemManually,
       ),
     );

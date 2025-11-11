@@ -891,9 +891,9 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                             color: Colors.black.withOpacity(0.6),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: Row(
+                          child: const Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: const [
+                            children: [
                               Icon(
                                 Icons.zoom_in,
                                 color: Colors.white,

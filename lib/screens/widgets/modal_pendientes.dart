@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class AddItemModalV2 extends StatefulWidget {
+class ModalPendientes extends StatefulWidget {
   final Function(String name, String placeName, int quantity) onAdd;
 
-  const AddItemModalV2({
+  const ModalPendientes({
     super.key,
     required this.onAdd,
   });
 
   @override
-  State<AddItemModalV2> createState() => _AddItemModalV2State();
+  State<ModalPendientes> createState() => _ModalPendientesState();
 }
 
-class _AddItemModalV2State extends State<AddItemModalV2> {
+class _ModalPendientesState extends State<ModalPendientes> {
   final _nameController = TextEditingController();
   final _quantityController = TextEditingController(text: '1');
   final _customPlaceController = TextEditingController();
