@@ -7,6 +7,7 @@ import 'recordatorios_detalle_screen.dart' as detail;
 import '../services/notification_service.dart';
 
 // Variable global eliminada, se declara dentro de la clase correspondiente
+typedef DeleteAlertCallback = void Function(AlertData alert);
 
 enum AlertPriority { baja, media, alta }
 
@@ -72,6 +73,9 @@ class AlertData {
 
 class AlertsScreen extends StatefulWidget {
   const AlertsScreen({super.key});
+  
+  static DeleteAlertCallback? onAlertDeleted;
+  
   @override
   State<AlertsScreen> createState() => _AlertsScreenState();
 }
@@ -244,6 +248,9 @@ class _AlertsScreenState extends State<AlertsScreen> {
 
   void _deleteSelected() {
     setState(() {
+      for (var a in _alerts.where((a) => selectedAlerts.contains(a.id)).toList()) {
+        AlertsScreen.onAlertDeleted?.call(a);
+      }
       _alerts.removeWhere((a) => selectedAlerts.contains(a.id));
       selectedAlerts.clear();
       selectionMode = false;
@@ -355,7 +362,19 @@ class _AlertsScreenState extends State<AlertsScreen> {
                 },
                 onToggleActive: () => _toggleAlertActive(a),
                 onDelete: () {
-                  setState(() => _alerts.remove(a));
+                  // Enviar a papelera
+                  AlertsScreen.onAlertDeleted?.call(a);
+                  // Eliminar de la lista actual
+                  setState(() {
+                    _alerts.removeWhere((alert) => alert.id == a.id);
+                  });
+                  // Mostrar confirmación
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${a.title} movido a papelera'),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
                 },
                 showCheckbox: showSelection && selectionMode,
                 checked: selectedAlerts.contains(a.id),

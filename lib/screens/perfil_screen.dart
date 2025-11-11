@@ -7,6 +7,7 @@ import 'dart:io';
 
 import '../models/user.dart';
 import '../providers/font_size_provider.dart';
+import 'recordatorios_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -24,6 +25,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _userEmail = 'carlos.r@email.com';
   User? _currentUser;
   String? _profileImagePath;
+  List<Map<String, dynamic>> _deletedAlerts = []; // Papelera de recordatorios
   
   Future<void> _pickProfileImage(ImageSource source) async {
     final picker = ImagePicker();
@@ -35,6 +37,77 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final sp = await SharedPreferences.getInstance();
       await sp.setString('profile_image_path', picked.path);
     }
+  }
+
+  void _showTrashDialog() {
+    // Crear una copia estatica de la papelera para mostrar
+    final trash = List<Map<String, dynamic>>.from(_deletedAlerts);
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Papelera de Reciclaje'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: trash.isEmpty
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.delete_outline, size: 64, color: Colors.grey),
+                    SizedBox(height: 12),
+                    Text('No hay recordatorios eliminados'),
+                  ],
+                )
+              : ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: trash.length,
+                  itemBuilder: (context, index) {
+                    final alert = trash[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        leading: const Icon(Icons.restore_from_trash),
+                        title: Text(alert['title'] ?? 'Sin título'),
+                        subtitle: Text(alert['description'] ?? ''),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete_forever, color: Colors.red),
+                          onPressed: () {
+                            setState(() {
+                              _deletedAlerts.removeAt(index);
+                            });
+                            Navigator.pop(context);
+                            _showTrashDialog();
+                          },
+                        ),
+                        onTap: () {
+                          // Restaurar alerta
+                          setState(() {
+                            _deletedAlerts.removeAt(index);
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${alert['title']} restaurado'),
+                              action: SnackBarAction(
+                                label: 'OK',
+                                onPressed: () {},
+                              ),
+                            ),
+                          );
+                          Navigator.pop(context);
+                        },
+                      ),
+                    );
+                  },
+                ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showAccessibilityDialog() {
@@ -410,6 +483,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     _loadCurrentUser();
     _loadProfileImage();
+    
+    // Registrar el callback para capturar recordatorios eliminados
+    AlertsScreen.onAlertDeleted = (alert) {
+      setState(() {
+        _deletedAlerts.add({
+          'id': alert.id,
+          'title': alert.title,
+          'description': alert.description,
+          'date': alert.date,
+          'priority': alert.priority,
+          'location': alert.location,
+          'object': alert.object,
+          'repetitive': alert.repetitive,
+          'repeatFrequency': alert.repeatFrequency,
+          'active': alert.active,
+          'color': alert.color,
+          'imagePath': alert.imagePath,
+          'selectedWeekdays': alert.selectedWeekdays,
+        });
+      });
+    };
   }
 
   Future<void> _loadCurrentUser() async {
@@ -499,6 +593,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
+                  // PAPELERA DE RECICLAJE
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: _buildCard(
+                      margin: EdgeInsets.zero,
+                      child: ListTile(
+                        leading: const Icon(Icons.delete_outline, color: Colors.orange),
+                        title: const Text('Papelera'),
+                        subtitle: Text('${_deletedAlerts.length} recordatorios eliminados'),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: _showTrashDialog,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // CERRAR SESIÓN
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: ElevatedButton(
