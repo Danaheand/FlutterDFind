@@ -3,8 +3,16 @@ import 'package:provider/provider.dart';
 import '../../providers/font_size_provider.dart';
 import '../../theme/app_theme.dart';
 
-class TipsSection extends StatelessWidget {
+class TipsSection extends StatefulWidget {
   const TipsSection({super.key});
+
+  @override
+  State<TipsSection> createState() => _TipsSectionState();
+}
+
+class _TipsSectionState extends State<TipsSection> {
+  bool _expandNewItems = false;
+  List<String> _newItems = [];
 
   @override
   Widget build(BuildContext context) {
@@ -12,9 +20,9 @@ class TipsSection extends StatelessWidget {
 
     final tips = [
       TipItem(
-        icon: Icons.touch_app,
-        title: 'Marca como comprado',
-        description: 'Toca el checkbox para marcar un artículo como comprado',
+        icon: Icons.add_circle_outline,
+        title: 'Crear un pendiente',
+        description: 'Toca el botón "+" para añadir un nuevo artículo a tu lista',
         color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
       ),
       TipItem(
@@ -144,9 +152,136 @@ class TipsSection extends StatelessWidget {
               children: tips.map((tip) => _buildTipCard(context, tip)).toList(),
             ),
           ),
+
+          // Nueva sección: Items añadidos
+          if (_newItems.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Column(
+                children: [
+                  GestureDetector(
+                    onTap: () => setState(() => _expandNewItems = !_expandNewItems),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isLight ? AppTheme.cardLight : AppTheme.cardDark,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isLight ? AppTheme.dividerLight : AppTheme.dividerDark,
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.new_releases_rounded,
+                                  color: isLight ? AppTheme.successLight : AppTheme.successDark,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Consumer<FontSizeProvider>(
+                                    builder: (context, fontSizeProvider, _) => Text(
+                                      'Nuevos items (${_newItems.length})',
+                                      style: TextStyle(
+                                        fontSize: fontSizeProvider.fontSize,
+                                        fontWeight: FontWeight.bold,
+                                        color: isLight
+                                            ? AppTheme.textPrimaryLight
+                                            : AppTheme.textPrimaryDark,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            _expandNewItems ? Icons.expand_less : Icons.expand_more,
+                            color: AppTheme.getTextSecondary(context),
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (_expandNewItems)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8, bottom: 12),
+                      child: Column(
+                        children: _newItems.map((item) => _buildNewItemCard(context, item)).toList(),
+                      ),
+                    ),
+                ],
+              ),
+            ),
         ],
       ),
     );
+  }
+
+  Widget _buildNewItemCard(BuildContext context, String item) {
+    final bool isLight = Theme.of(context).brightness == Brightness.light;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isLight 
+            ? AppTheme.successLight.withOpacity(0.1)
+            : AppTheme.successDark.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: (isLight ? AppTheme.successLight : AppTheme.successDark).withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: (isLight ? AppTheme.successLight : AppTheme.successDark).withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.check_circle_outline,
+              color: isLight ? AppTheme.successLight : AppTheme.successDark,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Consumer<FontSizeProvider>(
+              builder: (context, fontSizeProvider, _) => Text(
+                item,
+                style: TextStyle(
+                  fontSize: fontSizeProvider.fontSize - 1,
+                  color: isLight
+                      ? AppTheme.textPrimaryLight
+                      : AppTheme.textPrimaryDark,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void addNewItem(String item) {
+    setState(() {
+      _newItems.insert(0, item);
+      if (!_expandNewItems) {
+        _expandNewItems = true;
+      }
+    });
   }
 
   Widget _buildTipCard(BuildContext context, TipItem tip) {
@@ -207,11 +342,6 @@ class TipsSection extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-          Icon(
-            Icons.arrow_forward_ios_rounded,
-            size: 16,
-            color: AppTheme.getTextSecondary(context),
           ),
         ],
       ),
