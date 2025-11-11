@@ -7,7 +7,7 @@ import 'screens/profile_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/properties_screen.dart';
-import 'screens/categories_screen.dart';
+
 import 'theme/app_theme.dart';
 import 'repository/local_user_repository.dart';
 import 'services/notification_service.dart';
@@ -96,7 +96,6 @@ class MyApp extends StatelessWidget {
           '/alerts': (context) => const AlertsScreen(),
           '/profile': (context) => const ProfileScreen(),
           '/properties': (context) => const PropertiesScreen(),
-          '/categories': (context) => const CategoriesScreen(),
         },
       ),
     );

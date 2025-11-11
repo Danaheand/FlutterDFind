@@ -31,6 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _userEmail = 'carlos.r@email.com';
   User? _currentUser;
   String? _profileImagePath;
+  
   Future<void> _pickProfileImage(ImageSource source) async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: source, maxWidth: 1024);
@@ -43,10 +44,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  void _toggleDarkMode(bool v) {
-    setState(() => _darkMode = v);
-    // Cambia el tema localmente (no global)
-    // Si quieres cambiar global, usa Provider o similar
+  void _showAccessibilityDialog() {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context, listen: false);
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Accesibilidad'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.dark_mode_outlined),
+                  title: const Text('Tema Oscuro'),
+                  trailing: Switch(
+                    value: _darkMode,
+                    onChanged: (v) {
+                      this.setState(() => _darkMode = v);
+                      setState(() {});
+                    },
+                  ),
+                ),
+                const Divider(),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.format_size),
+                  title: const Text('Ajustar tamaño de letra'),
+                  trailing: Switch(
+                    value: fontSizeProvider.enabled,
+                    onChanged: (v) {
+                      fontSizeProvider.setEnabled(v);
+                      setState(() {});
+                    },
+                  ),
+                ),
+                if (fontSizeProvider.enabled)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Column(
+                      children: [
+                        const Divider(),
+                        Row(
+                          children: [
+                            const Text('A-', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                            Expanded(
+                              child: Slider(
+                                min: 12.0,
+                                max: 28.0,
+                                divisions: 8,
+                                value: fontSizeProvider.fontSize,
+                                label: '${fontSizeProvider.fontSize.toInt()}',
+                                onChanged: (v) {
+                                  fontSizeProvider.setFontSize(v);
+                                  setState(() {});
+                                },
+                              ),
+                            ),
+                            const Text('A+', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                          ],
+                        ),
+                        Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            'Tamaño actual: ${fontSizeProvider.fontSize.toInt()}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cerrar'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showLogoutConfirm() {
@@ -353,7 +437,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         fontSize: fontSizeProvider.fontSize,
                       )),
                   const SizedBox(height: 16),
-                  _buildSectionTitle('Configuración'),
+                  // NOTIFICACIONES
+                  _buildSectionTitle('Notificaciones'),
                   _buildCard(
                     child: Column(
                       children: [
@@ -370,7 +455,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             }),
                           ),
                         ),
-                        // Ajustes de notificaciones SIEMPRE visibles
+                        // Ajustes de notificaciones
                         if (_notifications)
                           Padding(
                             padding: const EdgeInsets.only(
@@ -477,48 +562,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ],
                             ),
                           ),
-                        const Divider(height: 0),
-                        ListTile(
-                          leading: const Icon(Icons.dark_mode_outlined),
-                          title: const Text('Tema Oscuro'),
-                          trailing: Switch(
-                            value: _darkMode,
-                            onChanged: _toggleDarkMode,
-                          ),
-                        ),
-                        ListTile(
-                          leading: const Icon(Icons.format_size),
-                          title: const Text('Ajustar tamaño de letra'),
-                          trailing: Switch(
-                            value: fontSizeProvider.enabled,
-                            onChanged: (v) {
-                              fontSizeProvider.setEnabled(v);
-                            },
-                          ),
-                        ),
-                        if (fontSizeProvider.enabled)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            child: Row(
-                              children: [
-                                const Text('A-', style: TextStyle(fontWeight: FontWeight.bold)),
-                                Expanded(
-                                  child: Slider(
-                                    min: 12.0,
-                                    max: 28.0,
-                                    divisions: 8,
-                                    value: fontSizeProvider.fontSize,
-                                    label: '${fontSizeProvider.fontSize.toInt()}',
-                                    onChanged: (v) {
-                                      fontSizeProvider.setFontSize(v);
-                                    },
-                                  ),
-                                ),
-                                const Text('A+', style: TextStyle(fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                          ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // ACCESIBILIDAD
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: _buildCard(
+                      margin: EdgeInsets.zero,
+                      child: ListTile(
+                        leading: const Icon(Icons.accessibility),
+                        title: const Text('Accesibilidad'),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: _showAccessibilityDialog,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -544,7 +602,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ],
-        ), // cierre de ListView
+        ),
         if (_showLogoutDialog)
           Positioned.fill(
             child: Container(
