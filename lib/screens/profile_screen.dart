@@ -362,7 +362,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               const Icon(Icons.notifications_active_outlined),
                           title: const Text('Notificaciones'),
                           subtitle:
-                              const Text('Controla alertas y avisos de la app'),
+                              const Text('Controla recordatorios y avisos de la app'),
                           trailing: Switch(
                             value: _notifications,
                             onChanged: (v) => setState(() {
