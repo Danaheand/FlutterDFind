@@ -12,6 +12,7 @@ class TipsSection extends StatefulWidget {
 
 class _TipsSectionState extends State<TipsSection> {
   bool _expandNewItems = false;
+  bool _expandTips = true;  // Tips expandidos por defecto
   List<String> _newItems = [];
 
   @override
@@ -82,83 +83,96 @@ class _TipsSectionState extends State<TipsSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isLight
-                  ? AppTheme.surfaceLight.withOpacity(0.8)
-                  : AppTheme.cardDark.withOpacity(0.5),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
+          // Header - Clickeable para expandir/contraer
+          GestureDetector(
+            onTap: () => setState(() => _expandTips = !_expandTips),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isLight
+                    ? AppTheme.surfaceLight.withOpacity(0.8)
+                    : AppTheme.cardDark.withOpacity(0.5),
+                borderRadius: _expandTips
+                    ? const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      )
+                    : BorderRadius.circular(16),
               ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: isLight
-                        ? AppTheme.primaryLight.withOpacity(0.15)
-                        : AppTheme.primaryDark.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: isLight
+                          ? AppTheme.primaryLight.withOpacity(0.15)
+                          : AppTheme.primaryDark.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.lightbulb_rounded,
+                      color:
+                          isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
+                      size: 28,
+                    ),
                   ),
-                  child: Icon(
-                    Icons.lightbulb_rounded,
-                    color:
-                        isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Consumer<FontSizeProvider>(
-                        builder: (context, fontSizeProvider, _) => Text(
-                          'Tips para el uso',
-                          style: TextStyle(
-                            fontSize: fontSizeProvider.fontSize + 4,
-                            fontWeight: FontWeight.bold,
-                            color: isLight
-                                ? AppTheme.primaryLight
-                                : AppTheme.primaryDark,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Consumer<FontSizeProvider>(
+                          builder: (context, fontSizeProvider, _) => Text(
+                            'Tips para el uso',
+                            style: TextStyle(
+                              fontSize: fontSizeProvider.fontSize + 4,
+                              fontWeight: FontWeight.bold,
+                              color: isLight
+                                  ? AppTheme.primaryLight
+                                  : AppTheme.primaryDark,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Consumer<FontSizeProvider>(
-                        builder: (context, fontSizeProvider, _) => Text(
-                          'Aprovecha al máximo la aplicación',
-                          style: TextStyle(
-                            fontSize: fontSizeProvider.fontSize - 2,
-                            color: AppTheme.getTextSecondary(context),
+                        const SizedBox(height: 2),
+                        Consumer<FontSizeProvider>(
+                          builder: (context, fontSizeProvider, _) => Text(
+                            'Aprovecha al máximo la aplicación',
+                            style: TextStyle(
+                              fontSize: fontSizeProvider.fontSize - 2,
+                              color: AppTheme.getTextSecondary(context),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  Icon(
+                    _expandTips ? Icons.expand_less : Icons.expand_more,
+                    color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
+                    size: 24,
+                  ),
+                ],
+              ),
             ),
           ),
 
-          // Tips List
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              children: tips.map((tip) => _buildTipCard(context, tip)).toList(),
+          // Tips List - Se expande/contrae
+          if (_expandTips)
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                children: tips.map((tip) => _buildTipCard(context, tip)).toList(),
+              ),
             ),
-          ),
 
           // Nueva sección: Items añadidos
           if (_newItems.isNotEmpty)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Column(
                 children: [
+                  const Divider(height: 0),
+                  const SizedBox(height: 8),
                   GestureDetector(
                     onTap: () => setState(() => _expandNewItems = !_expandNewItems),
                     child: Container(
