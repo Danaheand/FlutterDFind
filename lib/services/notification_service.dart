@@ -37,15 +37,22 @@ class NotificationService {
 
   Future<void> _requestPermissions() async {
     try {
-      await Permission.notification.request();
+      // Solicitar permiso de notificaciones
+      final notificationStatus = await Permission.notification.request();
+      print('Permiso de notificaciones: $notificationStatus');
       
       // Para Android 13+
+      if (await Permission.scheduleExactAlarm.isDenied) {
+        final alarmStatus = await Permission.scheduleExactAlarm.request();
+        print('Permiso de alarma exacta: $alarmStatus');
+      }
+      
+      // Para Android 12+
       if (await Permission.scheduleExactAlarm.isDenied) {
         await Permission.scheduleExactAlarm.request();
       }
     } catch (e) {
       print('Error al solicitar permisos: $e');
-      // No hacer throw para permitir que la app continúe en web
     }
   }
 
@@ -179,5 +186,45 @@ class NotificationService {
 
   Future<List<PendingNotificationRequest>> getPendingNotifications() async {
     return await _notifications.pendingNotificationRequests();
+  }
+
+  Future<void> testNotification() async {
+    // Prueba inmediata de notificación (en 3 segundos)
+    try {
+      final now = DateTime.now().add(Duration(seconds: 3));
+      
+      final androidDetails = AndroidNotificationDetails(
+        'test_channel',
+        'Prueba',
+        channelDescription: 'Notificación de prueba',
+        importance: Importance.max,
+        priority: Priority.high,
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
+
+      final notificationDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await _notifications.zonedSchedule(
+        999,
+        'Prueba de Notificación',
+        'Esta es una notificación de prueba en 3 segundos',
+        tz.TZDateTime.from(now, tz.local),
+        notificationDetails,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.dateAndTime,
+      );
+      
+      print('✅ Notificación de prueba programada');
+    } catch (e) {
+      print('❌ Error en notificación de prueba: $e');
+    }
   }
 }

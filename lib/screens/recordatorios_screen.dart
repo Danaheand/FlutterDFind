@@ -1173,14 +1173,26 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                     scheduledDate: result.date,
                   );
                 }
+                
+                // Verificar que la notificación se programó correctamente
+                final pending = await NotificationService().getPendingNotifications();
+                print('✅ Notificación programada exitosamente');
+                print('📌 Total de notificaciones pendientes: ${pending.length}');
+                for (var notif in pending) {
+                  print('   - ID: ${notif.id}, Título: ${notif.title}');
+                }
+                
               } catch (e) {
                 // Si hay error con las notificaciones, mostrar mensaje
                 if (mounted) {
+                  print('❌ Error al programar alarma: $e');
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Error al programar alarma: $e')),
                   );
                 }
               }
+            } else {
+              print('⚠️  La fecha es anterior a ahora, no se programó notificación');
             }
 
             Navigator.pop(context, result);
