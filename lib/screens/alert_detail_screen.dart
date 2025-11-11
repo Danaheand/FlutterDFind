@@ -48,10 +48,23 @@ class AlertData {
   });
 }
 
-class AlertDetailScreen extends StatelessWidget {
+class AlertDetailScreen extends StatefulWidget {
   final AlertData alert;
 
   const AlertDetailScreen({super.key, required this.alert});
+
+  @override
+  State<AlertDetailScreen> createState() => _AlertDetailScreenState();
+}
+
+class _AlertDetailScreenState extends State<AlertDetailScreen> {
+  late AlertData alert;
+
+  @override
+  void initState() {
+    super.initState();
+    alert = widget.alert;
+  }
 
   String _getPriorityText() {
     switch (alert.priority) {
@@ -104,6 +117,142 @@ class AlertDetailScreen extends StatelessWidget {
     return '$hour:$minute';
   }
 
+  void _showEditDialog() {
+    final titleCtrl = TextEditingController(text: alert.title);
+    final descCtrl = TextEditingController(text: alert.description);
+    final locationCtrl = TextEditingController(text: alert.location ?? '');
+    final objectCtrl = TextEditingController(text: alert.object ?? '');
+    
+    DateTime editDate = alert.date;
+    AlertPriority editPriority = alert.priority;
+    Color? editColor = alert.color ?? _defaultColorFor(alert.priority);
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Editar Recordatorio'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  controller: titleCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Título',
+                    prefixIcon: Icon(Icons.title),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: descCtrl,
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                    labelText: 'Descripción',
+                    prefixIcon: Icon(Icons.notes),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: locationCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Lugar (opcional)',
+                    prefixIcon: Icon(Icons.place_outlined),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: objectCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Artículo (opcional)',
+                    prefixIcon: Icon(Icons.inventory_2_outlined),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: editDate,
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) {
+                      setState(() => editDate = picked);
+                    }
+                  },
+                  child: InputDecorator(
+                    decoration: const InputDecoration(
+                      labelText: 'Fecha',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    child: Text(
+                      '${editDate.day.toString().padLeft(2, '0')}/${editDate.month.toString().padLeft(2, '0')}/${editDate.year}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<AlertPriority>(
+                  value: editPriority,
+                  decoration: const InputDecoration(
+                    labelText: 'Prioridad',
+                    prefixIcon: Icon(Icons.priority_high_rounded),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: AlertPriority.baja, child: Text('Baja')),
+                    DropdownMenuItem(value: AlertPriority.media, child: Text('Media')),
+                    DropdownMenuItem(value: AlertPriority.alta, child: Text('Alta')),
+                  ],
+                  onChanged: (val) {
+                    setState(() {
+                      editPriority = val!;
+                      editColor = _defaultColorFor(editPriority);
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                setState(() {
+                  alert = AlertData(
+                    id: alert.id,
+                    title: titleCtrl.text.trim(),
+                    description: descCtrl.text.trim(),
+                    date: editDate,
+                    priority: editPriority,
+                    location: locationCtrl.text.trim().isEmpty ? null : locationCtrl.text.trim(),
+                    object: objectCtrl.text.trim().isEmpty ? null : objectCtrl.text.trim(),
+                    repetitive: alert.repetitive,
+                    repeatFrequency: alert.repeatFrequency,
+                    active: alert.active,
+                    color: editColor,
+                    imagePath: alert.imagePath,
+                  );
+                });
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Recordatorio actualizado')),
+                );
+              },
+              icon: const Icon(Icons.save),
+              label: const Text('Guardar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   String _formatTimeRemaining(DateTime date) {
     final now = DateTime.now();
     final difference = date.difference(now);
@@ -141,10 +290,7 @@ class AlertDetailScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
-              // TODO: Abrir editor de Recordatorio
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Editar Recordatorio (proximamente)')),
-              );
+              _showEditDialog();
             },
           ),
         ],
