@@ -6,7 +6,7 @@ import 'screens/alerts_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
-import 'screens/properties_screen.dart';
+
 
 import 'theme/app_theme.dart';
 import 'repository/local_user_repository.dart';
@@ -95,7 +95,6 @@ class MyApp extends StatelessWidget {
           '/register': (context) => const RegisterScreen(),
           '/alerts': (context) => const AlertsScreen(),
           '/profile': (context) => const ProfileScreen(),
-          '/properties': (context) => const PropertiesScreen(),
         },
       ),
     );
