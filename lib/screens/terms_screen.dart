@@ -31,7 +31,7 @@ class TermsScreen extends StatelessWidget {
             ),
             _buildSection(
               'Uso de la Aplicación',
-              'La aplicación está diseñada para ayudarte a gestionar inventarios y recordatorios. Te comprometes a usar la aplicación solo para fines legítimos y de acuerdo con todas las leyes y regulaciones aplicables.',
+              'La aplicación está diseñada para ayudarte a gestionar los recordatorios. Te comprometes a usar la aplicación solo para fines legítimos y de acuerdo con todas las leyes y regulaciones aplicables.',
             ),
             _buildSection(
               'Privacidad',
@@ -49,7 +49,7 @@ class TermsScreen extends StatelessWidget {
             Align(
               alignment: Alignment.center,
               child: Text(
-                'Última actualización: 6 de noviembre de 2025',
+                'Última actualización: 11 de noviembre de 2025',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Colors.grey,
                     ),
