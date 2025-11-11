@@ -543,9 +543,9 @@ class _AlertCard extends StatelessWidget {
                             Text(
                               dateText,
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 14,
                                 color: Colors.grey.shade600,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
