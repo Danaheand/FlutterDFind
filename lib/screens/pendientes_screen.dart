@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 import '../providers/font_size_provider.dart';
 import '../models/shopping_item.dart';
 import '../theme/app_theme.dart';
+import '../services/trash_service.dart';
 import 'widgets/modal_pendientes.dart';
 import 'widgets/tips_section.dart';
-// ...existing code...
 
 typedef AddToShoppingList = void Function(String name);
 
@@ -21,11 +21,18 @@ class InventoryScreen extends StatefulWidget {
 class _InventoryScreenState extends State<InventoryScreen> {
   final List<ShoppingItem> _items = [];
   final Map<String, bool> _expandedPlaces = {};
+  late final TrashService _trashService;
 
   @override
   void initState() {
     super.initState();
     InventoryScreen.addFromAlertGlobal = addFromAlert;
+    _trashService = TrashService.getInstance();
+    _initializeTrash();
+  }
+
+  Future<void> _initializeTrash() async {
+    await _trashService.loadTrashItems();
   }
 
   @override
@@ -82,10 +89,39 @@ class _InventoryScreenState extends State<InventoryScreen> {
     }
   }
 
-  void _removeItem(ShoppingItem item) {
+  void _removeItem(ShoppingItem item) async {
+    // Mover a papelera en lugar de eliminar
+    await _trashService.addShoppingItemToTrash(item);
+    
     setState(() {
       _items.remove(item);
     });
+
+    // Mostrar confirmación con opción de deshacer
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${item.name} movido a papelera'),
+          duration: const Duration(seconds: 3),
+          action: SnackBarAction(
+            label: 'Deshacer',
+            onPressed: () async {
+              try {
+                final restoredItem = await _trashService.restoreItem(item.id);
+                if (mounted) {
+                  setState(() {
+                    _items.add(_trashService.trashItemToShoppingItem(restoredItem));
+                  });
+                }
+              } catch (e) {
+                // Si no se puede restaurar, no hacer nada
+                print('Error restaurando item: $e');
+              }
+            },
+          ),
+        ),
+      );
+    }
   }
 
   void _showAddItemModal() {
