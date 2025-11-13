@@ -1,11 +1,26 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import '../providers/font_size_provider.dart';
-import '../theme/app_theme.dart';
 
 enum AlertPriority { baja, media, alta }
+
+class WeekDay {
+  final String label;
+  final String fullName;
+  final int value;
+
+  WeekDay(this.label, this.fullName, this.value);
+}
+
+final List<WeekDay> weekDays = [
+  WeekDay('L', 'Lunes', 1),
+  WeekDay('M', 'Martes', 2),
+  WeekDay('X', 'Miércoles', 3),
+  WeekDay('J', 'Jueves', 4),
+  WeekDay('V', 'Viernes', 5),
+  WeekDay('S', 'Sábado', 6),
+  WeekDay('D', 'Domingo', 7),
+];
 
 Color _defaultColorFor(AlertPriority p) {
   switch (p) {
@@ -31,6 +46,7 @@ class AlertData {
   bool active;
   Color? color;
   String? imagePath;
+  List<int>? selectedWeekdays;
 
   AlertData({
     required this.id,
@@ -45,6 +61,7 @@ class AlertData {
     this.active = true,
     this.color,
     this.imagePath,
+    this.selectedWeekdays,
   });
 }
 
@@ -77,38 +94,9 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
     }
   }
 
-  IconData _getPriorityIcon() {
-    switch (alert.priority) {
-      case AlertPriority.alta:
-        return Icons.warning_amber_rounded;
-      case AlertPriority.media:
-        return Icons.notifications_active_rounded;
-      case AlertPriority.baja:
-        return Icons.check_circle_rounded;
-    }
-  }
-
   Color get _color {
     if (!alert.active) return Colors.grey.shade400;
     return alert.color ?? _defaultColorFor(alert.priority);
-  }
-
-  String _formatDate(DateTime date) {
-    final months = [
-      'Enero',
-      'Febrero',
-      'Marzo',
-      'Abril',
-      'Mayo',
-      'Junio',
-      'Julio',
-      'Agosto',
-      'Septiembre',
-      'Octubre',
-      'Noviembre',
-      'Diciembre'
-    ];
-    return '${date.day} de ${months[date.month - 1]} ${date.year}';
   }
 
   String _formatTime(DateTime date) {
@@ -118,159 +106,8 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
   }
 
   void _showEditDialog() {
-    final titleCtrl = TextEditingController(text: alert.title);
-    final descCtrl = TextEditingController(text: alert.description);
-    final locationCtrl = TextEditingController(text: alert.location ?? '');
-    final objectCtrl = TextEditingController(text: alert.object ?? '');
-
-    DateTime editDate = alert.date;
-    AlertPriority editPriority = alert.priority;
-    Color? editColor = alert.color ?? _defaultColorFor(alert.priority);
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Editar Recordatorio'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                TextField(
-                  controller: titleCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                    prefixIcon: Icon(Icons.title),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: descCtrl,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'Descripción',
-                    prefixIcon: Icon(Icons.notes),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: locationCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Lugar (opcional)',
-                    prefixIcon: Icon(Icons.place_outlined),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: objectCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Artículo (opcional)',
-                    prefixIcon: Icon(Icons.inventory_2_outlined),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: editDate,
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime(2100),
-                    );
-                    if (picked != null) {
-                      setState(() => editDate = picked);
-                    }
-                  },
-                  child: InputDecorator(
-                    decoration: const InputDecoration(
-                      labelText: 'Fecha',
-                      border: OutlineInputBorder(),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    ),
-                    child: Text(
-                      '${editDate.day.toString().padLeft(2, '0')}/${editDate.month.toString().padLeft(2, '0')}/${editDate.year}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<AlertPriority>(
-                  // initialValue: editPriority,
-                  decoration: const InputDecoration(
-                    labelText: 'Prioridad',
-                    prefixIcon: Icon(Icons.priority_high_rounded),
-                  ),
-                  items: const [
-                    DropdownMenuItem(
-                        value: AlertPriority.baja, child: Text('Baja')),
-                    DropdownMenuItem(
-                        value: AlertPriority.media, child: Text('Media')),
-                    DropdownMenuItem(
-                        value: AlertPriority.alta, child: Text('Alta')),
-                  ],
-                  onChanged: (val) {
-                    setState(() {
-                      editPriority = val!;
-                      editColor = _defaultColorFor(editPriority);
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: const Text(
-                    'Cancelar',
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            ElevatedButton.icon(
-              onPressed: () {
-                setState(() {
-                  alert = AlertData(
-                    id: alert.id,
-                    title: titleCtrl.text.trim(),
-                    description: descCtrl.text.trim(),
-                    date: editDate,
-                    priority: editPriority,
-                    location: locationCtrl.text.trim().isEmpty
-                        ? null
-                        : locationCtrl.text.trim(),
-                    object: objectCtrl.text.trim().isEmpty
-                        ? null
-                        : objectCtrl.text.trim(),
-                    repetitive: alert.repetitive,
-                    repeatFrequency: alert.repeatFrequency,
-                    active: alert.active,
-                    color: editColor,
-                    imagePath: alert.imagePath,
-                  );
-                });
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Recordatorio actualizado')),
-                );
-              },
-              icon: const Icon(Icons.save),
-              label: const Text('Guardar'),
-            ),
-          ],
-        ),
-      ),
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Función de editar en desarrollo')),
     );
   }
 
@@ -290,665 +127,353 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
     }
 
     if (difference.inDays > 0) {
-      return 'En ${difference.inDays} día${difference.inDays > 1 ? 's' : ''} y ${difference.inHours % 24} hora${difference.inHours % 24 != 1 ? 's' : ''}';
+      final hours = difference.inHours % 24;
+      return '${difference.inDays} día${difference.inDays > 1 ? 's' : ''} y $hours hora${hours != 1 ? 's' : ''}';
     } else if (difference.inHours > 0) {
-      return 'En ${difference.inHours} hora${difference.inHours > 1 ? 's' : ''}';
+      return '${difference.inHours} hora${difference.inHours > 1 ? 's' : ''}';
     } else {
-      return 'En ${difference.inMinutes} minuto${difference.inMinutes > 1 ? 's' : ''}';
+      return '${difference.inMinutes} minuto${difference.inMinutes > 1 ? 's' : ''}';
     }
+  }
+
+  String _getMonthName(int month) {
+    const months = [
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre'
+    ];
+    return months[month - 1];
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isLight = Theme.of(context).brightness == Brightness.light;
     final now = DateTime.now();
     final isPast = alert.date.isBefore(now);
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text('Detalle del Recordatorio'),
+        centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              _showEditDialog();
-            },
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: _showEditDialog,
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Header con color de prioridad
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    _color,
-                    _color.withOpacity(0.8),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: _color.withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.25),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
-                            width: 2,
-                          ),
-                        ),
-                        child: Icon(
-                          _getPriorityIcon(),
-                          color: Colors.white,
-                          size: 36,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Consumer<FontSizeProvider>(
-                              builder: (context, fontSizeProvider, _) => Text(
-                                alert.title,
-                                style: TextStyle(
-                                  fontSize: fontSizeProvider.fontSize + 6,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  height: 1.2,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      offset: const Offset(0, 2),
-                                      blurRadius: 4,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.25),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    _getPriorityIcon(),
-                                    color: Colors.white,
-                                    size: 14,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'Prioridad ${_getPriorityText()}',
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            // Tiempo restante o vencido
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isPast
-                      ? (isLight
-                          ? [
-                              AppTheme.errorLight.withOpacity(0.1),
-                              AppTheme.errorLight.withOpacity(0.05),
-                            ]
-                          : [
-                              AppTheme.errorDark.withOpacity(0.15),
-                              AppTheme.errorDark.withOpacity(0.1),
-                            ])
-                      : (isLight
-                          ? [
-                              AppTheme.primaryLight.withOpacity(0.1),
-                              AppTheme.secondaryLight.withOpacity(0.1),
-                            ]
-                          : [
-                              AppTheme.primaryDark.withOpacity(0.15),
-                              AppTheme.secondaryDark.withOpacity(0.15),
-                            ]),
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isPast
-                      ? (isLight
-                          ? AppTheme.errorLight.withOpacity(0.4)
-                          : AppTheme.errorDark.withOpacity(0.4))
-                      : (isLight
-                          ? AppTheme.primaryLight.withOpacity(0.4)
-                          : AppTheme.primaryDark.withOpacity(0.4)),
-                  width: 2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: (isPast
-                            ? (isLight
-                                ? AppTheme.errorLight
-                                : AppTheme.errorDark)
-                            : (isLight
-                                ? AppTheme.primaryLight
-                                : AppTheme.primaryDark))
-                        .withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: isPast
-                              ? (isLight
-                                  ? AppTheme.errorLight.withOpacity(0.15)
-                                  : AppTheme.errorDark.withOpacity(0.2))
-                              : (isLight
-                                  ? AppTheme.primaryLight.withOpacity(0.15)
-                                  : AppTheme.primaryDark.withOpacity(0.2)),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          isPast ? Icons.event_busy : Icons.access_time_rounded,
-                          color: isPast
-                              ? (isLight
-                                  ? AppTheme.errorLight
-                                  : AppTheme.errorDark)
-                              : (isLight
-                                  ? AppTheme.primaryLight
-                                  : AppTheme.primaryDark),
-                          size: 28,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Consumer<FontSizeProvider>(
-                          builder: (context, fontSizeProvider, _) => Text(
-                            isPast
-                                ? _formatTimeRemaining(alert.date)
-                                : _formatTimeRemaining(alert.date),
-                            style: TextStyle(
-                              fontSize: fontSizeProvider.fontSize + 3,
-                              fontWeight: FontWeight.bold,
-                              color: isPast
-                                  ? (isLight
-                                      ? AppTheme.errorLight
-                                      : AppTheme.errorDark)
-                                  : (isLight
-                                      ? AppTheme.primaryLight
-                                      : AppTheme.primaryDark),
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (!alert.active) ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isLight
-                            ? Colors.grey.shade200
-                            : Colors.grey.shade800,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.pause_circle_filled,
-                            size: 16,
-                            color: isLight
-                                ? Colors.grey.shade700
-                                : Colors.grey.shade400,
-                          ),
-                          const SizedBox(width: 6),
-                          Consumer<FontSizeProvider>(
-                            builder: (context, fontSizeProvider, _) => Text(
-                              'Recordatorio desactivado',
-                              style: TextStyle(
-                                fontSize: fontSizeProvider.fontSize - 2,
-                                fontWeight: FontWeight.w600,
-                                color: isLight
-                                    ? Colors.grey.shade700
-                                    : Colors.grey.shade400,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-
-            // Información principal
-            Padding(
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Imagen (si existe)
-                  if (alert.imagePath != null &&
-                      alert.imagePath!.isNotEmpty) ...[
-                    _buildImageCard(context),
-                    const SizedBox(height: 24),
-                  ],
-
-                  // Contenedor compacto con toda la información
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: isLight ? AppTheme.cardLight : AppTheme.cardDark,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isLight
-                            ? AppTheme.dividerLight
-                            : AppTheme.dividerDark,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: isLight
-                              ? Colors.black.withOpacity(0.05)
-                              : Colors.black.withOpacity(0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Título de la sección
-                        Consumer<FontSizeProvider>(
-                          builder: (context, fontSizeProvider, _) => Text(
-                            'Detalles del Recordatorio',
-                            style: TextStyle(
-                              fontSize: fontSizeProvider.fontSize + 2,
-                              fontWeight: FontWeight.bold,
-                              color: isLight
-                                  ? AppTheme.textPrimaryLight
-                                  : AppTheme.textPrimaryDark,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Fecha y hora
-                        _buildCompactInfoRow(
+                  // Imagen o ícono
+                  if (alert.imagePath != null && alert.imagePath!.isNotEmpty)
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
                           context,
-                          icon: Icons.event_rounded,
-                          label: 'Fecha',
-                          value: _formatDate(alert.date),
-                        ),
-                        const SizedBox(height: 12),
-
-                        _buildCompactInfoRow(
-                          context,
-                          icon: Icons.access_time_rounded,
-                          label: 'Hora',
-                          value: _formatTime(alert.date),
-                        ),
-
-                        // Descripción
-                        if (alert.description.isNotEmpty) ...[
-                          const SizedBox(height: 12),
-                          _buildCompactInfoRow(
-                            context,
-                            icon: Icons.notes_rounded,
-                            label: 'Descripción',
-                            value: alert.description,
-                            multiline: true,
-                          ),
-                        ],
-
-                        // Artículo
-                        if (alert.object != null &&
-                            alert.object!.isNotEmpty) ...[
-                          const SizedBox(height: 12),
-                          _buildCompactInfoRow(
-                            context,
-                            icon: Icons.inventory_2_rounded,
-                            label: 'Artículo',
-                            value: alert.object!,
-                          ),
-                        ],
-
-                        // Ubicación
-                        if (alert.location != null &&
-                            alert.location!.isNotEmpty) ...[
-                          const SizedBox(height: 12),
-                          _buildCompactInfoRow(
-                            context,
-                            icon: Icons.location_on_rounded,
-                            label: 'Ubicación',
-                            value: alert.location!,
-                          ),
-                        ],
-
-                        // Repetitiva
-                        if (alert.repetitive) ...[
-                          const SizedBox(height: 12),
-                          _buildCompactInfoRow(
-                            context,
-                            icon: Icons.repeat_rounded,
-                            label: 'Repetición',
-                            value: alert.repeatFrequency ?? 'Sin especificar',
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Botones de acción
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  if (alert.active && !isPast)
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Recordatorio desactivado'),
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                _ImageViewer(path: alert.imagePath!),
                           ),
                         );
-                        Navigator.pop(context);
                       },
-                      icon: const Icon(Icons.pause_circle_filled),
-                      label: const Text('Desactivar Recordatorio'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isLight
-                            ? AppTheme.warningLight
-                            : AppTheme.warningDark,
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size(double.infinity, 52),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 2,
-                      ),
-                    ),
-                  if (alert.active && !isPast) const SizedBox(height: 12),
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Row(
-                            children: [
-                              Icon(
-                                Icons.warning_rounded,
-                                color: isLight
-                                    ? AppTheme.errorLight
-                                    : AppTheme.errorDark,
-                              ),
-                              const SizedBox(width: 8),
-                              const Text('Eliminar Recordatorio'),
-                            ],
-                          ),
-                          content: const Text(
-                            '¿Estás seguro de que quieres eliminar este Recordatorio? Esta acción no se puede deshacer.',
-                          ),
-                          actions: [
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () => Navigator.pop(context),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 12),
-                                  child: const Text(
-                                    'Cancelar',
-                                    style: TextStyle(
-                                      color: Colors.blue,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.pop(context); // Cierra el diálogo
-                                Navigator.pop(
-                                    context); // Cierra la pantalla de detalle
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content:
-                                        const Text('Recordatorio eliminado'),
-                                    backgroundColor: isLight
-                                        ? AppTheme.errorLight
-                                        : AppTheme.errorDark,
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.delete),
-                              label: const Text('Eliminar'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: isLight
-                                    ? AppTheme.errorLight
-                                    : AppTheme.errorDark,
-                                foregroundColor: Colors.white,
-                              ),
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
-                      );
-                    },
-                    icon: const Icon(Icons.delete_outline),
-                    label: const Text('Eliminar Recordatorio'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor:
-                          isLight ? AppTheme.errorLight : AppTheme.errorDark,
-                      side: BorderSide(
-                        color:
-                            isLight ? AppTheme.errorLight : AppTheme.errorDark,
-                        width: 2,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: FutureBuilder<Uint8List>(
+                            future: XFile(alert.imagePath!).readAsBytes(),
+                            builder: (context, snap) {
+                              if (snap.connectionState !=
+                                      ConnectionState.done ||
+                                  !snap.hasData) {
+                                return Container(
+                                  color: Colors.grey.shade200,
+                                  child: const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                );
+                              }
+                              return Image.memory(
+                                snap.data!,
+                                fit: BoxFit.cover,
+                              );
+                            },
+                          ),
+                        ),
                       ),
-                      minimumSize: const Size(double.infinity, 52),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                    ),
+                  if (alert.imagePath != null && alert.imagePath!.isNotEmpty)
+                    const SizedBox(height: 20),
+                  Text(
+                    alert.title,
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: _color.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'Prioridad ${_getPriorityText()}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: _color,
                       ),
                     ),
                   ),
+                  const SizedBox(height: 30),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          isPast ? 'VENCIÓ' : 'VENCE EN',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade600,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _formatTimeRemaining(alert.date),
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          '${alert.date.day} de ${_getMonthName(alert.date.month)} ${alert.date.year}, ${_formatTime(alert.date)}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  // Línea divisora
+                  Divider(
+                    color: Colors.grey.shade300,
+                    thickness: 1,
+                    height: 40,
+                  ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'DETALLES',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.grey.shade600,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _SimpleDetailItem(
+                    icon: Icons.description_outlined,
+                    label: 'Descripción',
+                    value: alert.description.isNotEmpty
+                        ? alert.description
+                        : 'Sin descripción',
+                  ),
+                  const SizedBox(height: 20),
+                  _SimpleDetailItem(
+                    icon: Icons.inventory_2_outlined,
+                    label: 'Artículo',
+                    value: alert.object ?? 'Sin especificar',
+                  ),
+                  const SizedBox(height: 20),
+                  _SimpleDetailItem(
+                    icon: Icons.location_on_outlined,
+                    label: 'Ubicación',
+                    value: alert.location ?? 'Sin especificar',
+                  ),
+                  const SizedBox(height: 20),
+                  if (alert.repetitive && alert.selectedWeekdays != null) ...[
+                    _SimpleRepetitionDetail(
+                        selectedWeekdays: alert.selectedWeekdays!),
+                  ],
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildImageCard(BuildContext context) {
-    final bool isLight = Theme.of(context).brightness == Brightness.light;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: isLight ? AppTheme.cardLight : AppTheme.cardDark,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isLight ? AppTheme.dividerLight : AppTheme.dividerDark,
-          width: 2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: _color.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header de la imagen
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: _color.withOpacity(0.1),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.image,
-                  color: _color,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Consumer<FontSizeProvider>(
-                  builder: (context, fontSizeProvider, _) => Text(
-                    'Imagen adjunta',
-                    style: TextStyle(
-                      fontSize: fontSizeProvider.fontSize,
-                      fontWeight: FontWeight.w600,
-                      color: _color,
-                    ),
-                  ),
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -2),
                 ),
               ],
             ),
-          ),
-          // Imagen
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => _ImageViewer(path: alert.imagePath!),
-                ),
-              );
-            },
-            child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(16),
-                bottomRight: Radius.circular(16),
-              ),
-              child: FutureBuilder<Uint8List>(
-                future: XFile(alert.imagePath!).readAsBytes(),
-                builder: (context, snap) {
-                  if (snap.connectionState != ConnectionState.done ||
-                      !snap.hasData) {
-                    return Container(
-                      height: 200,
-                      color:
-                          isLight ? Colors.grey.shade200 : Colors.grey.shade800,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: _color,
+            child: SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Botón Completar - Ancho completo
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Marcado como completado')),
+                      );
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                    icon: const Icon(Icons.check_circle_outline, size: 22),
+                    label: const Text('Completar',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600)),
+                  ),
+                  const SizedBox(height: 10),
+                  // Fila con Desactivar y Eliminar
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              alert.active = !alert.active;
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(alert.active
+                                      ? 'Activado'
+                                      : 'Desactivado')),
+                            );
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.grey.shade700,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            side: BorderSide(
+                                color: Colors.grey.shade300, width: 1.5),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                          icon: Icon(
+                            alert.active
+                                ? Icons.pause_circle_outline
+                                : Icons.play_circle_outline,
+                            size: 20,
+                          ),
+                          label: Text(
+                            alert.active ? 'Desactivar' : 'Activar',
+                            style: const TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w600),
+                          ),
                         ),
                       ),
-                    );
-                  }
-                  return Stack(
-                    children: [
-                      Image.memory(
-                        snap.data!,
-                        width: double.infinity,
-                        height: 200,
-                        fit: BoxFit.cover,
-                      ),
-                      Positioned(
-                        bottom: 8,
-                        right: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.6),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.zoom_in,
-                                color: Colors.white,
-                                size: 16,
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextButton.icon(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Eliminar'),
+                                content: const Text(
+                                    '¿Estás seguro de que deseas eliminar este recordatorio?'),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text('Cancelar')),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      Navigator.pop(context);
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content:
+                                                Text('Recordatorio eliminado')),
+                                      );
+                                    },
+                                    child: const Text('Eliminar',
+                                        style: TextStyle(color: Colors.red)),
+                                  ),
+                                ],
                               ),
-                              SizedBox(width: 4),
-                              Text(
-                                'Toca para ampliar',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
+                            );
+                          },
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.red,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            backgroundColor: Colors.red.shade50,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
                           ),
+                          icon: const Icon(Icons.delete_outline, size: 20),
+                          label: const Text('Eliminar',
+                              style: TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.w600)),
                         ),
                       ),
                     ],
-                  );
-                },
+                  ),
+                ],
               ),
             ),
           ),
@@ -956,60 +481,43 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
       ),
     );
   }
+}
 
-  Widget _buildCompactInfoRow(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required String value,
-    bool multiline = false,
-  }) {
-    final bool isLight = Theme.of(context).brightness == Brightness.light;
+// Widget para mostrar un item de detalle (solo texto, sin tarjeta)
+class _SimpleDetailItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
 
+  const _SimpleDetailItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment:
-          multiline ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: _color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            icon,
-            color: _color,
-            size: 20,
-          ),
-        ),
-        const SizedBox(width: 12),
+        Icon(icon, size: 22, color: Colors.grey.shade600),
+        const SizedBox(width: 14),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Consumer<FontSizeProvider>(
-                builder: (context, fontSizeProvider, _) => Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: fontSizeProvider.fontSize - 2,
-                    color: AppTheme.getTextSecondary(context),
-                    fontWeight: FontWeight.w600,
-                  ),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
                 ),
               ),
-              const SizedBox(height: 2),
-              Consumer<FontSizeProvider>(
-                builder: (context, fontSizeProvider, _) => Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: fontSizeProvider.fontSize + 1,
-                    fontWeight: FontWeight.w600,
-                    color: isLight
-                        ? AppTheme.textPrimaryLight
-                        : AppTheme.textPrimaryDark,
-                    height: 1.3,
-                  ),
-                ),
+              const SizedBox(height: 6),
+              Text(
+                value,
+                style: const TextStyle(fontSize: 16, color: Colors.black87),
               ),
             ],
           ),
@@ -1019,6 +527,70 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
   }
 }
 
+// Widget para mostrar repetición (sin tarjeta, estilo simple)
+class _SimpleRepetitionDetail extends StatelessWidget {
+  final List<int> selectedWeekdays;
+
+  const _SimpleRepetitionDetail({required this.selectedWeekdays});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(Icons.repeat_rounded, size: 22, color: Colors.grey.shade600),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Repetición',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: weekDays.map((day) {
+                  final isSelected = selectedWeekdays.contains(day.value);
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.blue : Colors.grey.shade200,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          day.label,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: isSelected
+                                ? Colors.white
+                                : Colors.grey.shade600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Widget para visualizar la imagen en pantalla completa
 class _ImageViewer extends StatelessWidget {
   const _ImageViewer({required this.path});
   final String path;
@@ -1037,9 +609,7 @@ class _ImageViewer extends StatelessWidget {
           future: XFile(path).readAsBytes(),
           builder: (context, snap) {
             if (snap.connectionState != ConnectionState.done || !snap.hasData) {
-              return const CircularProgressIndicator(
-                color: Colors.white,
-              );
+              return const CircularProgressIndicator(color: Colors.white);
             }
             return InteractiveViewer(
               minScale: 0.5,

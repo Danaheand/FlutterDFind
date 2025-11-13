@@ -392,7 +392,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false, // <- quita la flecha de retroceso
-        title: const Text('Alertas'),
+        title: const Text('Recordatorios'),
         actions: [
           if (tabIndex == 1 && pasadas.isNotEmpty)
             IconButton(
@@ -478,18 +478,6 @@ class _AlertCard extends StatelessWidget {
     return alert.color ?? _defaultColorFor(alert.priority);
   }
 
-  IconData get _icon {
-    if (!alert.active) return Icons.pause_circle_filled_rounded;
-    switch (alert.priority) {
-      case AlertPriority.alta:
-        return Icons.warning_amber_rounded;
-      case AlertPriority.media:
-        return Icons.notifications_active_rounded;
-      case AlertPriority.baja:
-        return Icons.check_circle_rounded;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final dateText = _dateLabel(alert.date);
@@ -497,220 +485,190 @@ class _AlertCard extends StatelessWidget {
     final isPasada = alert.date.isBefore(DateTime.now());
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      elevation: 2,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: _color.withOpacity(0.3), width: 1.5),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  width: 6,
-                  decoration: BoxDecoration(
-                    color: _color,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      bottomLeft: Radius.circular(16),
-                    ),
-                  ),
-                ),
-              ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                _color.withOpacity(0.05),
+                _color.withOpacity(0.02),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  if (showCheckbox)
-                    Checkbox(
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                if (showCheckbox)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: Checkbox(
                       value: checked,
                       onChanged: (_) => onTap(),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
                     ),
-                  if (showCheckbox) const SizedBox(width: 8),
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: (_color.withOpacity(0.15)),
-                    child: Icon(_icon, color: _color),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Título grande y prominente
+                      Text(
+                        alert.title,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: alert.active ? Colors.black87 : Colors.black38,
+                          letterSpacing: -0.5,
+                          height: 1.2,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 16),
+                      // Fecha con icono
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: _color.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              Icons.calendar_today_rounded,
+                              color: _color,
+                              size: 18,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            dateText,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade700,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Objeto (si existe)
+                      if (alert.object?.isNotEmpty ?? false) ...[
+                        const SizedBox(height: 12),
                         Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: _color.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.inventory_2_outlined,
+                                color: _color,
+                                size: 18,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                alert.title,
+                                alert.object!,
                                 style: TextStyle(
                                   fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: alert.active
-                                      ? Colors.black87
-                                      : Colors.black38,
+                                  color: Colors.grey.shade700,
+                                  fontWeight: FontWeight.w500,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              dateText,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade600,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
                           ],
                         ),
-                        if (alert.description.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            alert.description,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey.shade700,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                        if ((alert.object?.isNotEmpty ?? false) ||
-                            (alert.location?.isNotEmpty ?? false)) ...[
-                          const SizedBox(height: 6),
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: 6,
-                            children: [
-                              if (alert.object?.isNotEmpty ?? false)
-                                Chip(
-                                  label: Text('Artículo: ${alert.object}'),
-                                  visualDensity: VisualDensity.compact,
-                                  side: BorderSide(
-                                      color: _color.withOpacity(0.4)),
-                                ),
-                              if (alert.location?.isNotEmpty ?? false)
-                                Chip(
-                                  label: Text('Lugar: ${alert.location}'),
-                                  visualDensity: VisualDensity.compact,
-                                  side: BorderSide(
-                                      color: _color.withOpacity(0.4)),
-                                ),
-                            ],
-                          ),
-                        ],
                       ],
-                    ),
+                    ],
                   ),
-                  if (alert.imagePath != null &&
-                      alert.imagePath!.isNotEmpty) ...[
-                    const SizedBox(width: 10),
-                    _MiniThumb(path: alert.imagePath!),
-                  ],
-                  const SizedBox(width: 6),
-                  PopupMenuButton<String>(
-                    onSelected: (v) {
-                      if (isPasada) {
-                        if (v == 'delete') onDelete();
-                      } else {
-                        switch (v) {
-                          case 'toggle':
-                            onToggleActive();
-                            break;
-                          case 'delete':
-                            onDelete();
-                            break;
-                        }
+                ),
+                const SizedBox(width: 12),
+                // Menú de opciones
+                PopupMenuButton<String>(
+                  icon: Icon(
+                    Icons.more_vert_rounded,
+                    color: Colors.grey.shade600,
+                    size: 24,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  onSelected: (v) {
+                    if (isPasada) {
+                      if (v == 'delete') onDelete();
+                    } else {
+                      switch (v) {
+                        case 'toggle':
+                          onToggleActive();
+                          break;
+                        case 'delete':
+                          onDelete();
+                          break;
                       }
-                    },
-                    itemBuilder: (ctx) => isPasada
-                        ? [
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Text('Eliminar'),
+                    }
+                  },
+                  itemBuilder: (ctx) => isPasada
+                      ? [
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete_outline, size: 20),
+                                SizedBox(width: 12),
+                                Text('Eliminar'),
+                              ],
                             ),
-                          ]
-                        : [
-                            PopupMenuItem(
-                              value: 'toggle',
-                              child:
-                                  Text(alert.active ? 'Desactivar' : 'Activar'),
+                          ),
+                        ]
+                      : [
+                          PopupMenuItem(
+                            value: 'toggle',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  alert.active
+                                      ? Icons.pause_circle_outline
+                                      : Icons.play_circle_outline,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                Text(alert.active ? 'Desactivar' : 'Activar'),
+                              ],
                             ),
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Text('Eliminar'),
+                          ),
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete_outline, size: 20),
+                                SizedBox(width: 12),
+                                Text('Eliminar'),
+                              ],
                             ),
-                          ],
-                  ),
-                ],
-              ),
+                          ),
+                        ],
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _MiniThumb extends StatelessWidget {
-  const _MiniThumb({required this.path});
-  final String path;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => _ImageViewer(path: path)),
-      ),
-      child: FutureBuilder<Uint8List>(
-        future: XFile(path).readAsBytes(),
-        builder: (context, snap) {
-          if (snap.connectionState != ConnectionState.done || !snap.hasData) {
-            return const SizedBox(width: 56, height: 56);
-          }
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Image.memory(
-              snap.data!,
-              width: 56,
-              height: 56,
-              fit: BoxFit.cover,
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _ImageViewer extends StatelessWidget {
-  const _ImageViewer({required this.path});
-  final String path;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Imagen')),
-      body: Center(
-        child: FutureBuilder<Uint8List>(
-          future: XFile(path).readAsBytes(),
-          builder: (context, snap) {
-            if (snap.connectionState != ConnectionState.done || !snap.hasData) {
-              return const SizedBox.shrink();
-            }
-            return InteractiveViewer(
-              child: Image.memory(snap.data!),
-            );
-          },
+          ),
         ),
       ),
     );
@@ -928,7 +886,8 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
       titlePadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
       contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
       actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      title: Text(existing == null ? 'Nueva alerta' : 'Editar alerta'),
+      title:
+          Text(existing == null ? 'Nuevo Recordatorio' : 'Editar Recordatorio'),
       content: SizedBox(
         width: 520,
         child: SingleChildScrollView(
