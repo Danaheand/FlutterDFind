@@ -7,8 +7,6 @@ class LocalUserRepository {
   static final LocalUserRepository instance = LocalUserRepository._();
 
   static const _kUsersStorageKey = 'users_v1';
-  static const _kLegacyKey =
-      'demo_users_v1'; // antigua key usada en register_screen.dart
 
   Future<List<User>> _loadRaw() async {
     final sp = await SharedPreferences.getInstance();

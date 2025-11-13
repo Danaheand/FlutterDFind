@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../widgets/custom_text_button.dart';
 
 class ModalPendientes extends StatefulWidget {
   final Function(String name, String placeName, int quantity) onAdd;
@@ -112,7 +113,7 @@ class _ModalPendientesState extends State<ModalPendientes> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _selectedPlace,
+              initialValue: _selectedPlace,
               decoration: const InputDecoration(
                 labelText: 'Lugar de compra',
                 border: OutlineInputBorder(),
@@ -161,7 +162,7 @@ class _ModalPendientesState extends State<ModalPendientes> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton(
+                CustomTextButton(
                   onPressed: () => Navigator.of(context).pop(),
                   child: const Text('CANCELAR'),
                 ),

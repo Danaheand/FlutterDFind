@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../repository/local_user_repository.dart';
 import '../models/user.dart';
+import '../widgets/custom_text_button.dart';
 import 'terminos_screen.dart';
 import 'politicas_privacidad_screen.dart';
 
@@ -388,7 +389,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
 
                         const SizedBox(height: 12),
-                        TextButton.icon(
+                        CustomTextButton.icon(
                           onPressed: _isLoading
                               ? null
                               : () => Navigator.of(context).push(
@@ -398,7 +399,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           label: const Text('Ver usuarios registrados'),
                         ),
                         const SizedBox(height: 4),
-                        TextButton(
+                        CustomTextButton(
                           onPressed: () async {
                             await LocalUserRepository.instance.clearAll();
                             if (!mounted) return;
@@ -512,7 +513,7 @@ class _UsersListScreenState extends State<UsersListScreen> {
                             ],
                           ),
                           actions: [
-                            TextButton(
+                            CustomTextButton(
                                 onPressed: () => Navigator.of(context).pop(),
                                 child: const Text('Cerrar')),
                           ],

@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'recordatorios_detalle_screen.dart' as detail;
 import '../services/notification_service.dart';
+import '../widgets/custom_text_button.dart';
 
 // Variable global eliminada, se declara dentro de la clase correspondiente
 typedef DeleteAlertCallback = void Function(AlertData alert);
@@ -793,7 +794,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
           ),
         ),
         actions: [
-          TextButton(
+          CustomTextButton(
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Cerrar'),
           ),
@@ -826,7 +827,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
           padding: const EdgeInsets.only(bottom: 12),
           child: Row(
             children: [
-              TextButton.icon(
+              CustomTextButton.icon(
                 onPressed: () {
                   setState(() {
                     if (allDaysSelected) {
@@ -1028,7 +1029,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
               ),
               _vGap,
               DropdownButtonFormField<AlertPriority>(
-                value: priority,
+                initialValue: priority,
                 decoration: const InputDecoration(
                   labelText: 'Prioridad',
                   prefixIcon: Icon(Icons.priority_high_rounded),
@@ -1107,7 +1108,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                         ),
                         if (_pickedImage != null ||
                             (existingPath?.isNotEmpty ?? false))
-                          TextButton.icon(
+                          CustomTextButton.icon(
                             onPressed: _clearImage,
                             icon: const Icon(Icons.delete_outline),
                             label: const Text('Quitar'),
@@ -1145,7 +1146,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
         ),
       ),
       actions: [
-        TextButton(
+        CustomTextButton(
           onPressed: () => Navigator.pop(context, null),
           child: const Text('Cancelar'),
         ),

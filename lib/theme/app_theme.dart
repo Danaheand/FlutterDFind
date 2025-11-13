@@ -126,8 +126,8 @@ class AppTheme {
         ),
       ),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: primaryLight,
+        style: ButtonStyle(
+          foregroundColor: WidgetStateProperty.all(primaryLight),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -218,8 +218,8 @@ class AppTheme {
         ),
       ),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: primaryDark,
+        style: ButtonStyle(
+          foregroundColor: WidgetStateProperty.all(primaryDark),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(

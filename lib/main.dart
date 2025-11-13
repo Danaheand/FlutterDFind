@@ -87,10 +87,10 @@ class MyApp extends StatelessWidget {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
-        home: const LoginScreen(),
+        home: const AppLoginScreen(),
         routes: {
           '/main': (context) => const MainScaffold(),
-          '/login': (context) => const LoginScreen(),
+          '/login': (context) => const AppLoginScreen(),
           '/register': (context) => const RegisterScreen(),
           '/alerts': (context) => const AlertsScreen(),
           '/profile': (context) => const ProfileScreen(),

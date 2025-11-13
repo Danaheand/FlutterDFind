@@ -191,9 +191,9 @@ class NotificationService {
   Future<void> testNotification() async {
     // Prueba inmediata de notificación (en 3 segundos)
     try {
-      final now = DateTime.now().add(Duration(seconds: 3));
+      final now = DateTime.now().add(const Duration(seconds: 3));
       
-      final androidDetails = AndroidNotificationDetails(
+      const androidDetails = AndroidNotificationDetails(
         'test_channel',
         'Prueba',
         channelDescription: 'Notificación de prueba',

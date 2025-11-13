@@ -9,6 +9,7 @@ import '../models/user.dart';
 import '../providers/font_size_provider.dart';
 import '../services/trash_service.dart';
 import '../models/trash_item.dart';
+import '../widgets/custom_text_button.dart';
 import 'recordatorios_screen.dart';
 import 'pendientes_screen.dart';
 
@@ -28,7 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _userEmail = 'carlos.r@email.com';
   User? _currentUser;
   String? _profileImagePath;
-  List<Map<String, dynamic>> _deletedAlerts = []; // Papelera de recordatorios
+  final List<Map<String, dynamic>> _deletedAlerts = []; // Papelera de recordatorios
   late final TrashService _trashService;
   
   Future<void> _pickProfileImage(ImageSource source) async {
@@ -56,9 +57,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           width: double.maxFinite,
           height: 400,
           child: (trashItems.isEmpty && deletedAlerts.isEmpty)
-              ? Column(
+              ? const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     Icon(Icons.delete_outline, size: 64, color: Colors.grey),
                     SizedBox(height: 12),
                     Text('No hay elementos eliminados'),
@@ -174,7 +175,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         actions: [
           if (trashItems.isNotEmpty || deletedAlerts.isNotEmpty)
-            TextButton(
+            CustomTextButton(
               onPressed: () async {
                 final confirmed = await showDialog<bool>(
                   context: context,
@@ -182,11 +183,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     title: const Text('Vaciar Papelera'),
                     content: const Text('¿Estás seguro de que quieres eliminar permanentemente todos los elementos?'),
                     actions: [
-                      TextButton(
+                      CustomTextButton(
                         onPressed: () => Navigator.pop(context, false),
                         child: const Text('Cancelar'),
                       ),
-                      TextButton(
+                      CustomTextButton(
                         onPressed: () => Navigator.pop(context, true),
                         child: const Text('Eliminar Todo', style: TextStyle(color: Colors.red)),
                       ),
@@ -207,7 +208,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               },
               child: const Text('Vaciar Papelera', style: TextStyle(color: Colors.red)),
             ),
-          TextButton(
+          CustomTextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cerrar'),
           ),
@@ -295,7 +296,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           actions: [
-            TextButton(
+            CustomTextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Cerrar'),
             ),
@@ -342,7 +343,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           actions: [
-            TextButton(
+            CustomTextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Cerrar'),
             ),
@@ -556,7 +557,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       },
                       child: const Text('Guardar'),
                     ),
-                    TextButton(
+                    CustomTextButton(
                       onPressed: () => Navigator.pop(context),
                       child: const Text('Cerrar'),
                     ),
@@ -817,7 +818,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          TextButton(
+                          CustomTextButton(
                             onPressed: _hideLogoutConfirm,
                             child: const Text('Cancelar'),
                           ),

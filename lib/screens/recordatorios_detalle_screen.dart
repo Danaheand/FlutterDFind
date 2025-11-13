@@ -196,7 +196,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<AlertPriority>(
-                  value: editPriority,
+                  initialValue: editPriority,
                   decoration: const InputDecoration(
                     labelText: 'Prioridad',
                     prefixIcon: Icon(Icons.priority_high_rounded),
@@ -217,9 +217,21 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: const Text(
+                    'Cancelar',
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
             ),
             ElevatedButton.icon(
               onPressed: () {
@@ -731,9 +743,21 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                             '¿Estás seguro de que quieres eliminar este Recordatorio? Esta acción no se puede deshacer.',
                           ),
                           actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('Cancelar'),
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => Navigator.pop(context),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  child: const Text(
+                                    'Cancelar',
+                                    style: TextStyle(
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                             ElevatedButton.icon(
                               onPressed: () {
