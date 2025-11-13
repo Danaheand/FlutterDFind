@@ -12,7 +12,6 @@ import '../models/trash_item.dart';
 import '../widgets/custom_text_button.dart';
 import 'recordatorios_screen.dart';
 import 'pendientes_screen.dart';
-import '../services/api_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -615,7 +614,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         });
       });
     };
-    _loadUserProfile();
   }
 
   void _addTestDeletedAlert() {
@@ -691,38 +689,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _profileImagePath = path;
       });
-    }
-  }
-
-  Future<void> _loadUserProfile() async {
-    try {
-      // Obtener email del usuario actual guardado localmente
-      final sp = await SharedPreferences.getInstance();
-      final userJson = sp.getString('current_user');
-      
-      if (userJson != null) {
-        final userData = jsonDecode(userJson);
-        final correo = userData['correo'];
-        
-        // Obtener datos actualizados del servidor
-        final result = await ApiService.getUserProfile(correo: correo);
-        
-        if (result['success']) {
-          setState(() {
-            // Actualizar los datos del perfil con la respuesta del servidor
-            final profileData = result['data'];
-            // Usar profileData para actualizar la UI
-            // Ejemplo: _nombreCtrl.text = profileData['nombreUsuario'];
-          });
-          
-          // Actualizar SharedPreferences con datos frescos
-          await sp.setString('current_user', jsonEncode(result['data']));
-        } else {
-          print('Error cargando perfil: ${result['error']}');
-        }
-      }
-    } catch (e) {
-      print('Error: $e');
     }
   }
 
