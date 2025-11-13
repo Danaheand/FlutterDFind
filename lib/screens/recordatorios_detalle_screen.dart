@@ -122,7 +122,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
     final descCtrl = TextEditingController(text: alert.description);
     final locationCtrl = TextEditingController(text: alert.location ?? '');
     final objectCtrl = TextEditingController(text: alert.object ?? '');
-    
+
     DateTime editDate = alert.date;
     AlertPriority editPriority = alert.priority;
     Color? editColor = alert.color ?? _defaultColorFor(alert.priority);
@@ -186,7 +186,8 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                     decoration: const InputDecoration(
                       labelText: 'Fecha',
                       border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                     child: Text(
                       '${editDate.day.toString().padLeft(2, '0')}/${editDate.month.toString().padLeft(2, '0')}/${editDate.year}',
@@ -196,15 +197,18 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<AlertPriority>(
-                  initialValue: editPriority,
+                  // initialValue: editPriority,
                   decoration: const InputDecoration(
                     labelText: 'Prioridad',
                     prefixIcon: Icon(Icons.priority_high_rounded),
                   ),
                   items: const [
-                    DropdownMenuItem(value: AlertPriority.baja, child: Text('Baja')),
-                    DropdownMenuItem(value: AlertPriority.media, child: Text('Media')),
-                    DropdownMenuItem(value: AlertPriority.alta, child: Text('Alta')),
+                    DropdownMenuItem(
+                        value: AlertPriority.baja, child: Text('Baja')),
+                    DropdownMenuItem(
+                        value: AlertPriority.media, child: Text('Media')),
+                    DropdownMenuItem(
+                        value: AlertPriority.alta, child: Text('Alta')),
                   ],
                   onChanged: (val) {
                     setState(() {
@@ -222,7 +226,8 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
               child: InkWell(
                 onTap: () => Navigator.pop(context),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   child: const Text(
                     'Cancelar',
                     style: TextStyle(
@@ -242,8 +247,12 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                     description: descCtrl.text.trim(),
                     date: editDate,
                     priority: editPriority,
-                    location: locationCtrl.text.trim().isEmpty ? null : locationCtrl.text.trim(),
-                    object: objectCtrl.text.trim().isEmpty ? null : objectCtrl.text.trim(),
+                    location: locationCtrl.text.trim().isEmpty
+                        ? null
+                        : locationCtrl.text.trim(),
+                    object: objectCtrl.text.trim().isEmpty
+                        ? null
+                        : objectCtrl.text.trim(),
                     repetitive: alert.repetitive,
                     repeatFrequency: alert.repeatFrequency,
                     active: alert.active,
@@ -748,7 +757,8 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                               child: InkWell(
                                 onTap: () => Navigator.pop(context),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 12),
                                   child: const Text(
                                     'Cancelar',
                                     style: TextStyle(
@@ -766,7 +776,8 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                                     context); // Cierra la pantalla de detalle
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: const Text('Recordatorio eliminado'),
+                                    content:
+                                        const Text('Recordatorio eliminado'),
                                     backgroundColor: isLight
                                         ? AppTheme.errorLight
                                         : AppTheme.errorDark,

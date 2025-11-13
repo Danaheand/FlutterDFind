@@ -63,7 +63,8 @@ class _ModalPendientesState extends State<ModalPendientes> {
       final customPlace = _customPlaceController.text.trim();
       if (customPlace.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Por favor ingresa un nombre para el lugar')),
+          const SnackBar(
+              content: Text('Por favor ingresa un nombre para el lugar')),
         );
         return;
       }
@@ -113,7 +114,7 @@ class _ModalPendientesState extends State<ModalPendientes> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              initialValue: _selectedPlace,
+              // initialValue: _selectedPlace,
               decoration: const InputDecoration(
                 labelText: 'Lugar de compra',
                 border: OutlineInputBorder(),

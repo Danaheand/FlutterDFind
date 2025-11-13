@@ -74,9 +74,9 @@ class AlertData {
 
 class AlertsScreen extends StatefulWidget {
   const AlertsScreen({super.key});
-  
+
   static DeleteAlertCallback? onAlertDeleted;
-  
+
   @override
   State<AlertsScreen> createState() => _AlertsScreenState();
 }
@@ -249,7 +249,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
 
   void _deleteSelected() {
     setState(() {
-      for (var a in _alerts.where((a) => selectedAlerts.contains(a.id)).toList()) {
+      for (var a
+          in _alerts.where((a) => selectedAlerts.contains(a.id)).toList()) {
         AlertsScreen.onAlertDeleted?.call(a);
       }
       _alerts.removeWhere((a) => selectedAlerts.contains(a.id));
@@ -734,7 +735,8 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
   String? object;
   bool repetitive = false;
   String? repeatFrequency;
-  List<int> selectedWeekdays = []; // Días de la semana seleccionados (1=Lunes, 7=Domingo)
+  List<int> selectedWeekdays =
+      []; // Días de la semana seleccionados (1=Lunes, 7=Domingo)
 
   Color? customColor;
   final _picker = ImagePicker();
@@ -895,15 +897,20 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
 
   String _getSelectedDaysText() {
     if (selectedWeekdays.isEmpty) return '';
-    
+
     final dayNames = {
-      1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves',
-      5: 'Viernes', 6: 'Sábado', 7: 'Domingo'
+      1: 'Lunes',
+      2: 'Martes',
+      3: 'Miércoles',
+      4: 'Jueves',
+      5: 'Viernes',
+      6: 'Sábado',
+      7: 'Domingo'
     };
-    
+
     selectedWeekdays.sort();
     final names = selectedWeekdays.map((day) => dayNames[day]).toList();
-    
+
     if (names.length <= 2) {
       return names.join(' y ');
     } else {
@@ -1029,7 +1036,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
               ),
               _vGap,
               DropdownButtonFormField<AlertPriority>(
-                initialValue: priority,
+                // initialValue: priority,
                 decoration: const InputDecoration(
                   labelText: 'Prioridad',
                   prefixIcon: Icon(Icons.priority_high_rounded),
@@ -1127,14 +1134,15 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
               ),
               if (repetitive) ...[
                 _vGap,
-                Text('Selecciona los días que se repetirá:', style: Theme.of(context).textTheme.titleMedium),
+                Text('Selecciona los días que se repetirá:',
+                    style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 12),
                 _buildWeekdaySelector(),
                 const SizedBox(height: 8),
                 Text(
-                  selectedWeekdays.isEmpty 
-                    ? 'Selecciona al menos un día' 
-                    : 'Se repetirá: ${_getSelectedDaysText()}',
+                  selectedWeekdays.isEmpty
+                      ? 'Selecciona al menos un día'
+                      : 'Se repetirá: ${_getSelectedDaysText()}',
                   style: TextStyle(
                     color: selectedWeekdays.isEmpty ? Colors.red : Colors.green,
                     fontSize: 12,
@@ -1169,7 +1177,8 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
               active: widget.alert?.active ?? true,
               color: customColor,
               imagePath: _pickedImage?.path ?? widget.alert?.imagePath,
-              selectedWeekdays: selectedWeekdays.isNotEmpty ? selectedWeekdays : null,
+              selectedWeekdays:
+                  selectedWeekdays.isNotEmpty ? selectedWeekdays : null,
             );
 
             // Programar la notificación/alarma
@@ -1177,10 +1186,13 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
               try {
                 if (repetitive && selectedWeekdays.isNotEmpty) {
                   // Alarma repetitiva para días específicos
-                  await NotificationService().scheduleRepeatingAlarmNotification(
+                  await NotificationService()
+                      .scheduleRepeatingAlarmNotification(
                     baseId: result.id.hashCode,
                     title: 'Alarma: ${result.title}',
-                    body: result.description.isNotEmpty ? result.description : 'Es hora de tu alarma',
+                    body: result.description.isNotEmpty
+                        ? result.description
+                        : 'Es hora de tu alarma',
                     scheduledDate: result.date,
                     weekdays: selectedWeekdays,
                   );
@@ -1189,19 +1201,22 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                   await NotificationService().scheduleAlarmNotification(
                     id: result.id.hashCode,
                     title: 'Alarma: ${result.title}',
-                    body: result.description.isNotEmpty ? result.description : 'Es hora de tu alarma',
+                    body: result.description.isNotEmpty
+                        ? result.description
+                        : 'Es hora de tu alarma',
                     scheduledDate: result.date,
                   );
                 }
-                
+
                 // Verificar que la notificación se programó correctamente
-                final pending = await NotificationService().getPendingNotifications();
+                final pending =
+                    await NotificationService().getPendingNotifications();
                 print('✅ Notificación programada exitosamente');
-                print('📌 Total de notificaciones pendientes: ${pending.length}');
+                print(
+                    '📌 Total de notificaciones pendientes: ${pending.length}');
                 for (var notif in pending) {
                   print('   - ID: ${notif.id}, Título: ${notif.title}');
                 }
-                
               } catch (e) {
                 // Si hay error con las notificaciones, mostrar mensaje
                 if (mounted) {
@@ -1212,7 +1227,8 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
                 }
               }
             } else {
-              print('⚠️  La fecha es anterior a ahora, no se programó notificación');
+              print(
+                  '⚠️  La fecha es anterior a ahora, no se programó notificación');
             }
 
             Navigator.pop(context, result);

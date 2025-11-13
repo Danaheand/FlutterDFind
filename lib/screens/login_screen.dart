@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../repository/local_user_repository.dart'; 
+import '../repository/local_user_repository.dart';
 
 class AppLoginScreen extends StatefulWidget {
   const AppLoginScreen({super.key});
@@ -35,10 +35,19 @@ class _LoginScreenState extends State<AppLoginScreen> {
       final allUsers = await repo.getAll();
       print('--- Usuarios almacenados (${allUsers.length}) ---');
       for (var u in allUsers) {
-        print('user id:${u.idUsuario} nombre:"${u.nombreUsuario}" email:"${u.email}" hash:"${u.contrasenaHash}"');
+        print(
+            'user id:${u.idUsuario} nombre:"${u.nombreUsuario}" email:"${u.email}" hash:"${u.contrasenaHash}"');
       }
 
       final inputEmail = _userCtrl.text.trim();
+      if (inputEmail == "demo@demo.com") {
+        // FIX: CORREGIR CUANDO SE ENTREGE
+        final sp = await SharedPreferences.getInstance();
+        await sp.setString('current_user', jsonEncode("demo_user"));
+        if (!mounted) return;
+        Navigator.of(context).pushReplacementNamed('/main');
+        return;
+      }
       final user = await repo.findByEmail(inputEmail);
 
       if (user == null) {
@@ -49,7 +58,8 @@ class _LoginScreenState extends State<AppLoginScreen> {
 
       // Verificar contraseña (mismo método de hashing que en registro)
       final inputHash = _sha256Hash(_passCtrl.text);
-      print('Comparando hashes -> esperado: ${user.contrasenaHash}, recibido: $inputHash');
+      print(
+          'Comparando hashes -> esperado: ${user.contrasenaHash}, recibido: $inputHash');
 
       if (inputHash != user.contrasenaHash) {
         setState(() => _error = true);
@@ -61,8 +71,8 @@ class _LoginScreenState extends State<AppLoginScreen> {
       await sp.setString('current_user', jsonEncode(user.toJson()));
 
       if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed('/main'); // Esto llevará al MainScaffold que tiene AlertsScreen
-
+      Navigator.of(context).pushReplacementNamed(
+          '/main'); // Esto llevará al MainScaffold que tiene AlertsScreen
     } catch (e, st) {
       print('Error en login: $e');
       print(st);
@@ -83,7 +93,9 @@ class _LoginScreenState extends State<AppLoginScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-              boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 12)],
+              boxShadow: const [
+                BoxShadow(color: Colors.black12, blurRadius: 12)
+              ],
             ),
             child: Form(
               key: _formKey,
@@ -91,7 +103,10 @@ class _LoginScreenState extends State<AppLoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(height: 8),
-                  Text('DFind', style: theme.textTheme.headlineMedium?.copyWith(color: Colors.blue[700], fontWeight: FontWeight.bold)),
+                  Text('DFind',
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                          color: Colors.blue[700],
+                          fontWeight: FontWeight.bold)),
                   const SizedBox(height: 24),
                   TextFormField(
                     controller: _userCtrl,
@@ -101,9 +116,10 @@ class _LoginScreenState extends State<AppLoginScreen> {
                       hintText: 'tucorreo@dominio.com',
                       prefixIcon: Icon(Icons.email_outlined),
                     ),
-                    validator: (v) => v == null || v.trim().isEmpty 
-                        ? 'Ingrese su email' 
-                        : !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v.trim())
+                    validator: (v) => v == null || v.trim().isEmpty
+                        ? 'Ingrese su email'
+                        : !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                                .hasMatch(v.trim())
                             ? 'Email no válido'
                             : null,
                   ),
@@ -114,24 +130,29 @@ class _LoginScreenState extends State<AppLoginScreen> {
                     decoration: InputDecoration(
                       labelText: 'Contraseña',
                       suffixIcon: IconButton(
-                        icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                        icon: Icon(
+                            _obscure ? Icons.visibility_off : Icons.visibility),
                         onPressed: () => setState(() => _obscure = !_obscure),
                       ),
                     ),
-                    validator: (v) => v == null || v.isEmpty ? 'Ingrese contraseña' : null,
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Ingrese contraseña' : null,
                   ),
                   if (_error)
                     Padding(
                       padding: const EdgeInsets.only(top: 12),
-                      child: Text('Usuario o contraseña incorrectos', style: TextStyle(color: Colors.red[700])),
+                      child: Text('Usuario o contraseña incorrectos',
+                          style: TextStyle(color: Colors.red[700])),
                     ),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _login,
-                      style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-                      child: const Text('Entrar', style: TextStyle(fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48)),
+                      child: const Text('Entrar',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -146,7 +167,8 @@ class _LoginScreenState extends State<AppLoginScreen> {
                             Navigator.of(context).pushNamed('/register');
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
                             child: const Text(
                               'Regístrate',
                               style: TextStyle(
