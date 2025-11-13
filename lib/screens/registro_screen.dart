@@ -9,6 +9,7 @@ import '../models/user.dart';
 import '../widgets/custom_text_button.dart';
 import 'terminos_screen.dart';
 import 'politicas_privacidad_screen.dart';
+import '../services/api_service.dart';
 
 /// Pantalla principal de registro (mejorada UI/UX).
 class RegisterScreen extends StatefulWidget {
@@ -75,6 +76,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return null;
   }
 
+  String _sha256Hash(String input) {
+    final bytes = utf8.encode(input);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
   Future<void> _submit() async {
     if (!mounted) return; // Agregar al inicio del método
 
@@ -92,52 +99,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Verificar si email ya existe (local)
-      final repo = LocalUserRepository.instance;
-      final existing = await repo.findByEmail(_emailCtrl.text.trim());
-      if (existing != null) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('El email ya está registrado (demo).')),
-        );
-        return;
-      }
+      // Hash de la contraseña
+      final passwordHash = _sha256Hash(_passCtrl.text);
 
-      // Crear hash de contraseña
-      final password = _passCtrl.text;
-      final hash = sha256.convert(utf8.encode(password)).toString();
-
-      // Agregar usuario localmente
-      final newUser = await repo.addUser(
+      final result = await ApiService.registerUser(
         nombreUsuario: _nameCtrl.text.trim(),
-        email: _emailCtrl.text.trim(),
-        contrasenaHash: hash,
+        correo: _emailCtrl.text.trim(),
+        contrasenaHash: passwordHash,
+        aceptoTerminos: true, // o usa una variable de checkbox
+        versionTerminos: "1.0", // versión actual de tus términos
+        ipAceptacion: "192.168.1.1", // puedes obtener la IP real si necesitas
       );
 
-      // Guarda current_user igual que en login para persistencia
-      final sp = await SharedPreferences.getInstance();
-      await sp.setString('current_user', jsonEncode(newUser.toJson()));
+      if (result['success']) {
+        // Registro exitoso - mostrar mensaje y navegar
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Registro exitoso. Inicia sesión con tu cuenta.'),
+            backgroundColor: Colors.green,
+          ),
+        );
 
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Usuario creado (id: ${newUser.idUsuario})')),
-      );
-
-      // Opcional: limpiar formulario y navegar a lista
-      _formKey.currentState?.reset();
-      _nameCtrl.clear();
-      _emailCtrl.clear();
-      _passCtrl.clear();
-      _confirmCtrl.clear();
-      setState(() => _agreeTerms = false);
-
-      // Ir a la pantalla de login después de crear la cuenta
-      if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed('/login');
+        if (!mounted) return;
+        Navigator.of(context).pushReplacementNamed('/login');
+      } else {
+        // Mostrar error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${result['error']}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } catch (e) {
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);

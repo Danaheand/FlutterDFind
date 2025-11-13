@@ -3,6 +3,7 @@ import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../repository/local_user_repository.dart'; 
+import '../services/api_service.dart';
 
 class AppLoginScreen extends StatefulWidget {
   const AppLoginScreen({super.key});
@@ -29,44 +30,28 @@ class _LoginScreenState extends State<AppLoginScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     try {
-      final repo = LocalUserRepository.instance;
-
-      // Depuración: listar usuarios guardados
-      final allUsers = await repo.getAll();
-      print('--- Usuarios almacenados (${allUsers.length}) ---');
-      for (var u in allUsers) {
-        print('user id:${u.idUsuario} nombre:"${u.nombreUsuario}" email:"${u.email}" hash:"${u.contrasenaHash}"');
-      }
-
-      final inputEmail = _userCtrl.text.trim();
-      final user = await repo.findByEmail(inputEmail);
-
-      if (user == null) {
-        print('Usuario no encontrado para email: "$inputEmail"');
-        setState(() => _error = true);
-        return;
-      }
-
-      // Verificar contraseña (mismo método de hashing que en registro)
+      // Hash de la contraseña (igual que en registro)
       final inputHash = _sha256Hash(_passCtrl.text);
-      print('Comparando hashes -> esperado: ${user.contrasenaHash}, recibido: $inputHash');
+      
+      final result = await ApiService.loginUser(
+        correo: _userCtrl.text.trim(),
+        contrasenaHash: inputHash,
+      );
 
-      if (inputHash != user.contrasenaHash) {
+      if (result['success']) {
+        // Guardar datos del usuario en SharedPreferences
+        final sp = await SharedPreferences.getInstance();
+        await sp.setString('current_user', jsonEncode(result['data']));
+        
+        if (!mounted) return;
+        Navigator.of(context).pushReplacementNamed('/main');
+      } else {
         setState(() => _error = true);
-        return;
+        print('Error login: ${result['error']}');
       }
-
-      // Guardar usuario actual (json)
-      final sp = await SharedPreferences.getInstance();
-      await sp.setString('current_user', jsonEncode(user.toJson()));
-
-      if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed('/main'); // Esto llevará al MainScaffold que tiene AlertsScreen
-
-    } catch (e, st) {
-      print('Error en login: $e');
-      print(st);
+    } catch (e) {
       setState(() => _error = true);
+      print('Error en login: $e');
     }
   }
 
