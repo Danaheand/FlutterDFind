@@ -9,6 +9,8 @@ import '../models/user.dart';
 import '../widgets/custom_text_button.dart';
 import 'terminos_screen.dart';
 import 'politicas_privacidad_screen.dart';
+import '../repository/remote_user_repository.dart';
+
 
 /// Pantalla principal de registro (mejorada UI/UX).
 class RegisterScreen extends StatefulWidget {
@@ -76,73 +78,67 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _submit() async {
-    if (!mounted) return; // Agregar al inicio del método
+  if (!mounted) return;
 
-    final valid = _formKey.currentState?.validate() ?? false;
-    if (!valid) return;
-    if (!_agreeTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content:
-                Text('Debes aceptar los Términos y la Política de Privacidad')),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      // Verificar si email ya existe (local)
-      final repo = LocalUserRepository.instance;
-      final existing = await repo.findByEmail(_emailCtrl.text.trim());
-      if (existing != null) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('El email ya está registrado (demo).')),
-        );
-        return;
-      }
-
-      // Crear hash de contraseña
-      final password = _passCtrl.text;
-      final hash = sha256.convert(utf8.encode(password)).toString();
-
-      // Agregar usuario localmente
-      final newUser = await repo.addUser(
-        nombreUsuario: _nameCtrl.text.trim(),
-        email: _emailCtrl.text.trim(),
-        contrasenaHash: hash,
-      );
-
-      // Guarda current_user igual que en login para persistencia
-      final sp = await SharedPreferences.getInstance();
-      await sp.setString('current_user', jsonEncode(newUser.toJson()));
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Usuario creado (id: ${newUser.idUsuario})')),
-      );
-
-      // Opcional: limpiar formulario y navegar a lista
-      _formKey.currentState?.reset();
-      _nameCtrl.clear();
-      _emailCtrl.clear();
-      _passCtrl.clear();
-      _confirmCtrl.clear();
-      setState(() => _agreeTerms = false);
-
-      // Ir a la pantalla de login después de crear la cuenta
-      if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed('/login');
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+  final valid = _formKey.currentState?.validate() ?? false;
+  if (!valid) return;
+  if (!_agreeTerms) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Debes aceptar los Términos y la Política de Privacidad'),
+      ),
+    );
+    return;
   }
+
+  setState(() => _isLoading = true);
+
+  try {
+    final password = _passCtrl.text;
+    final hash = sha256.convert(utf8.encode(password)).toString();
+
+    final remoteRepo = RemoteUserRepository.instance;
+
+    final newUser = await remoteRepo.register(
+      nombreUsuario: _nameCtrl.text.trim(),
+      email: _emailCtrl.text.trim(),
+      contrasenaHash: hash,
+      aceptoTerminos: _agreeTerms,
+      versionTerminos: '1.0',
+      ipAceptacion: null, // si luego quieres, puedes mandar la IP real
+    );
+
+    // Guardar usuario actual igual que en login
+    final sp = await SharedPreferences.getInstance();
+    await sp.setString('current_user', jsonEncode(newUser.toJson()));
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Usuario creado (id: ${newUser.idUsuario})')),
+    );
+
+    // Limpiar formulario
+    _formKey.currentState?.reset();
+    _nameCtrl.clear();
+    _emailCtrl.clear();
+    _passCtrl.clear();
+    _confirmCtrl.clear();
+    setState(() => _agreeTerms = false);
+
+    // Ir directo al login o al main, como prefieras
+    Navigator.of(context).pushReplacementNamed('/login');
+  } catch (e, st) {
+    print('Error en registro remoto: $e');
+    print(st);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Error al registrar. Intenta de nuevo.')),
+    );
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
+  }
+}
+
 
   Widget _buildPasswordRequirements(String password) {
     return Column(
@@ -386,30 +382,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     style:
                                         TextStyle(fontWeight: FontWeight.w700)),
                           ),
-                        ),
-
-                        const SizedBox(height: 12),
-                        CustomTextButton.icon(
-                          onPressed: _isLoading
-                              ? null
-                              : () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                      builder: (_) => const UsersListScreen())),
-                          icon: const Icon(Icons.list),
-                          label: const Text('Ver usuarios registrados'),
-                        ),
-                        const SizedBox(height: 4),
-                        CustomTextButton(
-                          onPressed: () async {
-                            await LocalUserRepository.instance.clearAll();
-                            if (!mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content:
-                                        Text('Lista de usuarios limpiada')));
-                            setState(() {});
-                          },
-                          child: const Text('Limpiar lista de usuarios'),
                         ),
                       ],
                     ),

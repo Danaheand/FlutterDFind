@@ -3,6 +3,8 @@ import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../repository/local_user_repository.dart';
+import '../repository/remote_user_repository.dart';
+
 
 class AppLoginScreen extends StatefulWidget {
   const AppLoginScreen({super.key});
@@ -25,60 +27,40 @@ class _LoginScreenState extends State<AppLoginScreen> {
   }
 
   Future<void> _login() async {
-    setState(() => _error = false);
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+  setState(() => _error = false);
+  if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    try {
-      final repo = LocalUserRepository.instance;
+  try {
+    final email = _userCtrl.text.trim();
 
-      // Depuración: listar usuarios guardados
-      final allUsers = await repo.getAll();
-      print('--- Usuarios almacenados (${allUsers.length}) ---');
-      for (var u in allUsers) {
-        print(
-            'user id:${u.idUsuario} nombre:"${u.nombreUsuario}" email:"${u.email}" hash:"${u.contrasenaHash}"');
-      }
+    final remoteRepo = RemoteUserRepository.instance;
+    final user = await remoteRepo.login(
+      email: email,
+      contrasenaHash: _passCtrl.text.trim(), // ej: "hash123"
+    );
 
-      final inputEmail = _userCtrl.text.trim();
-      if (inputEmail == "demo@demo.com") {
-        // FIX: CORREGIR CUANDO SE ENTREGE
-        final sp = await SharedPreferences.getInstance();
-        await sp.setString('current_user', jsonEncode("demo_user"));
-        if (!mounted) return;
-        Navigator.of(context).pushReplacementNamed('/main');
-        return;
-      }
-      final user = await repo.findByEmail(inputEmail);
+    final sp = await SharedPreferences.getInstance();
+    await sp.setString('current_user', jsonEncode(user.toJson()));
 
-      if (user == null) {
-        print('Usuario no encontrado para email: "$inputEmail"');
-        setState(() => _error = true);
-        return;
-      }
+    if (!mounted) return;
+    Navigator.of(context).pushReplacementNamed('/main');
+  } catch (e, st) {
+    print('Error en login remoto: $e');
+    print(st);
+    setState(() => _error = true);
 
-      // Verificar contraseña (mismo método de hashing que en registro)
-      final inputHash = _sha256Hash(_passCtrl.text);
-      print(
-          'Comparando hashes -> esperado: ${user.contrasenaHash}, recibido: $inputHash');
-
-      if (inputHash != user.contrasenaHash) {
-        setState(() => _error = true);
-        return;
-      }
-
-      // Guardar usuario actual (json)
-      final sp = await SharedPreferences.getInstance();
-      await sp.setString('current_user', jsonEncode(user.toJson()));
-
-      if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed(
-          '/main'); // Esto llevará al MainScaffold que tiene AlertsScreen
-    } catch (e, st) {
-      print('Error en login: $e');
-      print(st);
-      setState(() => _error = true);
-    }
+    if (!mounted) return;
+    // 👇 aquí mostramos el error COMPLETO en la app (APK/web/emulador)
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(e.toString()),
+        duration: const Duration(seconds: 6),
+      ),
+    );
   }
+}
+
+
 
   @override
   Widget build(BuildContext context) {
