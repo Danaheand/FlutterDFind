@@ -1,14 +1,10 @@
 // lib/register_screen.dart
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../repository/local_user_repository.dart';
-import '../models/user.dart';
 import '../widgets/custom_text_button.dart';
 import 'terminos_screen.dart';
 import 'politicas_privacidad_screen.dart';
+import '../services/api_service.dart';
 
 /// Pantalla principal de registro (mejorada UI/UX).
 class RegisterScreen extends StatefulWidget {
@@ -92,52 +88,50 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Verificar si email ya existe (local)
-      final repo = LocalUserRepository.instance;
-      final existing = await repo.findByEmail(_emailCtrl.text.trim());
-      if (existing != null) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('El email ya está registrado (demo).')),
-        );
-        return;
+      // Primero probar conectividad
+      print('🔍 Probando conectividad...');
+      final hasConnection = await ApiService.testConnection();
+      if (!hasConnection) {
+        throw Exception('No se puede conectar al servidor. Verifica tu conexión a internet.');
       }
 
-      // Crear hash de contraseña
-      final password = _passCtrl.text;
-      final hash = sha256.convert(utf8.encode(password)).toString();
-
-      // Agregar usuario localmente
-      final newUser = await repo.addUser(
+      print('📝 Iniciando registro...');
+      final result = await ApiService.registerUser(
         nombreUsuario: _nameCtrl.text.trim(),
-        email: _emailCtrl.text.trim(),
-        contrasenaHash: hash,
+        correo: _emailCtrl.text.trim(),
+        password: _passCtrl.text, // Enviamos password sin hash
+        aceptoTerminos: true,
+        versionTerminos: "1.0",
+        ipAceptacion: "192.168.1.1",
       );
 
-      // Guarda current_user igual que en login para persistencia
-      final sp = await SharedPreferences.getInstance();
-      await sp.setString('current_user', jsonEncode(newUser.toJson()));
+      if (result['success']) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Registro exitoso. Inicia sesión con tu cuenta.'),
+            backgroundColor: Colors.green,
+          ),
+        );
 
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Usuario creado (id: ${newUser.idUsuario})')),
-      );
-
-      // Opcional: limpiar formulario y navegar a lista
-      _formKey.currentState?.reset();
-      _nameCtrl.clear();
-      _emailCtrl.clear();
-      _passCtrl.clear();
-      _confirmCtrl.clear();
-      setState(() => _agreeTerms = false);
-
-      // Ir a la pantalla de login después de crear la cuenta
-      if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed('/login');
+        if (!mounted) return;
+        Navigator.of(context).pushReplacementNamed('/login');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ ${result['error']}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 6),
+          ),
+        );
+      }
     } catch (e) {
-      if (!mounted) return;
+      print('❌ Error registro: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(
+          content: Text('❌ $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 6),
+        ),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -392,22 +386,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         CustomTextButton.icon(
                           onPressed: _isLoading
                               ? null
-                              : () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                      builder: (_) => const UsersListScreen())),
+                              : () => ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Funcionalidad disponible próximamente'),
+                                  ),
+                                ),
                           icon: const Icon(Icons.list),
                           label: const Text('Ver usuarios registrados'),
                         ),
                         const SizedBox(height: 4),
                         CustomTextButton(
-                          onPressed: () async {
-                            await LocalUserRepository.instance.clearAll();
-                            if (!mounted) return;
+                          onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content:
-                                        Text('Lista de usuarios limpiada')));
-                            setState(() {});
+                                    content: Text('Funcionalidad disponible próximamente')));
                           },
                           child: const Text('Limpiar lista de usuarios'),
                         ),
@@ -424,7 +416,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 }
 
+class _RequirementItem extends StatelessWidget {
+  final String text;
+  final bool isValid;
+
+  const _RequirementItem({
+    required this.text,
+    required this.isValid,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(
+            isValid ? Icons.check_circle : Icons.circle_outlined,
+            size: 16,
+            color: isValid ? Colors.green : Colors.grey,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: TextStyle(
+              color: isValid ? Colors.green : Colors.grey,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Pantalla para listar usuarios guardados (solo demo).
+/// COMENTADO: Ahora usamos API remota en lugar de repositorio local
+/*
 class UsersListScreen extends StatefulWidget {
   const UsersListScreen({super.key});
 
@@ -433,7 +461,7 @@ class UsersListScreen extends StatefulWidget {
 }
 
 class _UsersListScreenState extends State<UsersListScreen> {
-  late Future<List<User>> _future;
+  late Future<List<dynamic>> _future;
 
   @override
   void initState() {
@@ -530,37 +558,4 @@ class _UsersListScreenState extends State<UsersListScreen> {
     );
   }
 }
-
-class _RequirementItem extends StatelessWidget {
-  final String text;
-  final bool isValid;
-
-  const _RequirementItem({
-    required this.text,
-    required this.isValid,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Icon(
-            isValid ? Icons.check_circle : Icons.circle_outlined,
-            size: 16,
-            color: isValid ? Colors.green : Colors.grey,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            text,
-            style: TextStyle(
-              color: isValid ? Colors.green : Colors.grey,
-              fontSize: 13,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+*/

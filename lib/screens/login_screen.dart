@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../repository/local_user_repository.dart';
+import '../services/api_service.dart';
+
 
 class AppLoginScreen extends StatefulWidget {
   const AppLoginScreen({super.key});
@@ -18,67 +18,61 @@ class _LoginScreenState extends State<AppLoginScreen> {
   bool _obscure = true;
   bool _error = false;
 
-  String _sha256Hash(String input) {
-    final bytes = utf8.encode(input);
-    final digest = sha256.convert(bytes);
-    return digest.toString();
-  }
-
   Future<void> _login() async {
     setState(() => _error = false);
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     try {
-      final repo = LocalUserRepository.instance;
-
-      // Depuración: listar usuarios guardados
-      final allUsers = await repo.getAll();
-      print('--- Usuarios almacenados (${allUsers.length}) ---');
-      for (var u in allUsers) {
-        print(
-            'user id:${u.idUsuario} nombre:"${u.nombreUsuario}" email:"${u.email}" hash:"${u.contrasenaHash}"');
+      // Primero probar conectividad
+      print('🔍 Probando conectividad...');
+      final hasConnection = await ApiService.testConnection();
+      if (!hasConnection) {
+        throw Exception('No se puede conectar al servidor. Verifica tu conexión a internet.');
       }
 
-      final inputEmail = _userCtrl.text.trim();
-      if (inputEmail == "demo@demo.com") {
-        // FIX: CORREGIR CUANDO SE ENTREGE
+      final email = _userCtrl.text.trim();
+      final password = _passCtrl.text.trim();
+
+      print('🔐 Iniciando login...');
+      final result = await ApiService.loginUser(
+        correo: email,
+        password: password, // Enviamos password sin hash
+      );
+
+      if (result['success']) {
         final sp = await SharedPreferences.getInstance();
-        await sp.setString('current_user', jsonEncode("demo_user"));
+        await sp.setString('current_user', jsonEncode(result['data']));
+
         if (!mounted) return;
         Navigator.of(context).pushReplacementNamed('/main');
-        return;
-      }
-      final user = await repo.findByEmail(inputEmail);
-
-      if (user == null) {
-        print('Usuario no encontrado para email: "$inputEmail"');
+      } else {
         setState(() => _error = true);
-        return;
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ ${result['error']}'),
+            duration: const Duration(seconds: 4),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
-
-      // Verificar contraseña (mismo método de hashing que en registro)
-      final inputHash = _sha256Hash(_passCtrl.text);
-      print(
-          'Comparando hashes -> esperado: ${user.contrasenaHash}, recibido: $inputHash');
-
-      if (inputHash != user.contrasenaHash) {
-        setState(() => _error = true);
-        return;
-      }
-
-      // Guardar usuario actual (json)
-      final sp = await SharedPreferences.getInstance();
-      await sp.setString('current_user', jsonEncode(user.toJson()));
+    } catch (e, st) {
+      print('❌ Error login: $e');
+      print('📍 Stack trace: $st');
+      setState(() => _error = true);
 
       if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed(
-          '/main'); // Esto llevará al MainScaffold que tiene AlertsScreen
-    } catch (e, st) {
-      print('Error en login: $e');
-      print(st);
-      setState(() => _error = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ $e'),
+          duration: const Duration(seconds: 6),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {

@@ -12,6 +12,8 @@ import '../models/trash_item.dart';
 import '../widgets/custom_text_button.dart';
 import 'recordatorios_screen.dart';
 import 'pendientes_screen.dart';
+import '../repository/remote_user_repository.dart';
+
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -533,27 +535,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    ElevatedButton(
+                    CustomTextButton(
                       onPressed: () async {
                         final newName = nameController.text.trim();
-                        bool changed = false;
-                        setState(() {
-                          if (newName.isNotEmpty && newName != _userName) {
-                            _userName = newName;
-                            changed = true;
-                          }
-                          if (_currentUser != null) {
-                            _currentUser = _currentUser!.copyWith(
-                              nombreUsuario: newName.isNotEmpty ? newName : _userName,
-                            );
-                            changed = true;
-                          }
-                        });
-                        if (changed && _currentUser != null) {
-                          final sp = await SharedPreferences.getInstance();
-                          await sp.setString('current_user', jsonEncode(_currentUser!.toJson()));
+
+                        if (_currentUser == null && _userEmail.isEmpty) {
+                          // No tenemos info del usuario, no podemos llamar a la API
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('No se pudo obtener la información del usuario.')),
+                          );
+                          return;
                         }
-                        Navigator.pop(context);
+
+                        try {
+                          // Correo actual con el que el usuario está logueado
+                          final correoActual = _currentUser?.email ?? _userEmail;
+
+                          // Llamar a la API para actualizar perfil por correo
+                          final updatedUser = await RemoteUserRepository.instance
+                              .updateProfileByEmail(
+                            correoActual: correoActual,
+                            nuevoNombre: newName.isNotEmpty ? newName : null,
+                            // si luego quieres cambiar correo, aquí mandas nuevoCorreo
+                            nuevoCorreo: null,
+                          );
+
+                          // Actualizar estado local con la respuesta de la API
+                          setState(() {
+                            _currentUser = updatedUser;
+                            _userName = updatedUser.nombreUsuario;
+                            _userEmail = updatedUser.email;
+                          });
+
+                          // Guardar en SharedPreferences
+                          final sp = await SharedPreferences.getInstance();
+                          await sp.setString('current_user', jsonEncode(updatedUser.toJson()));
+
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Perfil actualizado')),
+                          );
+                          Navigator.pop(context);
+                        } catch (e) {
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error al actualizar perfil: $e')),
+                          );
+                        }
                       },
                       child: const Text('Guardar'),
                     ),
