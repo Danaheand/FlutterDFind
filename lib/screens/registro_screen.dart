@@ -382,27 +382,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 12),
-                        CustomTextButton.icon(
-                          onPressed: _isLoading
-                              ? null
-                              : () => ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Funcionalidad disponible próximamente'),
-                                  ),
-                                ),
-                          icon: const Icon(Icons.list),
-                          label: const Text('Ver usuarios registrados'),
-                        ),
-                        const SizedBox(height: 4),
-                        CustomTextButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text('Funcionalidad disponible próximamente')));
-                          },
-                          child: const Text('Limpiar lista de usuarios'),
-                        ),
                       ],
                     ),
                   ),
