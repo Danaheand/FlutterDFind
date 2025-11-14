@@ -24,14 +24,34 @@ class User {
     'telefono': telefono,
   };
 
-  factory User.fromJson(Map<String, dynamic> json) => User(
-    idUsuario: json['id_usuario'] as int,
-    nombreUsuario: json['nombre_usuario'] as String,
-    email: json['email'] ?? json['correo'],
-    contrasenaHash: json['contrasena_hash'] as String,
-    fechaCreacionIso: json['fecha_creacion'] as String,
-    telefono: json['telefono'] as String? ?? '',
-  );
+  factory User.fromJson(Map<String, dynamic> json) {
+    // Debug: imprimir el JSON recibido
+    print('📄 User.fromJson recibió: $json');
+    
+    return User(
+      idUsuario: _parseIntSafely(json['id_usuario'] ?? json['idUsuario']),
+      nombreUsuario: _parseStringSafely(json['nombre_usuario'] ?? json['nombreUsuario']),
+      email: _parseStringSafely(json['email'] ?? json['correo']),
+      contrasenaHash: _parseStringSafely(json['contrasena_hash'] ?? json['contrasenaHash']),
+      fechaCreacionIso: _parseStringSafely(json['fecha_creacion'] ?? json['fechaCreacion']),
+      telefono: _parseStringSafely(json['telefono']),
+    );
+  }
+
+  // Métodos auxiliares para parseo seguro
+  static int _parseIntSafely(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is String) {
+      return int.tryParse(value) ?? 0;
+    }
+    return 0;
+  }
+
+  static String _parseStringSafely(dynamic value) {
+    if (value == null) return '';
+    return value.toString();
+  }
 
   User copyWith({
     int? idUsuario,

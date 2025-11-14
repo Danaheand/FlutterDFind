@@ -105,6 +105,36 @@ class RemoteUserRepository {
   }
 
   // ======================
+  // OBTENER PERFIL POR EMAIL
+  // ======================
+  Future<User> getUserProfile({
+    required String email,
+  }) async {
+    final url = _uri('/api/Auth/profile/by-email/$email');
+
+    print('GET $url');
+
+    final resp = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    print('Resp status: ${resp.statusCode}');
+    print('Resp body: ${resp.body}');
+
+    if (resp.statusCode == 200) {
+      final data = jsonDecode(resp.body) as Map<String, dynamic>;
+      return User.fromJson(data);
+    } else {
+      throw Exception(
+        'Error obteniendo perfil: ${resp.statusCode} - ${resp.body}',
+      );
+    }
+  }
+
+  // ======================
   // ACTUALIZAR PERFIL POR CORREO
   // ======================
   Future<User> updateProfileByEmail({
