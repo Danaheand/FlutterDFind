@@ -27,10 +27,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _showLogoutDialog = false;
   bool _notifSound = true;
   bool _notifVibration = true;
-  String _userName = 'Carlos Rodríguez';
-  String _userEmail = 'carlos.r@email.com';
+  String _userName = '';
+  String _userEmail = '';
   User? _currentUser;
   String? _profileImagePath;
+  bool _isLoading = true;
   final List<Map<String, dynamic>> _deletedAlerts = []; // Papelera de recordatorios
   late final TrashService _trashService;
   
@@ -428,7 +429,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showProfileModal() async {
+    if (_currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error: No se pudo cargar la información del usuario')),
+      );
+      return;
+    }
+
     final nameController = TextEditingController(text: _userName);
+    
     await showDialog(
       context: context,
       builder: (context) {
@@ -531,6 +540,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const SizedBox(height: 12),
+                // Mostrar información adicional del usuario
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.email, size: 16, color: Colors.grey),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _userEmail,
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Miembro desde: ${_formatDate(_currentUser!.fechaCreacionIso)}',
+                            style: const TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.tag, size: 16, color: Colors.grey),
+                          const SizedBox(width: 8),
+                          Text(
+                            'ID: ${_currentUser!.idUsuario}',
+                            style: const TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -539,26 +595,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onPressed: () async {
                         final newName = nameController.text.trim();
 
-                        if (_currentUser == null && _userEmail.isEmpty) {
-                          // No tenemos info del usuario, no podemos llamar a la API
+                        if (_currentUser == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('No se pudo obtener la información del usuario.')),
                           );
                           return;
                         }
 
+                        if (newName.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('El nombre no puede estar vacío.')),
+                          );
+                          return;
+                        }
+
+                        // Si el nombre no cambió, no hacer nada
+                        if (newName == _currentUser!.nombreUsuario) {
+                          Navigator.pop(context);
+                          return;
+                        }
+
                         try {
-                          // Correo actual con el que el usuario está logueado
-                          final correoActual = _currentUser?.email ?? _userEmail;
+                          // Mostrar indicador de carga
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (context) => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
 
                           // Llamar a la API para actualizar perfil por correo
                           final updatedUser = await RemoteUserRepository.instance
                               .updateProfileByEmail(
-                            correoActual: correoActual,
-                            nuevoNombre: newName.isNotEmpty ? newName : null,
-                            // si luego quieres cambiar correo, aquí mandas nuevoCorreo
-                            nuevoCorreo: null,
+                            correoActual: _currentUser!.email,
+                            nuevoNombre: newName,
+                            nuevoCorreo: null, // Por ahora solo cambiamos nombre
                           );
+
+                          // Cerrar indicador de carga
+                          if (mounted) Navigator.pop(context);
 
                           // Actualizar estado local con la respuesta de la API
                           setState(() {
@@ -573,13 +649,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Perfil actualizado')),
+                            const SnackBar(
+                              content: Text('✅ Perfil actualizado correctamente'),
+                              backgroundColor: Colors.green,
+                            ),
                           );
                           Navigator.pop(context);
                         } catch (e) {
+                          // Cerrar indicador de carga si está abierto
+                          if (mounted) Navigator.pop(context);
+                          
+                          print('Error actualizando perfil: $e');
                           if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error al actualizar perfil: $e')),
+                            SnackBar(
+                              content: Text('❌ Error al actualizar perfil: $e'),
+                              backgroundColor: Colors.red,
+                              duration: const Duration(seconds: 4),
+                            ),
                           );
                         }
                       },
@@ -694,18 +781,91 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadCurrentUser() async {
-    final sp = await SharedPreferences.getInstance();
-    final userJson = sp.getString('current_user');
-    if (userJson != null) {
-      try {
-        final userData = jsonDecode(userJson);
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final sp = await SharedPreferences.getInstance();
+      final userJson = sp.getString('current_user');
+      
+      print('🔍 Cargando usuario desde SharedPreferences...');
+      print('📄 UserJson: $userJson');
+      
+      if (userJson != null && userJson.isNotEmpty) {
+        try {
+          final userData = jsonDecode(userJson);
+          print('📊 UserData parseado: $userData');
+          
+          final user = User.fromJson(userData);
+          print('👤 Usuario creado: ${user.nombreUsuario} (${user.email})');
+          
+          // Usar los datos locales primero para mostrar algo rápidamente
+          setState(() {
+            _currentUser = user;
+            _userName = user.nombreUsuario;
+            _userEmail = user.email;
+          });
+          
+          // Intentar obtener el perfil actualizado desde la API en segundo plano
+          try {
+            print('🌐 Obteniendo perfil actualizado desde API...');
+            final updatedUser = await RemoteUserRepository.instance.getUserProfile(
+              email: user.email,
+            );
+            
+            print('✅ Perfil actualizado obtenido: ${updatedUser.nombreUsuario}');
+            
+            // Si la API responde, actualizar con los datos más recientes
+            setState(() {
+              _currentUser = updatedUser;
+              _userName = updatedUser.nombreUsuario;
+              _userEmail = updatedUser.email;
+            });
+            
+            // Guardar los datos actualizados en SharedPreferences
+            await sp.setString('current_user', jsonEncode(updatedUser.toJson()));
+            
+          } catch (apiError) {
+            print('⚠️ Error obteniendo perfil actualizado (usando datos locales): $apiError');
+            // Si falla la API, mantener los datos locales ya cargados
+          }
+          
+        } catch (parseError) {
+          print('❌ Error parseando usuario desde SharedPreferences: $parseError');
+          // Si hay error parseando, limpiar SharedPreferences y redirigir al login
+          await sp.remove('current_user');
+          if (mounted) {
+            Navigator.of(context).pushReplacementNamed('/login');
+            return;
+          }
+        }
+      } else {
+        print('❌ No hay usuario guardado en SharedPreferences');
+        // No hay usuario guardado, redirigir al login
+        if (mounted) {
+          Navigator.of(context).pushReplacementNamed('/login');
+          return;
+        }
+      }
+    } catch (e) {
+      print('❌ Error general cargando usuario: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error cargando perfil. Volviendo al login.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        // En caso de error general, ir al login
+        Navigator.of(context).pushReplacementNamed('/login');
+        return;
+      }
+    } finally {
+      if (mounted) {
         setState(() {
-          _currentUser = User.fromJson(userData);
-          _userName = _currentUser?.nombreUsuario ?? _userName;
-          _userEmail = _currentUser?.email ?? _userEmail;
+          _isLoading = false;
         });
-      } catch (e) {
-        print('Error loading user: $e');
       }
     }
   }
@@ -720,13 +880,68 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  String _formatDate(String isoDateString) {
+    try {
+      final date = DateTime.parse(isoDateString);
+      final months = [
+        'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+        'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+      ];
+      return '${date.day} de ${months[date.month - 1]} de ${date.year}';
+    } catch (e) {
+      return isoDateString; // Si no se puede parsear, devolver la cadena original
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    
+    // Mostrar indicador de carga si aún está cargando el usuario
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Cargando perfil...'),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Si no hay usuario y no está cargando, mostrar mensaje de error
+    if (_currentUser == null) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              const Text('Error cargando el perfil'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pushReplacementNamed('/login');
+                },
+                child: const Text('Ir al Login'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
     return Stack(
       children: [
-        ListView(
+        RefreshIndicator(
+          onRefresh: _loadCurrentUser,
+          child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
           children: [
             Container(
@@ -818,6 +1033,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ],
+          ),
         ),
         if (_showLogoutDialog)
           Positioned.fill(
