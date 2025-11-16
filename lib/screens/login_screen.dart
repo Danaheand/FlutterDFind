@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
-
+import '../services/session_manager.dart';
 
 class AppLoginScreen extends StatefulWidget {
   const AppLoginScreen({super.key});
@@ -27,7 +25,8 @@ class _LoginScreenState extends State<AppLoginScreen> {
       print('🔍 Probando conectividad...');
       final hasConnection = await ApiService.testConnection();
       if (!hasConnection) {
-        throw Exception('No se puede conectar al servidor. Verifica tu conexión a internet.');
+        throw Exception(
+            'No se puede conectar al servidor. Verifica tu conexión a internet.');
       }
 
       final email = _userCtrl.text.trim();
@@ -40,8 +39,8 @@ class _LoginScreenState extends State<AppLoginScreen> {
       );
 
       if (result['success']) {
-        final sp = await SharedPreferences.getInstance();
-        await sp.setString('current_user', jsonEncode(result['data']));
+        // Guardar sesión usando SessionManager
+        await SessionManager.instance.setUserSession(result['data']);
 
         if (!mounted) return;
         Navigator.of(context).pushReplacementNamed('/main');
@@ -71,8 +70,6 @@ class _LoginScreenState extends State<AppLoginScreen> {
       );
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {

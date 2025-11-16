@@ -10,6 +10,7 @@ import 'screens/registro_screen.dart';
 
 import 'theme/app_theme.dart';
 import 'services/notification_service.dart';
+import 'services/session_manager.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -64,6 +65,10 @@ class _MainScaffoldState extends State<MainScaffold> {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializar el gestor de sesión
+  print('🔧 Inicializando SessionManager...');
+  await SessionManager.instance.initialize();
 
   // Solo inicializar notificaciones en dispositivos móviles (no en web)
   try {

@@ -1,13 +1,12 @@
 import 'dart:math';
 import 'dart:typed_data';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'recordatorios_detalle_screen.dart' as detail;
 import '../services/notification_service.dart';
+import '../services/session_manager.dart';
 import '../widgets/custom_text_button.dart';
 import '../providers/recordatorio_provider.dart';
 import '../models/recordatorio.dart';
@@ -107,21 +106,14 @@ class _AlertsScreenState extends State<AlertsScreen> {
 
   Future<void> _loadUserAndRecordatorios() async {
     try {
-      // Cargar email del usuario desde SharedPreferences
-      final sp = await SharedPreferences.getInstance();
-      final userJson = sp.getString('current_user');
+      // Obtener email del usuario desde SessionManager
+      _userEmail = SessionManager.instance.userEmail;
+      _userId = SessionManager.instance.userId;
 
-      if (userJson != null) {
-        final userData = json.decode(userJson);
-        _userEmail = userData['correo'];
-        _userId = userData['idUsuario'];
-
-        if (_userEmail != null && _userId != null && mounted) {
-          // Cargar recordatorios del servidor
-          final provider = context.read<RecordatorioProvider>();
-          provider.setCorreoUsuario(_userEmail!);
-          await provider.cargarRecordatorios();
-        }
+      if (_userEmail != null && _userId != null && mounted) {
+        // Cargar recordatorios del servidor
+        final provider = context.read<RecordatorioProvider>();
+        await provider.cargarRecordatorios();
       }
     } catch (e) {
       print('❌ Error cargando recordatorios: $e');

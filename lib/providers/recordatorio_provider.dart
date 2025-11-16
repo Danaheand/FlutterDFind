@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../models/recordatorio.dart';
 import '../models/recordatorio_exception.dart';
 import '../repository/recordatorio_repository.dart';
+import '../services/session_manager.dart';
 
 /// Provider para gestionar el estado de los recordatorios en la aplicación
 /// Utiliza ChangeNotifier para notificar cambios a los widgets que escuchan
@@ -12,13 +13,14 @@ class RecordatorioProvider extends ChangeNotifier {
   List<Recordatorio> _recordatorios = [];
   bool _isLoading = false;
   String? _error;
-  String? _correoUsuario;
 
   // Getters
   List<Recordatorio> get recordatorios => List.unmodifiable(_recordatorios);
   bool get isLoading => _isLoading;
   String? get error => _error;
-  String? get correoUsuario => _correoUsuario;
+
+  /// Obtiene el correo del usuario desde el SessionManager
+  String? get correoUsuario => SessionManager.instance.userEmail;
 
   /// Recordatorios activos (no pausados)
   List<Recordatorio> get recordatoriosActivos =>
@@ -40,22 +42,18 @@ class RecordatorioProvider extends ChangeNotifier {
   RecordatorioProvider({RecordatorioRepository? repository})
       : _repository = repository ?? RecordatorioRepository();
 
-  /// Establece el correo del usuario actual
-  void setCorreoUsuario(String correo) {
-    _correoUsuario = correo;
-    notifyListeners();
-  }
-
   /// 1️⃣ Cargar todos los recordatorios del usuario
   ///
   /// Debe llamarse al:
   /// - Abrir la app
   /// - Recargar la pantalla de recordatorios
   /// - Después de login exitoso
-  Future<void> cargarRecordatorios({String? correo}) async {
-    final emailToUse = correo ?? _correoUsuario;
+  ///
+  /// Ya no necesitas pasar el correo, se obtiene automáticamente del SessionManager
+  Future<void> cargarRecordatorios() async {
+    final email = SessionManager.instance.userEmail;
 
-    if (emailToUse == null || emailToUse.isEmpty) {
+    if (email == null || email.isEmpty) {
       _error = 'No hay un usuario autenticado';
       notifyListeners();
       return;
@@ -65,11 +63,9 @@ class RecordatorioProvider extends ChangeNotifier {
     _error = null;
 
     try {
-      print('📱 Provider: Cargando recordatorios para $emailToUse');
+      print('📱 Provider: Cargando recordatorios para $email');
 
-      _recordatorios =
-          await _repository.obtenerRecordatoriosUsuario(emailToUse);
-      _correoUsuario = emailToUse;
+      _recordatorios = await _repository.obtenerRecordatoriosUsuario(email);
 
       print('✅ Provider: ${_recordatorios.length} recordatorios cargados');
       _setLoading(false);
@@ -110,7 +106,7 @@ class RecordatorioProvider extends ChangeNotifier {
       _setLoading(false);
 
       // Opcional: recargar para sincronizar con el servidor
-      if (autoReload && _correoUsuario != null) {
+      if (autoReload) {
         await cargarRecordatorios();
       }
 
@@ -160,7 +156,7 @@ class RecordatorioProvider extends ChangeNotifier {
       _setLoading(false);
 
       // Opcional: recargar para sincronizar
-      if (autoReload && _correoUsuario != null) {
+      if (autoReload) {
         await cargarRecordatorios();
       }
 
@@ -201,7 +197,7 @@ class RecordatorioProvider extends ChangeNotifier {
       _setLoading(false);
 
       // Opcional: recargar para sincronizar
-      if (autoReload && _correoUsuario != null) {
+      if (autoReload) {
         await cargarRecordatorios();
       }
     } on RecordatorioException catch (e) {
@@ -245,7 +241,7 @@ class RecordatorioProvider extends ChangeNotifier {
       notifyListeners();
 
       // Opcional: recargar para sincronizar
-      if (autoReload && _correoUsuario != null) {
+      if (autoReload) {
         await cargarRecordatorios();
       }
 
@@ -310,7 +306,6 @@ class RecordatorioProvider extends ChangeNotifier {
   /// Limpiar el estado (útil al cerrar sesión)
   void limpiar() {
     _recordatorios = [];
-    _correoUsuario = null;
     _error = null;
     _isLoading = false;
     notifyListeners();
@@ -324,8 +319,6 @@ class RecordatorioProvider extends ChangeNotifier {
 
   /// Recargar recordatorios (pull-to-refresh)
   Future<void> recargar() async {
-    if (_correoUsuario != null) {
-      await cargarRecordatorios();
-    }
+    await cargarRecordatorios();
   }
 }

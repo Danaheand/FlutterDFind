@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/user.dart';
 import '../providers/font_size_provider.dart';
 import '../services/trash_service.dart';
+import '../services/session_manager.dart';
 import '../models/trash_item.dart';
 import '../widgets/custom_text_button.dart';
 import 'recordatorios_screen.dart';
 import 'pendientes_screen.dart';
 import '../repository/remote_user_repository.dart';
-
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -32,9 +31,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   User? _currentUser;
   String? _profileImagePath;
   bool _isLoading = true;
-  final List<Map<String, dynamic>> _deletedAlerts = []; // Papelera de recordatorios
+  final List<Map<String, dynamic>> _deletedAlerts =
+      []; // Papelera de recordatorios
   late final TrashService _trashService;
-  
+
   Future<void> _pickProfileImage(ImageSource source) async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: source, maxWidth: 1024);
@@ -51,7 +51,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // Obtener elementos de papelera del servicio
     final trashItems = _trashService.getTrashItems();
     final deletedAlerts = List<Map<String, dynamic>>.from(_deletedAlerts);
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -76,60 +76,80 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       if (trashItems.isNotEmpty) ...[
                         const Text(
                           'Lista de Compras',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         const SizedBox(height: 8),
                         ...trashItems.map((item) => Card(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          child: ListTile(
-                            leading: const Icon(Icons.shopping_cart, color: Colors.blue),
-                            title: Text(item.name),
-                            subtitle: Text('${item.placeName} • ${item.deletedAt.day}/${item.deletedAt.month}'),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.restore, color: Colors.green),
-                                  onPressed: () async {
-                                    try {
-                                      final restoredItem = await _trashService.restoreItem(item.id);
-                                      final shoppingItem = _trashService.trashItemToShoppingItem(restoredItem);
-                                      
-                                      // Restaurar al InventoryScreen
-                                      if (InventoryScreen.addFromAlertGlobal != null) {
-                                        InventoryScreen.addFromAlertGlobal!(shoppingItem.name);
-                                      }
-                                      
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('${item.name} restaurado')),
-                                      );
-                                      Navigator.pop(context);
-                                    } catch (e) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('Error al restaurar: $e')),
-                                      );
-                                    }
-                                  },
+                              margin: const EdgeInsets.only(bottom: 8),
+                              child: ListTile(
+                                leading: const Icon(Icons.shopping_cart,
+                                    color: Colors.blue),
+                                title: Text(item.name),
+                                subtitle: Text(
+                                    '${item.placeName} • ${item.deletedAt.day}/${item.deletedAt.month}'),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.restore,
+                                          color: Colors.green),
+                                      onPressed: () async {
+                                        try {
+                                          final restoredItem =
+                                              await _trashService
+                                                  .restoreItem(item.id);
+                                          final shoppingItem = _trashService
+                                              .trashItemToShoppingItem(
+                                                  restoredItem);
+
+                                          // Restaurar al InventoryScreen
+                                          if (InventoryScreen
+                                                  .addFromAlertGlobal !=
+                                              null) {
+                                            InventoryScreen.addFromAlertGlobal!(
+                                                shoppingItem.name);
+                                          }
+
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                                content: Text(
+                                                    '${item.name} restaurado')),
+                                          );
+                                          Navigator.pop(context);
+                                        } catch (e) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                                content: Text(
+                                                    'Error al restaurar: $e')),
+                                          );
+                                        }
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_forever,
+                                          color: Colors.red),
+                                      onPressed: () async {
+                                        await _trashService
+                                            .deleteItemPermanently(item.id);
+                                        Navigator.pop(context);
+                                        _showTrashDialog();
+                                      },
+                                    ),
+                                  ],
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_forever, color: Colors.red),
-                                  onPressed: () async {
-                                    await _trashService.deleteItemPermanently(item.id);
-                                    Navigator.pop(context);
-                                    _showTrashDialog();
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        )),
+                              ),
+                            )),
                         const SizedBox(height: 16),
                       ],
                       // Sección de recordatorios eliminados
                       if (deletedAlerts.isNotEmpty) ...[
                         const Text(
                           'Recordatorios',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         const SizedBox(height: 8),
                         ...deletedAlerts.asMap().entries.map((entry) {
@@ -138,26 +158,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           return Card(
                             margin: const EdgeInsets.only(bottom: 8),
                             child: ListTile(
-                              leading: const Icon(Icons.notifications, color: Colors.orange),
+                              leading: const Icon(Icons.notifications,
+                                  color: Colors.orange),
                               title: Text(alert['title'] ?? 'Sin título'),
                               subtitle: Text(alert['description'] ?? ''),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.restore, color: Colors.green),
+                                    icon: const Icon(Icons.restore,
+                                        color: Colors.green),
                                     onPressed: () {
                                       setState(() {
                                         _deletedAlerts.removeAt(index);
                                       });
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('${alert['title']} restaurado')),
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                '${alert['title']} restaurado')),
                                       );
                                       Navigator.pop(context);
                                     },
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.delete_forever, color: Colors.red),
+                                    icon: const Icon(Icons.delete_forever,
+                                        color: Colors.red),
                                     onPressed: () {
                                       setState(() {
                                         _deletedAlerts.removeAt(index);
@@ -184,7 +210,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text('Vaciar Papelera'),
-                    content: const Text('¿Estás seguro de que quieres eliminar permanentemente todos los elementos?'),
+                    content: const Text(
+                        '¿Estás seguro de que quieres eliminar permanentemente todos los elementos?'),
                     actions: [
                       CustomTextButton(
                         onPressed: () => Navigator.pop(context, false),
@@ -192,12 +219,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       CustomTextButton(
                         onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Eliminar Todo', style: TextStyle(color: Colors.red)),
+                        child: const Text('Eliminar Todo',
+                            style: TextStyle(color: Colors.red)),
                       ),
                     ],
                   ),
                 );
-                
+
                 if (confirmed == true) {
                   await _trashService.emptyTrash();
                   setState(() {
@@ -209,7 +237,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   );
                 }
               },
-              child: const Text('Vaciar Papelera', style: TextStyle(color: Colors.red)),
+              child: const Text('Vaciar Papelera',
+                  style: TextStyle(color: Colors.red)),
             ),
           CustomTextButton(
             onPressed: () => Navigator.pop(context),
@@ -221,8 +250,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showAccessibilityDialog() {
-    final fontSizeProvider = Provider.of<FontSizeProvider>(context, listen: false);
-    
+    final fontSizeProvider =
+        Provider.of<FontSizeProvider>(context, listen: false);
+
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -265,7 +295,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         const Divider(),
                         Row(
                           children: [
-                            const Text('A-', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                            const Text('A-',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12)),
                             Expanded(
                               child: Slider(
                                 min: 12.0,
@@ -279,7 +311,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 },
                               ),
                             ),
-                            const Text('A+', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                            const Text('A+',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12)),
                           ],
                         ),
                         Align(
@@ -365,8 +399,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _logout() async {
-    final sp = await SharedPreferences.getInstance();
-    await sp.remove('current_user');
+    // Limpiar sesión usando SessionManager
+    await SessionManager.instance.clearSession();
+
     setState(() => _showLogoutDialog = false);
     if (!mounted) return;
     Navigator.of(context).pushReplacementNamed('/login');
@@ -384,7 +419,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white, width: 4),
-              boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8)],
+              boxShadow: const [
+                BoxShadow(color: Colors.black12, blurRadius: 8)
+              ],
             ),
             child: ClipOval(
               child: _profileImagePath != null
@@ -431,18 +468,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showProfileModal() async {
     if (_currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error: No se pudo cargar la información del usuario')),
+        const SnackBar(
+            content:
+                Text('Error: No se pudo cargar la información del usuario')),
       );
       return;
     }
 
     final nameController = TextEditingController(text: _userName);
-    
+
     await showDialog(
       context: context,
       builder: (context) {
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -465,14 +505,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               width: 160,
                               height: 160,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Container(
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
                                 width: 160,
                                 height: 160,
                                 color: Colors.blue[100],
                                 child: Center(
                                   child: Text(
-                                    nameController.text.isNotEmpty ? nameController.text[0] : '?',
-                                    style: const TextStyle(fontSize: 60, fontWeight: FontWeight.bold, color: Colors.white),
+                                    nameController.text.isNotEmpty
+                                        ? nameController.text[0]
+                                        : '?',
+                                    style: const TextStyle(
+                                        fontSize: 60,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white),
                                   ),
                                 ),
                               ),
@@ -486,28 +532,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           showModalBottomSheet(
                             context: context,
                             shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(20)),
                             ),
                             builder: (context) {
                               return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 24, horizontal: 16),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     ListTile(
-                                      leading: const Icon(Icons.camera_alt, color: Colors.blueAccent),
+                                      leading: const Icon(Icons.camera_alt,
+                                          color: Colors.blueAccent),
                                       title: const Text('Abrir cámara'),
                                       onTap: () async {
                                         Navigator.pop(context);
-                                        await _pickProfileImage(ImageSource.camera);
+                                        await _pickProfileImage(
+                                            ImageSource.camera);
                                       },
                                     ),
                                     ListTile(
-                                      leading: const Icon(Icons.photo_library, color: Colors.green),
+                                      leading: const Icon(Icons.photo_library,
+                                          color: Colors.green),
                                       title: const Text('Abrir galería'),
                                       onTap: () async {
                                         Navigator.pop(context);
-                                        await _pickProfileImage(ImageSource.gallery);
+                                        await _pickProfileImage(
+                                            ImageSource.gallery);
                                       },
                                     ),
                                   ],
@@ -520,10 +572,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           decoration: const BoxDecoration(
                             color: Colors.white,
                             shape: BoxShape.circle,
-                            boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
+                            boxShadow: [
+                              BoxShadow(color: Colors.black26, blurRadius: 4)
+                            ],
                           ),
                           padding: const EdgeInsets.all(8),
-                          child: const Icon(Icons.edit, size: 28, color: Colors.blueAccent),
+                          child: const Icon(Icons.edit,
+                              size: 28, color: Colors.blueAccent),
                         ),
                       ),
                     ),
@@ -537,7 +592,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     labelText: 'Nombre',
                     border: OutlineInputBorder(),
                   ),
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const SizedBox(height: 12),
                 // Mostrar información adicional del usuario
@@ -565,11 +621,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                          const Icon(Icons.calendar_today,
+                              size: 16, color: Colors.grey),
                           const SizedBox(width: 8),
                           Text(
                             'Miembro desde: ${_formatDate(_currentUser!.fechaCreacionIso)}',
-                            style: const TextStyle(fontSize: 12, color: Colors.grey),
+                            style: const TextStyle(
+                                fontSize: 12, color: Colors.grey),
                           ),
                         ],
                       ),
@@ -580,7 +638,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(width: 8),
                           Text(
                             'ID: ${_currentUser!.idUsuario}',
-                            style: const TextStyle(fontSize: 12, color: Colors.grey),
+                            style: const TextStyle(
+                                fontSize: 12, color: Colors.grey),
                           ),
                         ],
                       ),
@@ -597,14 +656,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                         if (_currentUser == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('No se pudo obtener la información del usuario.')),
+                            const SnackBar(
+                                content: Text(
+                                    'No se pudo obtener la información del usuario.')),
                           );
                           return;
                         }
 
                         if (newName.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('El nombre no puede estar vacío.')),
+                            const SnackBar(
+                                content:
+                                    Text('El nombre no puede estar vacío.')),
                           );
                           return;
                         }
@@ -626,11 +689,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           );
 
                           // Llamar a la API para actualizar perfil por correo
-                          final updatedUser = await RemoteUserRepository.instance
+                          final updatedUser = await RemoteUserRepository
+                              .instance
                               .updateProfileByEmail(
                             correoActual: _currentUser!.email,
                             nuevoNombre: newName,
-                            nuevoCorreo: null, // Por ahora solo cambiamos nombre
+                            nuevoCorreo:
+                                null, // Por ahora solo cambiamos nombre
                           );
 
                           // Cerrar indicador de carga
@@ -643,14 +708,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             _userEmail = updatedUser.email;
                           });
 
-                          // Guardar en SharedPreferences
-                          final sp = await SharedPreferences.getInstance();
-                          await sp.setString('current_user', jsonEncode(updatedUser.toJson()));
+                          // Guardar en SessionManager
+                          await SessionManager.instance.setUser(updatedUser);
 
                           if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('✅ Perfil actualizado correctamente'),
+                              content:
+                                  Text('✅ Perfil actualizado correctamente'),
                               backgroundColor: Colors.green,
                             ),
                           );
@@ -658,7 +723,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         } catch (e) {
                           // Cerrar indicador de carga si está abierto
                           if (mounted) Navigator.pop(context);
-                          
+
                           print('Error actualizando perfil: $e');
                           if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -708,7 +773,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadProfileImage();
     _initializeTrash();
     _addTestDeletedAlert();
-    
+
     // Registrar el callback para capturar recordatorios eliminados
     AlertsScreen.onAlertDeleted = (alert) {
       setState(() {
@@ -733,13 +798,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _addTestDeletedAlert() {
     // Agregar un recordatorio de prueba en papelera si no existe
-    final testExists = _deletedAlerts.any((alert) => alert['id'] == 'test_deleted_alert');
+    final testExists =
+        _deletedAlerts.any((alert) => alert['id'] == 'test_deleted_alert');
     if (!testExists) {
       setState(() {
         _deletedAlerts.add({
           'id': 'test_deleted_alert',
           'title': 'Recordatorio de Prueba',
-          'description': 'Este es un recordatorio eliminado que puedes recuperar desde la papelera',
+          'description':
+              'Este es un recordatorio eliminado que puedes recuperar desde la papelera',
           'date': DateTime.now().add(const Duration(days: 1)).toIso8601String(),
           'priority': 'Alta',
           'location': 'Casa',
@@ -763,8 +830,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _addTestShoppingItem() async {
     // Agregar un elemento de compras de prueba en papelera si no existe
     final trashItems = _trashService.getTrashItems();
-    final testExists = trashItems.any((item) => item.id == 'test_shopping_item');
-    
+    final testExists =
+        trashItems.any((item) => item.id == 'test_shopping_item');
+
     if (!testExists) {
       final testTrashItem = TrashItem(
         id: 'test_shopping_item',
@@ -775,7 +843,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         deletedAt: DateTime.now().subtract(const Duration(hours: 2)),
         originalType: 'shopping_item',
       );
-      
+
       await _trashService.addToTrash(testTrashItem);
     }
   }
@@ -786,62 +854,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     try {
-      final sp = await SharedPreferences.getInstance();
-      final userJson = sp.getString('current_user');
-      
-      print('🔍 Cargando usuario desde SharedPreferences...');
-      print('📄 UserJson: $userJson');
-      
-      if (userJson != null && userJson.isNotEmpty) {
+      // Obtener usuario desde SessionManager
+      final user = SessionManager.instance.currentUser;
+
+      print('🔍 Cargando usuario desde SessionManager...');
+
+      if (user != null) {
+        print('📊 Usuario obtenido: ${user.nombreUsuario} (${user.email})');
+
+        // Usar los datos locales primero para mostrar algo rápidamente
+        setState(() {
+          _currentUser = user;
+          _userName = user.nombreUsuario;
+          _userEmail = user.email;
+        });
+
+        // Intentar obtener el perfil actualizado desde la API en segundo plano
         try {
-          final userData = jsonDecode(userJson);
-          print('📊 UserData parseado: $userData');
-          
-          final user = User.fromJson(userData);
-          print('👤 Usuario creado: ${user.nombreUsuario} (${user.email})');
-          
-          // Usar los datos locales primero para mostrar algo rápidamente
+          print('🌐 Obteniendo perfil actualizado desde API...');
+          final updatedUser =
+              await RemoteUserRepository.instance.getUserProfile(
+            email: user.email,
+          );
+
+          print('✅ Perfil actualizado obtenido: ${updatedUser.nombreUsuario}');
+
+          // Si la API responde, actualizar con los datos más recientes
           setState(() {
-            _currentUser = user;
-            _userName = user.nombreUsuario;
-            _userEmail = user.email;
+            _currentUser = updatedUser;
+            _userName = updatedUser.nombreUsuario;
+            _userEmail = updatedUser.email;
           });
-          
-          // Intentar obtener el perfil actualizado desde la API en segundo plano
-          try {
-            print('🌐 Obteniendo perfil actualizado desde API...');
-            final updatedUser = await RemoteUserRepository.instance.getUserProfile(
-              email: user.email,
-            );
-            
-            print('✅ Perfil actualizado obtenido: ${updatedUser.nombreUsuario}');
-            
-            // Si la API responde, actualizar con los datos más recientes
-            setState(() {
-              _currentUser = updatedUser;
-              _userName = updatedUser.nombreUsuario;
-              _userEmail = updatedUser.email;
-            });
-            
-            // Guardar los datos actualizados en SharedPreferences
-            await sp.setString('current_user', jsonEncode(updatedUser.toJson()));
-            
-          } catch (apiError) {
-            print('⚠️ Error obteniendo perfil actualizado (usando datos locales): $apiError');
-            // Si falla la API, mantener los datos locales ya cargados
-          }
-          
-        } catch (parseError) {
-          print('❌ Error parseando usuario desde SharedPreferences: $parseError');
-          // Si hay error parseando, limpiar SharedPreferences y redirigir al login
-          await sp.remove('current_user');
-          if (mounted) {
-            Navigator.of(context).pushReplacementNamed('/login');
-            return;
-          }
+
+          // Guardar los datos actualizados en SessionManager
+          await SessionManager.instance.setUser(updatedUser);
+        } catch (apiError) {
+          print(
+              '⚠️ Error obteniendo perfil actualizado (usando datos locales): $apiError');
+          // Si falla la API, mantener los datos locales ya cargados
         }
       } else {
-        print('❌ No hay usuario guardado en SharedPreferences');
+        print('❌ No hay usuario en sesión');
         // No hay usuario guardado, redirigir al login
         if (mounted) {
           Navigator.of(context).pushReplacementNamed('/login');
@@ -884,8 +937,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final date = DateTime.parse(isoDateString);
       final months = [
-        'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-        'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+        'enero',
+        'febrero',
+        'marzo',
+        'abril',
+        'mayo',
+        'junio',
+        'julio',
+        'agosto',
+        'septiembre',
+        'octubre',
+        'noviembre',
+        'diciembre'
       ];
       return '${date.day} de ${months[date.month - 1]} de ${date.year}';
     } catch (e) {
@@ -897,7 +960,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final fontSizeProvider = Provider.of<FontSizeProvider>(context);
-    
+
     // Mostrar indicador de carga si aún está cargando el usuario
     if (_isLoading) {
       return const Scaffold(
@@ -936,103 +999,110 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       );
     }
-    
+
     return Stack(
       children: [
         RefreshIndicator(
           onRefresh: _loadCurrentUser,
           child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-          children: [
-            Container(
-              height: 120,
-              color: Colors.blue[500],
-              child: null,
-            ),
-            Transform.translate(
-              offset: const Offset(0, -48),
-              child: Column(
-                children: [
-                  _buildAvatar(),
-                  const SizedBox(height: 8),
-                  Text(_userName,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: fontSizeProvider.fontSize + 4,
-                      )),
-                  Text(_userEmail,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.grey,
-                        fontSize: fontSizeProvider.fontSize,
-                      )),
-                  const SizedBox(height: 16),
-                  // NOTIFICACIONES
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _buildCard(
-                      margin: EdgeInsets.zero,
-                      child: ListTile(
-                        leading: const Icon(Icons.notifications_active_outlined),
-                        title: const Text('Notificaciones'),
-                        subtitle: const Text('Controla recordatorios y avisos de la app'),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                        onTap: _showNotificationsDialog,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // ACCESIBILIDAD
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _buildCard(
-                      margin: EdgeInsets.zero,
-                      child: ListTile(
-                        leading: const Icon(Icons.accessibility),
-                        title: const Text('Accesibilidad'),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                        onTap: _showAccessibilityDialog,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // PAPELERA DE RECICLAJE
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _buildCard(
-                      margin: EdgeInsets.zero,
-                      child: ListTile(
-                        leading: const Icon(Icons.delete_outline, color: Colors.orange),
-                        title: const Text('Papelera'),
-                        subtitle: Text('${_trashService.getTrashItems().length + _deletedAlerts.length} elementos eliminados'),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                        onTap: _showTrashDialog,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // CERRAR SESIÓN
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.red,
-                        side: const BorderSide(color: Colors.redAccent),
-                        minimumSize: const Size.fromHeight(48),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                        elevation: 0,
-                      ),
-                      onPressed: _showLogoutConfirm,
-                      child: const Text('Cerrar Sesión',
-                          style: TextStyle(fontWeight: FontWeight.w600)),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                ],
+            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+            children: [
+              Container(
+                height: 120,
+                color: Colors.blue[500],
+                child: null,
               ),
-            ),
-          ],
+              Transform.translate(
+                offset: const Offset(0, -48),
+                child: Column(
+                  children: [
+                    _buildAvatar(),
+                    const SizedBox(height: 8),
+                    Text(_userName,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: fontSizeProvider.fontSize + 4,
+                        )),
+                    Text(_userEmail,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.grey,
+                          fontSize: fontSizeProvider.fontSize,
+                        )),
+                    const SizedBox(height: 16),
+                    // NOTIFICACIONES
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: _buildCard(
+                        margin: EdgeInsets.zero,
+                        child: ListTile(
+                          leading:
+                              const Icon(Icons.notifications_active_outlined),
+                          title: const Text('Notificaciones'),
+                          subtitle: const Text(
+                              'Controla recordatorios y avisos de la app'),
+                          trailing:
+                              const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: _showNotificationsDialog,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // ACCESIBILIDAD
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: _buildCard(
+                        margin: EdgeInsets.zero,
+                        child: ListTile(
+                          leading: const Icon(Icons.accessibility),
+                          title: const Text('Accesibilidad'),
+                          trailing:
+                              const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: _showAccessibilityDialog,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // PAPELERA DE RECICLAJE
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: _buildCard(
+                        margin: EdgeInsets.zero,
+                        child: ListTile(
+                          leading: const Icon(Icons.delete_outline,
+                              color: Colors.orange),
+                          title: const Text('Papelera'),
+                          subtitle: Text(
+                              '${_trashService.getTrashItems().length + _deletedAlerts.length} elementos eliminados'),
+                          trailing:
+                              const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: _showTrashDialog,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // CERRAR SESIÓN
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.red,
+                          side: const BorderSide(color: Colors.redAccent),
+                          minimumSize: const Size.fromHeight(48),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          elevation: 0,
+                        ),
+                        onPressed: _showLogoutConfirm,
+                        child: const Text('Cerrar Sesión',
+                            style: TextStyle(fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
         if (_showLogoutDialog)
