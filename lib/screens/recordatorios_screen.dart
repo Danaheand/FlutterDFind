@@ -1,11 +1,17 @@
 import 'dart:math';
 import 'dart:typed_data';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'recordatorios_detalle_screen.dart' as detail;
 import '../services/notification_service.dart';
 import '../widgets/custom_text_button.dart';
+import '../providers/recordatorio_provider.dart';
+import '../models/recordatorio.dart';
+import '../models/recordatorio_exception.dart';
 
 // Variable global eliminada, se declara dentro de la clase correspondiente
 typedef DeleteAlertCallback = void Function(AlertData alert);
@@ -54,6 +60,8 @@ class AlertData {
   Color? color;
   String? imagePath;
   List<int>? selectedWeekdays;
+  DateTime? createdAt;
+  DateTime? updatedAt;
 
   AlertData({
     required this.id,
@@ -69,6 +77,8 @@ class AlertData {
     this.color,
     this.imagePath,
     this.selectedWeekdays,
+    this.createdAt,
+    this.updatedAt,
   });
 }
 
@@ -85,116 +95,118 @@ class _AlertsScreenState extends State<AlertsScreen> {
   Set<String> selectedAlerts = {};
   int tabIndex = 0;
   bool selectionMode = false;
-  final List<AlertData> _alerts = [
-    // Actuales con todos los campos
-    AlertData(
-      id: 'a1',
-      title: 'Garantía del portátil vence',
-      description:
-          'Recuerda renovar la garantía extendida antes de que caduque para seguir protegido',
-      date: DateTime.now().add(const Duration(days: 45, hours: 14)),
-      priority: AlertPriority.media,
-      active: true,
-      color: Colors.lightBlue.shade400,
-      location: 'Oficina - Escritorio principal',
-      object: 'MacBook Pro 14"',
-      repetitive: false,
-    ),
-    AlertData(
-      id: 'a2',
-      title: 'Cambiar filtros del aire',
-      description:
-          'Los filtros del sistema de aire acondicionado necesitan ser reemplazados cada 3 meses',
-      date: DateTime.now().add(const Duration(days: 7, hours: 9)),
-      priority: AlertPriority.alta,
-      active: true,
-      color: Colors.red.shade400,
-      location: 'Casa - Sala de estar',
-      object: 'Aire acondicionado Samsung',
-      repetitive: true,
-      repeatFrequency: 'Cada 3 meses',
-    ),
-    AlertData(
-      id: 'a3',
-      title: 'Revisar extintores',
-      description:
-          'Inspección anual obligatoria de los extintores de incendios',
-      date:
-          DateTime.now().add(const Duration(days: 15, hours: 10, minutes: 30)),
-      priority: AlertPriority.alta,
-      active: true,
-      color: Colors.orange.shade600,
-      location: 'Oficina - Área común',
-      object: 'Extintor ABC 6kg',
-      repetitive: true,
-      repeatFrequency: 'Anual',
-    ),
-    AlertData(
-      id: 'a4',
-      title: 'Mantenimiento coche',
-      description: 'Cambio de aceite y revisión general del vehículo',
-      date: DateTime.now().add(const Duration(days: 3, hours: 16)),
-      priority: AlertPriority.media,
-      active: true,
-      color: Colors.blue.shade500,
-      location: 'Garaje',
-      object: 'Toyota Corolla 2020',
-      repetitive: true,
-      repeatFrequency: 'Cada 6 meses',
-    ),
-    // Pasadas
-    AlertData(
-      id: 'p1',
-      title: 'Pago de servicios',
-      description: 'Pagar facturas de luz, agua e internet del mes',
-      date: DateTime.now().subtract(const Duration(days: 2, hours: 5)),
-      priority: AlertPriority.alta,
-      active: true,
-      color: Colors.red.shade300,
-      location: 'Casa',
-      object: null,
-      repetitive: true,
-      repeatFrequency: 'Mensual',
-    ),
-    AlertData(
-      id: 'p2',
-      title: 'Regar plantas',
-      description: 'Regar todas las plantas del jardín',
-      date: DateTime.now().subtract(const Duration(days: 1, hours: 8)),
-      priority: AlertPriority.baja,
-      active: true,
-      color: Colors.green.shade300,
-      location: 'Casa - Jardín',
-      object: 'Plantas ornamentales',
-      repetitive: true,
-      repeatFrequency: 'Cada 2 días',
-    ),
-    AlertData(
-      id: 'p3',
-      title: 'Renovar suscripción',
-      description: 'Renovar suscripción premium de streaming',
-      date: DateTime.now().subtract(const Duration(days: 5, hours: 12)),
-      priority: AlertPriority.media,
-      active: true,
-      color: Colors.purple.shade300,
-      location: null,
-      object: null,
-      repetitive: false,
-    ),
-    // Desactivada
-    AlertData(
-      id: 'd1',
-      title: 'Alerta desactivada',
-      description: 'Esta alerta fue desactivada temporalmente',
-      date: DateTime.now().add(const Duration(days: 20)),
-      priority: AlertPriority.baja,
-      active: false,
-      color: Colors.grey.shade400,
-      location: 'Casa',
-      object: 'Artículo de prueba',
-      repetitive: false,
-    ),
-  ];
+  String? _userEmail;
+  int? _userId;
+
+  @override
+  void initState() {
+    super.initState();
+    AlertsScreen.onAlertDeleted = _onAlertDeleted;
+    _loadUserAndRecordatorios();
+  }
+
+  Future<void> _loadUserAndRecordatorios() async {
+    try {
+      // Cargar email del usuario desde SharedPreferences
+      final sp = await SharedPreferences.getInstance();
+      final userJson = sp.getString('current_user');
+
+      if (userJson != null) {
+        final userData = json.decode(userJson);
+        _userEmail = userData['correo'];
+        _userId = userData['idUsuario'];
+
+        if (_userEmail != null && _userId != null && mounted) {
+          // Cargar recordatorios del servidor
+          final provider = context.read<RecordatorioProvider>();
+          provider.setCorreoUsuario(_userEmail!);
+          await provider.cargarRecordatorios();
+        }
+      }
+    } catch (e) {
+      print('❌ Error cargando recordatorios: $e');
+    }
+  }
+
+  void _onAlertDeleted(AlertData alert) {
+    // Esta función se llama cuando se elimina un recordatorio desde el detalle
+    if (_userEmail != null) {
+      context.read<RecordatorioProvider>().eliminarRecordatorio(alert.title);
+    }
+  }
+
+  @override
+  void dispose() {
+    AlertsScreen.onAlertDeleted = null;
+    super.dispose();
+  }
+
+  // Convertir Recordatorio a AlertData para compatibilidad
+  AlertData _recordatorioToAlertData(Recordatorio rec) {
+    AlertPriority priority = AlertPriority.media;
+    switch (rec.prioridad.toLowerCase()) {
+      case 'alta':
+        priority = AlertPriority.alta;
+        break;
+      case 'baja':
+        priority = AlertPriority.baja;
+        break;
+      default:
+        priority = AlertPriority.media;
+    }
+
+    Color? color;
+    if (rec.color != null) {
+      try {
+        // Intentar parsear el color (ej: "#FF5733" o "0xFFFF5733")
+        final colorStr = rec.color!.replaceAll('#', '');
+        color = Color(int.parse(
+                colorStr.startsWith('0x') ? colorStr.substring(2) : colorStr,
+                radix: 16) |
+            0xFF000000);
+      } catch (e) {
+        color = null;
+      }
+    }
+
+    // Convertir diasSeleccionados string a List<int> si existe
+    List<int>? weekdays;
+    if (rec.diasSeleccionados != null && rec.diasSeleccionados!.isNotEmpty) {
+      try {
+        weekdays = rec.diasSeleccionados!
+            .split(',')
+            .map((s) => int.tryParse(s.trim()))
+            .where((n) => n != null)
+            .cast<int>()
+            .toList();
+      } catch (e) {
+        weekdays = null;
+      }
+    }
+
+    return AlertData(
+      id: rec.idRecordatorio ?? rec.titulo.hashCode.toString(),
+      title: rec.titulo,
+      description: rec.descripcion,
+      date: rec.fechaHora,
+      priority: priority,
+      location: rec.ubicacion,
+      object: rec.objeto,
+      repetitive: rec.esRepetitivo,
+      repeatFrequency: rec.frecuenciaRepeticion,
+      active: rec.activo,
+      color: color ?? _defaultColorFor(priority),
+      selectedWeekdays: weekdays,
+      imagePath: rec.rutaImagen,
+      createdAt: rec.creadoEl,
+      updatedAt: rec.actualizadoEl,
+    );
+  }
+
+  List<AlertData> get _alerts {
+    final provider = context.watch<RecordatorioProvider>();
+    return provider.recordatorios.map(_recordatorioToAlertData).toList();
+  }
 
   List<AlertData> get actuales =>
       _alerts.where((a) => a.active && a.date.isAfter(DateTime.now())).toList();
@@ -215,10 +227,33 @@ class _AlertsScreenState extends State<AlertsScreen> {
       .toList();
   List<AlertData> get desactivadas => _alerts.where((a) => !a.active).toList();
 
-  void _toggleAlertActive(AlertData alert) {
-    setState(() {
-      alert.active = !alert.active;
-    });
+  Future<void> _toggleAlertActive(AlertData alert) async {
+    if (_userEmail == null) return;
+
+    try {
+      final provider = context.read<RecordatorioProvider>();
+      await provider.toggleActivoRecordatorio(alert.title);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(alert.active
+                ? 'Recordatorio pausado'
+                : 'Recordatorio activado'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } on RecordatorioException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.message}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Widget _sectionHeader(String text) {
@@ -235,28 +270,125 @@ class _AlertsScreenState extends State<AlertsScreen> {
       BuildContext context, AlertData? existing) async {
     return showDialog<AlertData>(
       context: context,
-      builder: (_) => _AlertEditDialog(alert: existing),
+      builder: (_) => _AlertEditDialog(
+        alert: existing,
+        userEmail: _userEmail,
+      ),
       barrierDismissible: false,
     );
   }
 
   void _openAlertDialog() async {
+    if (_userEmail == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No hay usuario autenticado'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     final created = await _openEditor(context, null);
     if (created != null) {
-      setState(() => _alerts.add(created));
+      // Convertir AlertData a Recordatorio y crear en el servidor
+      try {
+        final provider = context.read<RecordatorioProvider>();
+
+        final nuevoRecordatorio = Recordatorio(
+          idUsuario: _userId!,
+          titulo: created.title,
+          descripcion: created.description,
+          fechaHora: created.date,
+          prioridad: created.priority.name,
+          ubicacion: created.location,
+          objeto: created.object,
+          esRepetitivo: created.repetitive,
+          frecuenciaRepeticion: created.repeatFrequency,
+          diasSeleccionados: created.selectedWeekdays?.join(','),
+        );
+
+        await provider.crearRecordatorio(nuevoRecordatorio);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Recordatorio creado exitosamente'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } on RecordatorioException catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: ${e.message}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
-  void _deleteSelected() {
-    setState(() {
-      for (var a
-          in _alerts.where((a) => selectedAlerts.contains(a.id)).toList()) {
-        AlertsScreen.onAlertDeleted?.call(a);
+  void _deleteSelected() async {
+    if (_userEmail == null || selectedAlerts.isEmpty) return;
+
+    final provider = context.read<RecordatorioProvider>();
+    final alertsToDelete =
+        _alerts.where((a) => selectedAlerts.contains(a.id)).toList();
+
+    // Confirmar eliminación
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar eliminación'),
+        content: Text('¿Eliminar ${alertsToDelete.length} recordatorio(s)?'),
+        actions: [
+          CustomTextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          CustomTextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar != true) return;
+
+    try {
+      for (var alert in alertsToDelete) {
+        await provider.eliminarRecordatorio(alert.title);
+        AlertsScreen.onAlertDeleted?.call(alert);
       }
-      _alerts.removeWhere((a) => selectedAlerts.contains(a.id));
-      selectedAlerts.clear();
-      selectionMode = false;
-    });
+
+      setState(() {
+        selectedAlerts.clear();
+        selectionMode = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text('${alertsToDelete.length} recordatorio(s) eliminado(s)'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } on RecordatorioException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.message}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildTabBar() {
@@ -389,11 +521,20 @@ class _AlertsScreenState extends State<AlertsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<RecordatorioProvider>();
+
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false, // <- quita la flecha de retroceso
+        automaticallyImplyLeading: false,
         title: const Text('Recordatorios'),
         actions: [
+          // Botón de refrescar
+          if (!provider.isLoading)
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              tooltip: 'Recargar',
+              onPressed: _loadUserAndRecordatorios,
+            ),
           if (tabIndex == 1 && pasadas.isNotEmpty)
             IconButton(
               icon: Icon(selectionMode ? Icons.close : Icons.select_all),
@@ -407,51 +548,101 @@ class _AlertsScreenState extends State<AlertsScreen> {
       ),
       floatingActionButton: tabIndex == 0
           ? FloatingActionButton(
-              onPressed: () => _openAlertDialog(),
+              onPressed: provider.isLoading ? null : () => _openAlertDialog(),
               tooltip: 'Añadir Alerta',
               child: const Icon(Icons.add_alert),
             )
           : null,
-      body: tabIndex == 0
-          ? ListView(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              children: [
-                _buildTabBar(),
-                _buildSection('Importantes', importantes),
-                _buildSection('Actuales', proximas),
-                _buildSection('Desactivadas', desactivadas),
-              ],
-            )
-          : Stack(
-              children: [
-                ListView(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  children: [
-                    _buildTabBar(),
-                    _buildSection('Pasadas', pasadas, showSelection: true),
-                  ],
-                ),
-                if (selectionMode && selectedAlerts.isNotEmpty)
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      color: Theme.of(context).colorScheme.surface,
-                      padding: const EdgeInsets.all(12),
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.delete),
-                        label: const Text('Eliminar Seleccionadas'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                        ),
-                        onPressed: _deleteSelected,
+      body: provider.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : provider.error != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline,
+                          size: 64, color: Colors.red),
+                      const SizedBox(height: 16),
+                      Text(
+                        provider.error!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.red),
                       ),
-                    ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadUserAndRecordatorios,
+                        child: const Text('Reintentar'),
+                      ),
+                    ],
                   ),
-              ],
-            ),
+                )
+              : _alerts.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.notifications_none,
+                              size: 64, color: Colors.grey),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'No tienes recordatorios',
+                            style: TextStyle(fontSize: 18, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Presiona + para crear uno',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: _loadUserAndRecordatorios,
+                      child: tabIndex == 0
+                          ? ListView(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              children: [
+                                _buildTabBar(),
+                                _buildSection('Importantes', importantes),
+                                _buildSection('Actuales', proximas),
+                                _buildSection('Desactivadas', desactivadas),
+                              ],
+                            )
+                          : Stack(
+                              children: [
+                                ListView(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8),
+                                  children: [
+                                    _buildTabBar(),
+                                    _buildSection('Pasadas', pasadas,
+                                        showSelection: true),
+                                  ],
+                                ),
+                                if (selectionMode && selectedAlerts.isNotEmpty)
+                                  Positioned(
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    child: Container(
+                                      color:
+                                          Theme.of(context).colorScheme.surface,
+                                      padding: const EdgeInsets.all(12),
+                                      child: ElevatedButton.icon(
+                                        icon: const Icon(Icons.delete),
+                                        label: const Text(
+                                            'Eliminar Seleccionadas'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.red,
+                                          foregroundColor: Colors.white,
+                                        ),
+                                        onPressed: _deleteSelected,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                    ),
     );
   }
 }
@@ -676,8 +867,12 @@ class _AlertCard extends StatelessWidget {
 }
 
 class _AlertEditDialog extends StatefulWidget {
-  const _AlertEditDialog({required this.alert});
+  const _AlertEditDialog({
+    required this.alert,
+    this.userEmail,
+  });
   final AlertData? alert;
+  final String? userEmail;
 
   @override
   State<_AlertEditDialog> createState() => _AlertEditDialogState();

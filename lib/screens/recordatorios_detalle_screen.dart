@@ -1,6 +1,10 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import '../providers/recordatorio_provider.dart';
+import '../models/recordatorio_exception.dart';
+import '../models/recordatorio.dart';
 
 enum AlertPriority { baja, media, alta }
 
@@ -47,6 +51,8 @@ class AlertData {
   Color? color;
   String? imagePath;
   List<int>? selectedWeekdays;
+  DateTime? createdAt;
+  DateTime? updatedAt;
 
   AlertData({
     required this.id,
@@ -62,6 +68,8 @@ class AlertData {
     this.color,
     this.imagePath,
     this.selectedWeekdays,
+    this.createdAt,
+    this.updatedAt,
   });
 }
 
@@ -105,9 +113,218 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
     return '$hour:$minute';
   }
 
+  String _formatDateTimeCompact(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final year = date.year.toString().substring(2);
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+    return '$day/$month/$year\n$hour:$minute';
+  }
+
   void _showEditDialog() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Función de editar en desarrollo')),
+    final titleCtrl = TextEditingController(text: alert.title);
+    final descCtrl = TextEditingController(text: alert.description);
+    final locationCtrl = TextEditingController(text: alert.location ?? '');
+    final objectCtrl = TextEditingController(text: alert.object ?? '');
+
+    DateTime editDate = alert.date;
+    AlertPriority editPriority = alert.priority;
+    Color? editColor = alert.color ?? _defaultColorFor(alert.priority);
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Editar Recordatorio'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  controller: titleCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Título',
+                    prefixIcon: Icon(Icons.title),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: descCtrl,
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                    labelText: 'Descripción',
+                    prefixIcon: Icon(Icons.notes),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: locationCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Lugar (opcional)',
+                    prefixIcon: Icon(Icons.place_outlined),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: objectCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Artículo (opcional)',
+                    prefixIcon: Icon(Icons.inventory_2_outlined),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: editDate,
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) {
+                      setState(() => editDate = picked);
+                    }
+                  },
+                  child: InputDecorator(
+                    decoration: const InputDecoration(
+                      labelText: 'Fecha',
+                      border: OutlineInputBorder(),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    child: Text(
+                      '${editDate.day.toString().padLeft(2, '0')}/${editDate.month.toString().padLeft(2, '0')}/${editDate.year}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<AlertPriority>(
+                  value: editPriority,
+                  // initialValue: editPriority,
+                  decoration: const InputDecoration(
+                    labelText: 'Prioridad',
+                    prefixIcon: Icon(Icons.priority_high_rounded),
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                        value: AlertPriority.baja, child: Text('Baja')),
+                    DropdownMenuItem(
+                        value: AlertPriority.media, child: Text('Media')),
+                    DropdownMenuItem(
+                        value: AlertPriority.alta, child: Text('Alta')),
+                  ],
+                  onChanged: (val) {
+                    setState(() {
+                      editPriority = val!;
+                      editColor = _defaultColorFor(editPriority);
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                final tituloOriginal =
+                    alert.title; // Guardar título original para el PUT
+
+                try {
+                  // Llamar a la API para actualizar
+                  final provider = context.read<RecordatorioProvider>();
+
+                  final recordatorioActualizado = Recordatorio(
+                    idRecordatorio: alert.id,
+                    idUsuario: 0, // Se requiere pero no se usa en PUT
+                    titulo: titleCtrl.text.trim(),
+                    descripcion: descCtrl.text.trim(),
+                    fechaHora: editDate,
+                    prioridad: editPriority.name,
+                    ubicacion: locationCtrl.text.trim().isEmpty
+                        ? null
+                        : locationCtrl.text.trim(),
+                    objeto: objectCtrl.text.trim().isEmpty
+                        ? null
+                        : objectCtrl.text.trim(),
+                    esRepetitivo: alert.repetitive,
+                    frecuenciaRepeticion: alert.repeatFrequency,
+                    diasSeleccionados: alert.selectedWeekdays?.join(','),
+                  );
+
+                  await provider.actualizarRecordatorio(
+                    tituloOriginal,
+                    recordatorioActualizado,
+                  );
+
+                  // Actualizar el estado local
+                  if (mounted) {
+                    setState(() {
+                      alert = AlertData(
+                        id: alert.id,
+                        title: titleCtrl.text.trim(),
+                        description: descCtrl.text.trim(),
+                        date: editDate,
+                        priority: editPriority,
+                        location: locationCtrl.text.trim().isEmpty
+                            ? null
+                            : locationCtrl.text.trim(),
+                        object: objectCtrl.text.trim().isEmpty
+                            ? null
+                            : objectCtrl.text.trim(),
+                        repetitive: alert.repetitive,
+                        repeatFrequency: alert.repeatFrequency,
+                        active: alert.active,
+                        color: editColor,
+                        imagePath: alert.imagePath,
+                        selectedWeekdays: alert.selectedWeekdays,
+                        createdAt: alert.createdAt,
+                        updatedAt: DateTime.now(),
+                      );
+                    });
+
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Recordatorio actualizado exitosamente'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                } on RecordatorioException catch (e) {
+                  Navigator.pop(context);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error: ${e.message}'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  Navigator.pop(context);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error inesperado: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              },
+              icon: const Icon(Icons.save),
+              label: const Text('Guardar'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -321,6 +538,8 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
+
+                  // Descripción (siempre se muestra)
                   _SimpleDetailItem(
                     icon: Icons.description_outlined,
                     label: 'Descripción',
@@ -329,21 +548,115 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                         : 'Sin descripción',
                   ),
                   const SizedBox(height: 20),
+
+                  // Artículo (solo si tiene valor)
+                  if (alert.object != null && alert.object!.isNotEmpty) ...[
+                    _SimpleDetailItem(
+                      icon: Icons.inventory_2_outlined,
+                      label: 'Artículo',
+                      value: alert.object!,
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  // Ubicación (solo si tiene valor)
+                  if (alert.location != null && alert.location!.isNotEmpty) ...[
+                    _SimpleDetailItem(
+                      icon: Icons.location_on_outlined,
+                      label: 'Ubicación',
+                      value: alert.location!,
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  // Estado activo
                   _SimpleDetailItem(
-                    icon: Icons.inventory_2_outlined,
-                    label: 'Artículo',
-                    value: alert.object ?? 'Sin especificar',
+                    icon: alert.active
+                        ? Icons.check_circle_outline
+                        : Icons.pause_circle_outline,
+                    label: 'Estado',
+                    value: alert.active ? 'Activo' : 'Inactivo',
                   ),
                   const SizedBox(height: 20),
-                  _SimpleDetailItem(
-                    icon: Icons.location_on_outlined,
-                    label: 'Ubicación',
-                    value: alert.location ?? 'Sin especificar',
-                  ),
-                  const SizedBox(height: 20),
-                  if (alert.repetitive && alert.selectedWeekdays != null) ...[
+
+                  // Repetición (solo si es repetitivo y tiene días seleccionados)
+                  if (alert.repetitive &&
+                      alert.selectedWeekdays != null &&
+                      alert.selectedWeekdays!.isNotEmpty) ...[
                     _SimpleRepetitionDetail(
                         selectedWeekdays: alert.selectedWeekdays!),
+                    const SizedBox(height: 20),
+                  ],
+
+                  // Frecuencia de repetición (solo si tiene valor)
+                  if (alert.repetitive &&
+                      alert.repeatFrequency != null &&
+                      alert.repeatFrequency!.isNotEmpty) ...[
+                    _SimpleDetailItem(
+                      icon: Icons.event_repeat,
+                      label: 'Frecuencia',
+                      value: alert.repeatFrequency!,
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  // Ruta de imagen (solo si tiene valor)
+                  if (alert.imagePath != null &&
+                      alert.imagePath!.isNotEmpty) ...[
+                    _SimpleDetailItem(
+                      icon: Icons.image_outlined,
+                      label: 'Imagen',
+                      value: 'Imagen adjunta',
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  // Sección de metadatos (fechas) - Solo si alguna existe
+                  if (alert.createdAt != null || alert.updatedAt != null) ...[
+                    const SizedBox(height: 10),
+                    Divider(
+                      color: Colors.grey.shade300,
+                      thickness: 1,
+                      height: 40,
+                    ),
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'INFORMACIÓN DEL SISTEMA',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.grey.shade600,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        // Fecha de creación
+                        if (alert.createdAt != null)
+                          Expanded(
+                            child: _CompactDetailItem(
+                              icon: Icons.calendar_today_outlined,
+                              label: 'Creado el',
+                              value: _formatDateTimeCompact(alert.createdAt!),
+                            ),
+                          ),
+                        if (alert.createdAt != null && alert.updatedAt != null)
+                          const SizedBox(width: 16),
+                        // Fecha de actualización
+                        if (alert.updatedAt != null)
+                          Expanded(
+                            child: _CompactDetailItem(
+                              icon: Icons.update_outlined,
+                              label: 'Actualizado el',
+                              value: _formatDateTimeCompact(alert.updatedAt!),
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ],
               ),
@@ -368,12 +681,62 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                 children: [
                   // Botón Completar - Ancho completo
                   ElevatedButton.icon(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Marcado como completado')),
+                    onPressed: () async {
+                      final confirmar = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Completar recordatorio'),
+                          content: const Text(
+                              '¿Deseas marcar este recordatorio como completado? Esto lo eliminará permanentemente.'),
+                          actions: [
+                            TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Cancelar')),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text('Completar',
+                                  style: TextStyle(color: Colors.blue)),
+                            ),
+                          ],
+                        ),
                       );
-                      Navigator.pop(context);
+
+                      if (confirmar == true && mounted) {
+                        try {
+                          // Llamar a la API para eliminar (completar = eliminar)
+                          final provider = context.read<RecordatorioProvider>();
+                          await provider.eliminarRecordatorio(alert.title);
+
+                          if (mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    'Recordatorio completado exitosamente'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          }
+                        } on RecordatorioException catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error: ${e.message}'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error inesperado: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
@@ -394,16 +757,48 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              alert.active = !alert.active;
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text(alert.active
-                                      ? 'Activado'
-                                      : 'Desactivado')),
-                            );
+                          onPressed: () async {
+                            try {
+                              // Llamar a la API para toggle activo
+                              final provider =
+                                  context.read<RecordatorioProvider>();
+                              await provider
+                                  .toggleActivoRecordatorio(alert.title);
+
+                              // Actualizar el estado local
+                              setState(() {
+                                alert.active = !alert.active;
+                              });
+
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(alert.active
+                                        ? 'Recordatorio activado'
+                                        : 'Recordatorio desactivado'),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              }
+                            } on RecordatorioException catch (e) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error: ${e.message}'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error inesperado: $e'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
                           },
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.grey.shade700,
@@ -429,8 +824,8 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextButton.icon(
-                          onPressed: () {
-                            showDialog(
+                          onPressed: () async {
+                            final confirmar = await showDialog<bool>(
                               context: context,
                               builder: (context) => AlertDialog(
                                 title: const Text('Eliminar'),
@@ -438,25 +833,57 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                                     '¿Estás seguro de que deseas eliminar este recordatorio?'),
                                 actions: [
                                   TextButton(
-                                      onPressed: () => Navigator.pop(context),
+                                      onPressed: () =>
+                                          Navigator.pop(context, false),
                                       child: const Text('Cancelar')),
                                   TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                      Navigator.pop(context);
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                            content:
-                                                Text('Recordatorio eliminado')),
-                                      );
-                                    },
+                                    onPressed: () =>
+                                        Navigator.pop(context, true),
                                     child: const Text('Eliminar',
                                         style: TextStyle(color: Colors.red)),
                                   ),
                                 ],
                               ),
                             );
+
+                            if (confirmar == true && mounted) {
+                              try {
+                                // Llamar a la API para eliminar
+                                final provider =
+                                    context.read<RecordatorioProvider>();
+                                await provider
+                                    .eliminarRecordatorio(alert.title);
+
+                                if (mounted) {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          'Recordatorio eliminado exitosamente'),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                }
+                              } on RecordatorioException catch (e) {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Error: ${e.message}'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Error inesperado: $e'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              }
+                            }
                           },
                           style: TextButton.styleFrom(
                             foregroundColor: Colors.red,
@@ -586,6 +1013,57 @@ class _SimpleRepetitionDetail extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// Widget compacto para mostrar información de sistema (lado a lado)
+class _CompactDetailItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _CompactDetailItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Icon(icon, size: 20, color: Colors.grey.shade600),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.black87,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 }

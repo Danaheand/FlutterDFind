@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/font_size_provider.dart';
+import 'providers/recordatorio_provider.dart';
 import 'screens/pendientes_screen.dart';
 import 'screens/recordatorios_screen.dart';
 import 'screens/perfil_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/registro_screen.dart';
-
 
 import 'theme/app_theme.dart';
 import 'services/notification_service.dart';
@@ -64,14 +64,14 @@ class _MainScaffoldState extends State<MainScaffold> {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Solo inicializar notificaciones en dispositivos móviles (no en web)
   try {
     await NotificationService().initialize();
   } catch (e) {
     print('Error inicializando notificaciones (probablemente web): $e');
   }
-  
+
   runApp(const MyApp());
 }
 
@@ -80,8 +80,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<FontSizeProvider>(
-      create: (_) => FontSizeProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<FontSizeProvider>(
+          create: (_) => FontSizeProvider(),
+        ),
+        ChangeNotifierProvider<RecordatorioProvider>(
+          create: (_) => RecordatorioProvider(),
+        ),
+      ],
       child: MaterialApp(
         title: 'DFind',
         theme: AppTheme.lightTheme,
