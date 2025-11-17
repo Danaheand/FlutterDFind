@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/user.dart';
 import '../providers/font_size_provider.dart';
+import '../providers/theme_provider.dart';
 import '../services/trash_service.dart';
 import '../services/session_manager.dart';
 import '../models/trash_item.dart';
@@ -22,7 +23,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _darkMode = false;
   bool _showLogoutDialog = false;
   bool _notifSound = true;
   bool _notifVibration = true;
@@ -193,6 +193,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showAccessibilityDialog() {
     final fontSizeProvider =
         Provider.of<FontSizeProvider>(context, listen: false);
+    final themeProvider =
+        Provider.of<ThemeProvider>(context, listen: false);
 
     showDialog(
       context: context,
@@ -208,9 +210,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   leading: const Icon(Icons.dark_mode_outlined),
                   title: const Text('Tema Oscuro'),
                   trailing: Switch(
-                    value: _darkMode,
-                    onChanged: (v) {
-                      this.setState(() => _darkMode = v);
+                    value: themeProvider.isDarkMode,
+                    onChanged: (v) async {
+                      await themeProvider.setDarkMode(v);
                       setState(() {});
                     },
                   ),

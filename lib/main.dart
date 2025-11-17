@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/font_size_provider.dart';
 import 'providers/recordatorio_provider.dart';
+import 'providers/theme_provider.dart';
 import 'screens/pendientes_screen.dart';
 import 'screens/recordatorios_screen.dart';
 import 'screens/perfil_screen.dart';
@@ -98,19 +99,26 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<RecordatorioProvider>(
           create: (_) => RecordatorioProvider(),
         ),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+        ),
       ],
-      child: MaterialApp(
-        title: 'DFind',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        home: const AppLoginScreen(),
-        routes: {
-          '/main': (context) => const MainScaffold(),
-          '/login': (context) => const AppLoginScreen(),
-          '/register': (context) => const RegisterScreen(),
-          '/alerts': (context) => const AlertsScreen(),
-          '/profile': (context) => const ProfileScreen(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
+          return MaterialApp(
+            title: 'DFind',
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            home: const AppLoginScreen(),
+            routes: {
+              '/main': (context) => const MainScaffold(),
+              '/login': (context) => const AppLoginScreen(),
+              '/register': (context) => const RegisterScreen(),
+              '/alerts': (context) => const AlertsScreen(),
+              '/profile': (context) => const ProfileScreen(),
+            },
+          );
         },
       ),
     );
