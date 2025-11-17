@@ -1,9 +1,14 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:confetti/confetti.dart';
+
 import '../providers/font_size_provider.dart';
 import '../models/shopping_item.dart';
 import '../theme/app_theme.dart';
 import '../services/trash_service.dart';
+import '../services/session_manager.dart';
 import 'widgets/modal_pendientes.dart';
 import 'widgets/tips_section.dart';
 
@@ -23,130 +28,272 @@ class _InventoryScreenState extends State<InventoryScreen> {
   final Map<String, bool> _expandedPlaces = {};
   late final TrashService _trashService;
 
+  bool _loading = false;
+
+  /// ✔ CORREO DEL USUARIO LOGUEADO
+  late String _correoUsuario;
+
+  /// ✔ URL BASE DE LA API
+  final String baseUrl = 'https://dfindapi-yfcq.onrender.com';
+
+  /// 🎉 Controlador de confeti
+  late ConfettiController _confettiController;
+
   @override
   void initState() {
     super.initState();
     InventoryScreen.addFromAlertGlobal = addFromAlert;
     _trashService = TrashService.getInstance();
-    _initializeTrash();
-  }
-
-  Future<void> _initializeTrash() async {
-    await _trashService.loadTrashItems();
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 1),
+    );
+    _initialize();
   }
 
   @override
   void dispose() {
     InventoryScreen.addFromAlertGlobal = null;
+    _confettiController.dispose();
     super.dispose();
   }
 
-  void addFromAlert(String name) {
-    if (_items.any((e) => e.name == name)) return;
-    setState(() {
-      _items.add(ShoppingItem(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: name,
-        placeName: 'Supermercado',
-        category: '',
-      ));
-    });
-  }
+  Future<void> _initialize() async {
+    debugPrint("🔵 Inicializando pantalla Pendientes...");
 
-  void _addItemManually(String name, String placeName, int quantity) {
-    setState(() {
-      _items.add(ShoppingItem(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: name,
-        placeName: placeName,
-        category: '',
-        quantity: quantity,
-      ));
-    });
-  }
+    try {
+      _correoUsuario = SessionManager.instance.userEmail ?? "";
 
-  void _toggleItem(ShoppingItem item) {
-    setState(() {
-      item.isPurchased = !item.isPurchased;
-    });
+      if (_correoUsuario.isEmpty) {
+        debugPrint("❌ ERROR: correoUsuario está vacío");
+        return;
+      }
 
-    // Mostrar solo un SnackBar de confirmación
-    if (item.isPurchased) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('✓ ${item.name} marcado como comprado'),
-          duration: const Duration(seconds: 2),
-          action: SnackBarAction(
-            label: 'Deshacer',
-            onPressed: () {
-              setState(() {
-                item.isPurchased = false;
-              });
-            },
-          ),
-        ),
-      );
+      debugPrint("✔ Usuario logueado: $_correoUsuario");
+
+      await _trashService.loadTrashItems();
+      await _loadItemsFromAPI();
+    } catch (e, st) {
+      debugPrint("❌ ERROR en init(): $e");
+      debugPrint("$st");
     }
+  }
+
+  // ================================================================
+  //                            API CALLS
+  // ================================================================
+
+  /// 🔵 GET — Cargar pendientes desde API (TRAER TODOS, sin soloComprados)
+  Future<void> _loadItemsFromAPI() async {
+    setState(() => _loading = true);
+    debugPrint("🔵 GET pendientes desde API...");
+
+    final url = Uri.parse(
+      "$baseUrl/api/Pendientes/by-email/$_correoUsuario",
+    );
+
+    debugPrint("🌐 URL GET Pendientes: $url");
+
+    try {
+      final res = await http.get(url);
+      debugPrint("✔ GET status: ${res.statusCode}");
+      debugPrint("✔ GET body: ${res.body}");
+
+      if (res.statusCode == 200) {
+        final List data = jsonDecode(res.body);
+
+        _items.clear();
+        for (var p in data) {
+          _items.add(
+            ShoppingItem(
+              id: p["idPendiente"],
+              name: p["nombre"],
+              placeName: p["lugar"],
+              category: p["categoria"],
+              quantity: p["cantidad"],
+              isPurchased: p["estaComprado"],
+            ),
+          );
+        }
+        debugPrint("📦 Items cargados en memoria: ${_items.length}");
+        setState(() {});
+      } else {
+        debugPrint("❌ Error GET: ${res.body}");
+      }
+    } catch (e, st) {
+      debugPrint("❌ Excepción en GET: $e");
+      debugPrint("$st");
+    }
+
+    setState(() => _loading = false);
+  }
+
+  /// 🟢 POST — Crear un pendiente
+  Future<void> _createItem(String name, String place, int quantity) async {
+    debugPrint("🟢 POST creando pendiente: $name");
+
+    final url = Uri.parse("$baseUrl/api/Pendientes");
+
+    final body = {
+      "correoUsuario": _correoUsuario,
+      "nombre": name,
+      "lugar": place,
+      "categoria": "General",
+      "cantidad": quantity,
+    };
+
+    debugPrint("🌐 URL POST Pendiente: $url");
+    debugPrint("📦 Body POST: $body");
+
+    try {
+      final res = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      debugPrint("✔ POST status: ${res.statusCode}");
+      debugPrint("✔ POST body: ${res.body}");
+
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        final p = jsonDecode(res.body);
+
+        setState(() {
+          _items.add(
+            ShoppingItem(
+              id: p["idPendiente"],
+              name: p["nombre"],
+              placeName: p["lugar"],
+              category: p["categoria"],
+              quantity: p["cantidad"],
+              isPurchased: p["estaComprado"],
+            ),
+          );
+        });
+        debugPrint("📦 Items tras crear: ${_items.length}");
+      } else {
+        debugPrint("❌ Error POST: ${res.body}");
+      }
+    } catch (e, st) {
+      debugPrint("❌ Excepción POST: $e");
+      debugPrint("$st");
+    }
+  }
+
+  /// 🟣 PUT — Marcar comprado/no comprado (maneja 200/204)
+  Future<void> _toggleAPI(ShoppingItem item) async {
+    debugPrint("🟣 TOGGLE pendiente: ${item.name}");
+
+    final url = Uri.parse(
+      "$baseUrl/api/Pendientes/by-email/$_correoUsuario/toggle-comprado-por-nombre"
+      "?nombre=${Uri.encodeComponent(item.name)}"
+      "&lugar=${Uri.encodeComponent(item.placeName)}",
+    );
+
+    debugPrint("🌐 URL TOGGLE: $url");
+
+    try {
+      final res = await http.put(url);
+
+      debugPrint("✔ TOGGLE status: ${res.statusCode}");
+      debugPrint("✔ TOGGLE body: ${res.body}");
+
+      if (res.statusCode == 200 && res.body.isNotEmpty) {
+        final data = jsonDecode(res.body);
+
+        setState(() {
+          item.isPurchased = data["estaComprado"];
+        });
+
+        if (item.isPurchased) {
+          _playConfetti();
+        }
+        return;
+      }
+
+      if (res.statusCode == 204) {
+        debugPrint("✔ TOGGLE 204 sin body, cambio local de estado.");
+        setState(() {
+          item.isPurchased = !item.isPurchased;
+        });
+
+        if (item.isPurchased) {
+          _playConfetti();
+        }
+        return;
+      }
+
+      debugPrint(
+        "❌ Error TOGGLE: Código ${res.statusCode} | Body: ${res.body}",
+      );
+    } catch (e, st) {
+      debugPrint("❌ Excepción TOGGLE: $e");
+      debugPrint("$st");
+    }
+  }
+
+  /// 🔴 PUT — Eliminar pendiente
+  Future<void> _deleteAPI(ShoppingItem item) async {
+    debugPrint("🔴 DELETE (lógico) pendiente: ${item.name}");
+
+    final url = Uri.parse(
+      "$baseUrl/api/Pendientes/by-email/$_correoUsuario/eliminar-por-nombre"
+      "?nombre=${Uri.encodeComponent(item.name)}"
+      "&lugar=${Uri.encodeComponent(item.placeName)}",
+    );
+
+    debugPrint("🌐 URL DELETE: $url");
+
+    try {
+      final res = await http.put(url);
+
+      debugPrint("✔ DELETE status: ${res.statusCode}");
+      debugPrint("✔ DELETE body: ${res.body}");
+
+      if (res.statusCode == 200 || res.statusCode == 204) {
+        setState(() => _items.remove(item));
+        debugPrint("📦 Items tras eliminar: ${_items.length}");
+      } else {
+        debugPrint("❌ Error DELETE: ${res.body}");
+      }
+    } catch (e, st) {
+      debugPrint("❌ Excepción DELETE: $e");
+      debugPrint("$st");
+    }
+  }
+
+  // ================================================================
+  //                     LÓGICA LOCAL
+  // ================================================================
+
+  void addFromAlert(String name) async {
+    await _createItem(name, "Supermercado", 1);
+  }
+
+  void _addItemManually(String name, String placeName, int quantity) async {
+    await _createItem(name, placeName, quantity);
+  }
+
+  void _toggleItem(ShoppingItem item) async {
+    await _toggleAPI(item);
   }
 
   void _removeItem(ShoppingItem item) async {
-    // Mover a papelera en lugar de eliminar
-    await _trashService.addShoppingItemToTrash(item);
-    
-    setState(() {
-      _items.remove(item);
-    });
-
-    // Mostrar confirmación con opción de deshacer
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${item.name} movido a papelera'),
-          duration: const Duration(seconds: 3),
-          action: SnackBarAction(
-            label: 'Deshacer',
-            onPressed: () async {
-              try {
-                final restoredItem = await _trashService.restoreItem(item.id);
-                if (mounted) {
-                  setState(() {
-                    _items.add(_trashService.trashItemToShoppingItem(restoredItem));
-                  });
-                }
-              } catch (e) {
-                // Si no se puede restaurar, no hacer nada
-                print('Error restaurando item: $e');
-              }
-            },
-          ),
-        ),
-      );
-    }
+    await _deleteAPI(item);
   }
 
-  void _showAddItemModal() {
-    showDialog(
-      context: context,
-      builder: (context) => ModalPendientes(
-        onAdd: _addItemManually,
+  void _playConfetti() {
+    _confettiController.play();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('¡Tarea completada! 🎉'),
+        duration: Duration(seconds: 2),
       ),
     );
   }
 
-  List<ShoppingItem> get _pendingItems =>
-      _items.where((item) => !item.isPurchased).toList();
-
-  List<ShoppingItem> get _purchasedItems =>
-      _items.where((item) => item.isPurchased).toList();
-
-  Map<String, List<ShoppingItem>> _groupItemsByPlace(List<ShoppingItem> items) {
-    final grouped = <String, List<ShoppingItem>>{};
-    for (var item in items) {
-      grouped.putIfAbsent(item.placeName, () => []);
-      grouped[item.placeName]!.add(item);
-    }
-    return grouped;
-  }
+  // ================================================================
+  //                            UI
+  // ================================================================
 
   @override
   Widget build(BuildContext context) {
@@ -155,9 +302,34 @@ class _InventoryScreenState extends State<InventoryScreen> {
         title: const Text('Pendientes'),
         automaticallyImplyLeading: false,
       ),
-      body: _buildNormalView(),
+      body: Stack(
+        children: [
+          _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _buildNormalView(),
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirection: -1.57, // hacia arriba
+              emissionFrequency: 0.08,
+              numberOfParticles: 20,
+              maxBlastForce: 30,
+              minBlastForce: 10,
+              shouldLoop: false,
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddItemModal,
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) => ModalPendientes(
+              onAdd: _addItemManually,
+            ),
+          );
+        },
         child: const Icon(Icons.add),
       ),
     );
@@ -169,25 +341,20 @@ class _InventoryScreenState extends State<InventoryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Sección de Tips siempre visible
           const TipsSection(),
-
           const SizedBox(height: 16),
-
-          // Lista "Por Comprar"
           _buildPendingSection(),
-
           const SizedBox(height: 24),
-
-          // Lista "Comprados"
           _buildPurchasedSection(),
         ],
       ),
     );
   }
 
+  // --------------------- POR COMPRAR ---------------------
+
   Widget _buildPendingSection() {
-    final pending = _pendingItems;
+    final pending = _items.where((i) => !i.isPurchased).toList();
 
     if (pending.isEmpty) {
       return Container(
@@ -242,6 +409,15 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
   }
 
+  Map<String, List<ShoppingItem>> _groupItemsByPlace(List<ShoppingItem> items) {
+    final grouped = <String, List<ShoppingItem>>{};
+    for (var item in items) {
+      grouped.putIfAbsent(item.placeName, () => []);
+      grouped[item.placeName]!.add(item);
+    }
+    return grouped;
+  }
+
   Widget _buildPlaceGroup(String place, List<ShoppingItem> items) {
     final isExpanded = _expandedPlaces[place] ?? true;
     final totalItems = items.length;
@@ -281,8 +457,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     ),
                   ),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppTheme.getPlaceBadgeBackground(context),
                       borderRadius: BorderRadius.circular(12),
@@ -303,41 +481,47 @@ class _InventoryScreenState extends State<InventoryScreen> {
           ),
           if (isExpanded) ...[
             const Divider(height: 1),
-            ...items.map((item) => ListTile(
-                  leading: Checkbox(
-                    value: item.isPurchased,
-                    onChanged: (_) => _toggleItem(item),
-                  ),
-                  title: Consumer<FontSizeProvider>(
-                    builder: (context, fontSizeProvider, _) => Text(
-                      item.name,
-                      style: TextStyle(fontSize: fontSizeProvider.fontSize + 2),
+            ...items.map(
+              (item) => ListTile(
+                leading: Checkbox(
+                  value: item.isPurchased,
+                  onChanged: (_) => _toggleItem(item),
+                ),
+                title: Consumer<FontSizeProvider>(
+                  builder: (context, fontSizeProvider, _) => Text(
+                    item.name,
+                    style: TextStyle(
+                      fontSize: fontSizeProvider.fontSize + 2,
                     ),
                   ),
-                  subtitle: item.quantity != null && item.quantity! > 1
-                      ? Consumer<FontSizeProvider>(
-                          builder: (context, fontSizeProvider, _) => Text(
-                            'Cantidad: ${item.quantity}',
-                            style: TextStyle(
-                              fontSize: fontSizeProvider.fontSize - 2,
-                              color: AppTheme.getTextSecondary(context),
-                            ),
+                ),
+                subtitle: item.quantity != null && item.quantity! > 1
+                    ? Consumer<FontSizeProvider>(
+                        builder: (context, fontSizeProvider, _) => Text(
+                          'Cantidad: ${item.quantity}',
+                          style: TextStyle(
+                            fontSize: fontSizeProvider.fontSize - 2,
+                            color: AppTheme.getTextSecondary(context),
                           ),
-                        )
-                      : null,
-                  trailing: IconButton(
-                    icon: const Icon(Icons.close, size: 20),
-                    onPressed: () => _removeItem(item),
-                  ),
-                )),
+                        ),
+                      )
+                    : null,
+                trailing: IconButton(
+                  icon: const Icon(Icons.close, size: 20),
+                  onPressed: () => _removeItem(item),
+                ),
+              ),
+            ),
           ],
         ],
       ),
     );
   }
 
+  // ---------------------- COMPRADOS ----------------------
+
   Widget _buildPurchasedSection() {
-    final purchased = _purchasedItems;
+    final purchased = _items.where((i) => i.isPurchased).toList();
 
     if (purchased.isEmpty) return const SizedBox.shrink();
 
@@ -357,43 +541,45 @@ class _InventoryScreenState extends State<InventoryScreen> {
         Card(
           child: Column(
             children: purchased
-                .map((item) => ListTile(
-                      leading: Checkbox(
-                        value: item.isPurchased,
-                        onChanged: (_) => _toggleItem(item),
-                      ),
-                      title: Consumer<FontSizeProvider>(
-                        builder: (context, fontSizeProvider, _) => Text(
-                          item.name,
-                          style: TextStyle(
-                            decoration: TextDecoration.lineThrough,
-                            color: AppTheme.getPurchasedColor(context),
-                            fontSize: fontSizeProvider.fontSize + 2,
-                          ),
+                .map(
+                  (item) => ListTile(
+                    leading: Checkbox(
+                      value: item.isPurchased,
+                      onChanged: (_) => _toggleItem(item),
+                    ),
+                    title: Consumer<FontSizeProvider>(
+                      builder: (context, fontSizeProvider, _) => Text(
+                        item.name,
+                        style: TextStyle(
+                          decoration: TextDecoration.lineThrough,
+                          color: AppTheme.getPurchasedColor(context),
+                          fontSize: fontSizeProvider.fontSize + 2,
                         ),
                       ),
-                      subtitle: Consumer<FontSizeProvider>(
-                        builder: (context, fontSizeProvider, _) => Text(
-                          item.quantity != null && item.quantity! > 1
-                              ? '${item.placeName} • Cantidad: ${item.quantity}'
-                              : item.placeName,
-                          style: TextStyle(
-                            fontSize: fontSizeProvider.fontSize - 2,
-                            color: AppTheme.getTextSecondary(context),
-                          ),
+                    ),
+                    subtitle: Consumer<FontSizeProvider>(
+                      builder: (context, fontSizeProvider, _) => Text(
+                        item.quantity != null && item.quantity! > 1
+                            ? '${item.placeName} • Cantidad: ${item.quantity}'
+                            : item.placeName,
+                        style: TextStyle(
+                          fontSize: fontSizeProvider.fontSize - 2,
+                          color: AppTheme.getTextSecondary(context),
                         ),
                       ),
-                      trailing: IconButton(
-                        icon: Icon(
-                          Icons.delete,
-                          color:
-                              Theme.of(context).brightness == Brightness.light
-                                  ? AppTheme.errorLight
-                                  : AppTheme.errorDark,
-                        ),
-                        onPressed: () => _removeItem(item),
+                    ),
+                    trailing: IconButton(
+                      icon: Icon(
+                        Icons.delete,
+                        color:
+                            Theme.of(context).brightness == Brightness.light
+                                ? AppTheme.errorLight
+                                : AppTheme.errorDark,
                       ),
-                    ))
+                      onPressed: () => _removeItem(item),
+                    ),
+                  ),
+                )
                 .toList(),
           ),
         ),
