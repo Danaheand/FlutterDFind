@@ -7,6 +7,7 @@ class TrashService {
   static const String _trashKey = 'trash_items';
   static TrashService? _instance;
   List<TrashItem> _trashItems = [];
+  bool _initialized = false;
 
   TrashService._();
 
@@ -15,8 +16,13 @@ class TrashService {
     return _instance!;
   }
 
-  // Cargar elementos de papelera desde SharedPreferences
+  /// Verificar si ya está inicializado
+  bool get isInitialized => _initialized;
+
+  /// Cargar elementos de papelera desde SharedPreferences
   Future<void> loadTrashItems() async {
+    if (_initialized) return; // Evitar inicializar dos veces
+    
     final prefs = await SharedPreferences.getInstance();
     final trashJson = prefs.getString(_trashKey);
     
@@ -24,6 +30,8 @@ class TrashService {
       final List<dynamic> trashList = jsonDecode(trashJson);
       _trashItems = trashList.map((item) => TrashItem.fromJson(item)).toList();
     }
+    
+    _initialized = true;
   }
 
   // Guardar elementos de papelera en SharedPreferences
@@ -33,8 +41,11 @@ class TrashService {
     await prefs.setString(_trashKey, trashJson);
   }
 
-  // Agregar elemento a la papelera
+  // Agregar elemento a la papelera (con inicialización automática)
   Future<void> addToTrash(TrashItem item) async {
+    if (!_initialized) {
+      await loadTrashItems();
+    }
     _trashItems.add(item);
     await _saveTrashItems();
   }
@@ -53,11 +64,19 @@ class TrashService {
 
   // Obtener todos los elementos de papelera
   List<TrashItem> getTrashItems() {
+    // Si no está inicializado, retornar lista vacía
+    // (La inicialización ocurrirá de forma asincrónica)
+    if (!_initialized) {
+      return [];
+    }
     return List.from(_trashItems);
   }
 
   // Restaurar elemento (eliminarlo de papelera)
   Future<TrashItem> restoreItem(String itemId) async {
+    if (!_initialized) {
+      await loadTrashItems();
+    }
     final itemIndex = _trashItems.indexWhere((item) => item.id == itemId);
     if (itemIndex != -1) {
       final restoredItem = _trashItems.removeAt(itemIndex);
@@ -69,12 +88,18 @@ class TrashService {
 
   // Eliminar permanentemente un elemento
   Future<void> deleteItemPermanently(String itemId) async {
+    if (!_initialized) {
+      await loadTrashItems();
+    }
     _trashItems.removeWhere((item) => item.id == itemId);
     await _saveTrashItems();
   }
 
   // Vaciar papelera completamente
   Future<void> emptyTrash() async {
+    if (!_initialized) {
+      await loadTrashItems();
+    }
     _trashItems.clear();
     await _saveTrashItems();
   }

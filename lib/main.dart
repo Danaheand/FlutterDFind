@@ -11,6 +11,7 @@ import 'screens/registro_screen.dart';
 import 'theme/app_theme.dart';
 import 'services/notification_service.dart';
 import 'services/session_manager.dart';
+import 'services/trash_service.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -69,6 +70,10 @@ void main() async {
   // Inicializar el gestor de sesión
   print('🔧 Inicializando SessionManager...');
   await SessionManager.instance.initialize();
+
+  // Inicializar TrashService
+  print('🗑️ Inicializando TrashService...');
+  await TrashService.getInstance().loadTrashItems();
 
   // Solo inicializar notificaciones en dispositivos móviles (no en web)
   try {
