@@ -7,10 +7,12 @@ import 'package:provider/provider.dart';
 import 'recordatorios_detalle_screen.dart' as detail;
 import '../services/notification_service.dart';
 import '../services/session_manager.dart';
+import '../services/trash_service.dart';
 import '../widgets/custom_text_button.dart';
 import '../providers/recordatorio_provider.dart';
 import '../models/recordatorio.dart';
 import '../models/recordatorio_exception.dart';
+import '../models/trash_item.dart';
 
 // Variable global eliminada, se declara dentro de la clase correspondiente
 typedef DeleteAlertCallback = void Function(AlertData alert);
@@ -352,7 +354,24 @@ class _AlertsScreenState extends State<AlertsScreen> {
     if (confirmar != true) return;
 
     try {
+      final trashService = TrashService.getInstance();
+      
       for (var alert in alertsToDelete) {
+        // Enviar el recordatorio a la papelera
+        final trashItem = TrashItem(
+          id: alert.id,
+          name: alert.title,
+          placeName: alert.location ?? 'Sin ubicación',
+          category: 'Recordatorio - ${alert.priority.name}',
+          quantity: null,
+          deletedAt: DateTime.now(),
+          originalType: 'alert',
+        );
+        
+        // Agregar a la papelera
+        await trashService.addToTrash(trashItem);
+        
+        // Eliminar de la API
         await provider.eliminarRecordatorio(alert.title);
         AlertsScreen.onAlertDeleted?.call(alert);
       }
@@ -366,7 +385,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content:
-                Text('${alertsToDelete.length} recordatorio(s) eliminado(s)'),
+                Text('♻️ ${alertsToDelete.length} recordatorio(s) enviado(s) a la papelera'),
             backgroundColor: Colors.green,
           ),
         );

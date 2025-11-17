@@ -31,8 +31,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   User? _currentUser;
   String? _profileImagePath;
   bool _isLoading = true;
-  final List<Map<String, dynamic>> _deletedAlerts =
-      []; // Papelera de recordatorios
   late final TrashService _trashService;
 
   Future<void> _pickProfileImage(ImageSource source) async {
@@ -50,8 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showTrashDialog() {
     // Obtener elementos de papelera del servicio
     final trashItems = _trashService.getTrashItems();
-    final deletedAlerts = List<Map<String, dynamic>>.from(_deletedAlerts);
-
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -59,7 +56,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         content: SizedBox(
           width: double.maxFinite,
           height: 400,
-          child: (trashItems.isEmpty && deletedAlerts.isEmpty)
+          child: trashItems.isEmpty
               ? const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -72,138 +69,85 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Sección de items de compras eliminados
-                      if (trashItems.isNotEmpty) ...[
-                        const Text(
-                          'Lista de Compras',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        const SizedBox(height: 8),
-                        ...trashItems.map((item) => Card(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              child: ListTile(
-                                leading: const Icon(Icons.shopping_cart,
-                                    color: Colors.blue),
-                                title: Text(item.name),
-                                subtitle: Text(
-                                    '${item.placeName} • ${item.deletedAt.day}/${item.deletedAt.month}'),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.restore,
-                                          color: Colors.green),
-                                      onPressed: () async {
-                                        try {
-                                          final restoredItem =
-                                              await _trashService
-                                                  .restoreItem(item.id);
-                                          final shoppingItem = _trashService
-                                              .trashItemToShoppingItem(
-                                                  restoredItem);
+                      // Mostrar todos los items de la papelera
+                      ...trashItems.map((item) {
+                        // Determinar ícono según tipo
+                        final icon = item.originalType == 'alert'
+                            ? Icons.notifications
+                            : Icons.shopping_cart;
+                        final color = item.originalType == 'alert'
+                            ? Colors.orange
+                            : Colors.blue;
+                        
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          child: ListTile(
+                            leading: Icon(icon, color: color),
+                            title: Text(item.name),
+                            subtitle: Text(
+                              '${item.placeName} • ${item.deletedAt.day}/${item.deletedAt.month}/${item.deletedAt.year}',
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.restore,
+                                      color: Colors.green),
+                                  onPressed: () async {
+                                    try {
+                                      await _trashService
+                                          .restoreItem(item.id);
 
-                                          // Restaurar al InventoryScreen
-                                          if (InventoryScreen
-                                                  .addFromAlertGlobal !=
-                                              null) {
-                                            InventoryScreen.addFromAlertGlobal!(
-                                                shoppingItem.name);
-                                          }
-
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                                content: Text(
-                                                    '${item.name} restaurado')),
-                                          );
-                                          Navigator.pop(context);
-                                        } catch (e) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                                content: Text(
-                                                    'Error al restaurar: $e')),
-                                          );
+                                      // Si es un item de compra, restaurar al InventoryScreen
+                                      if (item.originalType ==
+                                          'shopping_item') {
+                                        if (InventoryScreen
+                                                .addFromAlertGlobal !=
+                                            null) {
+                                          InventoryScreen.addFromAlertGlobal!(
+                                              item.name);
                                         }
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete_forever,
-                                          color: Colors.red),
-                                      onPressed: () async {
-                                        await _trashService
-                                            .deleteItemPermanently(item.id);
-                                        Navigator.pop(context);
-                                        _showTrashDialog();
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )),
-                        const SizedBox(height: 16),
-                      ],
-                      // Sección de recordatorios eliminados
-                      if (deletedAlerts.isNotEmpty) ...[
-                        const Text(
-                          'Recordatorios',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        const SizedBox(height: 8),
-                        ...deletedAlerts.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final alert = entry.value;
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            child: ListTile(
-                              leading: const Icon(Icons.notifications,
-                                  color: Colors.orange),
-                              title: Text(alert['title'] ?? 'Sin título'),
-                              subtitle: Text(alert['description'] ?? ''),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.restore,
-                                        color: Colors.green),
-                                    onPressed: () {
-                                      setState(() {
-                                        _deletedAlerts.removeAt(index);
-                                      });
+                                      }
+
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         SnackBar(
                                             content: Text(
-                                                '${alert['title']} restaurado')),
+                                                '${item.name} restaurado')),
                                       );
                                       Navigator.pop(context);
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_forever,
-                                        color: Colors.red),
-                                    onPressed: () {
-                                      setState(() {
-                                        _deletedAlerts.removeAt(index);
-                                      });
-                                      Navigator.pop(context);
                                       _showTrashDialog();
-                                    },
-                                  ),
-                                ],
-                              ),
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                'Error al restaurar: $e')),
+                                      );
+                                    }
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete_forever,
+                                      color: Colors.red),
+                                  onPressed: () async {
+                                    await _trashService
+                                        .deleteItemPermanently(item.id);
+                                    Navigator.pop(context);
+                                    _showTrashDialog();
+                                  },
+                                ),
+                              ],
                             ),
-                          );
-                        }),
-                      ],
+                          ),
+                        );
+                      }),
                     ],
                   ),
                 ),
         ),
         actions: [
-          if (trashItems.isNotEmpty || deletedAlerts.isNotEmpty)
+          if (trashItems.isNotEmpty)
             CustomTextButton(
               onPressed: () async {
                 final confirmed = await showDialog<bool>(
@@ -228,9 +172,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 if (confirmed == true) {
                   await _trashService.emptyTrash();
-                  setState(() {
-                    _deletedAlerts.clear();
-                  });
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Papelera vaciada')),
@@ -772,80 +713,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadCurrentUser();
     _loadProfileImage();
     _initializeTrash();
-    _addTestDeletedAlert();
-
-    // Registrar el callback para capturar recordatorios eliminados
-    AlertsScreen.onAlertDeleted = (alert) {
-      setState(() {
-        _deletedAlerts.add({
-          'id': alert.id,
-          'title': alert.title,
-          'description': alert.description,
-          'date': alert.date,
-          'priority': alert.priority,
-          'location': alert.location,
-          'object': alert.object,
-          'repetitive': alert.repetitive,
-          'repeatFrequency': alert.repeatFrequency,
-          'active': alert.active,
-          'color': alert.color,
-          'imagePath': alert.imagePath,
-          'selectedWeekdays': alert.selectedWeekdays,
-        });
-      });
-    };
-  }
-
-  void _addTestDeletedAlert() {
-    // Agregar un recordatorio de prueba en papelera si no existe
-    final testExists =
-        _deletedAlerts.any((alert) => alert['id'] == 'test_deleted_alert');
-    if (!testExists) {
-      setState(() {
-        _deletedAlerts.add({
-          'id': 'test_deleted_alert',
-          'title': 'Recordatorio de Prueba',
-          'description':
-              'Este es un recordatorio eliminado que puedes recuperar desde la papelera',
-          'date': DateTime.now().add(const Duration(days: 1)).toIso8601String(),
-          'priority': 'Alta',
-          'location': 'Casa',
-          'object': 'Documentos importantes',
-          'repetitive': false,
-          'repeatFrequency': '',
-          'active': true,
-          'color': 'blue',
-          'imagePath': null,
-          'selectedWeekdays': [],
-        });
-      });
-    }
   }
 
   Future<void> _initializeTrash() async {
     await _trashService.loadTrashItems();
-    await _addTestShoppingItem();
-  }
-
-  Future<void> _addTestShoppingItem() async {
-    // Agregar un elemento de compras de prueba en papelera si no existe
-    final trashItems = _trashService.getTrashItems();
-    final testExists =
-        trashItems.any((item) => item.id == 'test_shopping_item');
-
-    if (!testExists) {
-      final testTrashItem = TrashItem(
-        id: 'test_shopping_item',
-        name: 'Leche deslactosada',
-        placeName: 'Supermercado La Plaza',
-        category: 'Lácteos',
-        quantity: 2,
-        deletedAt: DateTime.now().subtract(const Duration(hours: 2)),
-        originalType: 'shopping_item',
-      );
-
-      await _trashService.addToTrash(testTrashItem);
-    }
   }
 
   Future<void> _loadCurrentUser() async {
@@ -1072,7 +943,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               color: Colors.orange),
                           title: const Text('Papelera'),
                           subtitle: Text(
-                              '${_trashService.getTrashItems().length + _deletedAlerts.length} elementos eliminados'),
+                              '${_trashService.getTrashItems().length} elementos eliminados'),
                           trailing:
                               const Icon(Icons.arrow_forward_ios, size: 16),
                           onTap: _showTrashDialog,

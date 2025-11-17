@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../providers/recordatorio_provider.dart';
 import '../models/recordatorio_exception.dart';
 import '../models/recordatorio.dart';
+import '../services/trash_service.dart';
+import '../models/trash_item.dart';
 
 enum AlertPriority { baja, media, alta }
 
@@ -703,7 +705,24 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
 
                       if (confirmar == true && mounted) {
                         try {
-                          // Llamar a la API para eliminar (completar = eliminar)
+                          // Enviar el recordatorio a la papelera
+                          final trashService = TrashService.getInstance();
+                          
+                          // Crear un TrashItem a partir del recordatorio
+                          final trashItem = TrashItem(
+                            id: alert.id,
+                            name: alert.title,
+                            placeName: alert.location ?? 'Sin ubicación',
+                            category: 'Recordatorio - ${alert.priority.name}',
+                            quantity: null,
+                            deletedAt: DateTime.now(),
+                            originalType: 'alert',
+                          );
+                          
+                          // Agregar a la papelera
+                          await trashService.addToTrash(trashItem);
+                          
+                          // Eliminar de la API
                           final provider = context.read<RecordatorioProvider>();
                           await provider.eliminarRecordatorio(alert.title);
 
@@ -712,7 +731,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text(
-                                    'Recordatorio completado exitosamente'),
+                                    '✅ Recordatorio completado y enviado a la papelera'),
                                 backgroundColor: Colors.green,
                               ),
                             );
@@ -848,7 +867,24 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
 
                             if (confirmar == true && mounted) {
                               try {
-                                // Llamar a la API para eliminar
+                                // Enviar el recordatorio a la papelera
+                                final trashService = TrashService.getInstance();
+                                
+                                // Crear un TrashItem a partir del recordatorio
+                                final trashItem = TrashItem(
+                                  id: alert.id,
+                                  name: alert.title,
+                                  placeName: alert.location ?? 'Sin ubicación',
+                                  category: 'Recordatorio - ${alert.priority.name}',
+                                  quantity: null,
+                                  deletedAt: DateTime.now(),
+                                  originalType: 'alert',
+                                );
+                                
+                                // Agregar a la papelera
+                                await trashService.addToTrash(trashItem);
+                                
+                                // Eliminar de la API
                                 final provider =
                                     context.read<RecordatorioProvider>();
                                 await provider
@@ -859,7 +895,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
-                                          'Recordatorio eliminado exitosamente'),
+                                          '♻️ Recordatorio enviado a la papelera'),
                                       backgroundColor: Colors.green,
                                     ),
                                   );
