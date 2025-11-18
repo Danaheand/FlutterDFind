@@ -506,20 +506,50 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   }
                 },
                 onToggleActive: () => _toggleAlertActive(a),
-                onDelete: () {
-                  // Enviar a papelera
-                  AlertsScreen.onAlertDeleted?.call(a);
-                  // Eliminar de la lista actual
-                  setState(() {
-                    _alerts.removeWhere((alert) => alert.id == a.id);
-                  });
-                  // Mostrar confirmación
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${a.title} movido a papelera'),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
+                onDelete: () async {
+                  try {
+                    // Crear TrashItem y agregar a papelera
+                    final trashService = TrashService.getInstance();
+                    final trashItem = TrashItem(
+                      id: a.id,
+                      name: a.title,
+                      placeName: a.location ?? 'Sin ubicación',
+                      category: 'Recordatorio - ${a.priority.name}',
+                      quantity: null,
+                      deletedAt: DateTime.now(),
+                      originalType: 'alert',
+                    );
+                    
+                    await trashService.addToTrash(trashItem);
+                    
+                    // Eliminar de la API
+                    final provider = context.read<RecordatorioProvider>();
+                    await provider.eliminarRecordatorio(a.title);
+                    
+                    // Eliminar de la lista actual
+                    if (mounted) {
+                      setState(() {
+                        _alerts.removeWhere((alert) => alert.id == a.id);
+                      });
+                      
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('♻️ Recordatorio enviado a la papelera'),
+                          backgroundColor: Colors.green,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
                 },
                 showCheckbox: showSelection && selectionMode,
                 checked: selectedAlerts.contains(a.id),
