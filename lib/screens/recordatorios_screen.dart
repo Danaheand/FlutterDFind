@@ -14,6 +14,7 @@ import '../models/recordatorio.dart';
 import '../models/recordatorio_exception.dart';
 import '../models/trash_item.dart';
 import 'widgets/tips_recordatorios.dart';
+import '../widgets/time_remaining_badge.dart';
 
 // Variable global eliminada, se declara dentro de la clase correspondiente
 typedef DeleteAlertCallback = void Function(AlertData alert);
@@ -710,13 +711,13 @@ class _AlertCard extends StatelessWidget {
     final dateText = _dateLabel(alert.date);
     // Detect if this alert is in 'pasadas' tab
     final isPasada = alert.date.isBefore(DateTime.now());
-
+    
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: _color.withOpacity(0.3), width: 1.5),
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: _color.withOpacity(0.2), width: 1),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -727,187 +728,221 @@ class _AlertCard extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                _color.withOpacity(0.05),
-                _color.withOpacity(0.02),
+                _color.withOpacity(0.03),
+                _color.withOpacity(0.01),
               ],
             ),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (showCheckbox)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: Checkbox(
-                      value: checked,
-                      onChanged: (_) => onTap(),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
+                // Fila 1: Checkbox + Título + Menú + Badge Tiempo
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (showCheckbox)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8, top: 0),
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: Checkbox(
+                            value: checked,
+                            onChanged: (_) => onTap(),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Título grande y prominente
-                      Text(
+                    // Título
+                    Expanded(
+                      child: Text(
                         alert.title,
                         style: TextStyle(
-                          fontSize: 22,
+                          fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: alert.active ? Colors.black87 : Colors.black38,
-                          letterSpacing: -0.5,
-                          height: 1.2,
                         ),
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 16),
-                      // Fecha y hora con icono
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: _color.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(
-                              Icons.calendar_today_rounded,
-                              color: _color,
-                              size: 18,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  dateText,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey.shade700,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                Text(
-                                  '${alert.date.hour.toString().padLeft(2, '0')}:${alert.date.minute.toString().padLeft(2, '0')}',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey.shade500,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                    ),
+                    const SizedBox(width: 6),
+                    // Badge de tiempo restante (compacto)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 4),
+                      child: TimeRemainingBadge(
+                        expiryDate: alert.date,
+                        isCompact: true,
                       ),
-                      // Objeto (si existe)
-                      if (alert.object?.isNotEmpty ?? false) ...[
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: _color.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                Icons.inventory_2_outlined,
-                                color: _color,
-                                size: 18,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                alert.object!,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey.shade700,
-                                  fontWeight: FontWeight.w500,
+                    ),
+                    const SizedBox(width: 2),
+                    // Menú de opciones
+                    PopupMenuButton<String>(
+                      icon: Icon(
+                        Icons.more_vert_rounded,
+                        color: Colors.grey.shade500,
+                        size: 18,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      onSelected: (v) {
+                        if (isPasada) {
+                          if (v == 'delete') onDelete();
+                        } else {
+                          switch (v) {
+                            case 'toggle':
+                              onToggleActive();
+                              break;
+                            case 'delete':
+                              onDelete();
+                              break;
+                          }
+                        }
+                      },
+                      itemBuilder: (ctx) => isPasada
+                          ? [
+                              const PopupMenuItem(
+                                value: 'delete',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.delete_outline, size: 18),
+                                    SizedBox(width: 10),
+                                    Text('Eliminar', style: TextStyle(fontSize: 13)),
+                                  ],
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                          ],
+                            ]
+                          : [
+                              PopupMenuItem(
+                                value: 'toggle',
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      alert.active
+                                          ? Icons.pause_circle_outline
+                                          : Icons.play_circle_outline,
+                                      size: 18,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(alert.active ? 'Desactivar' : 'Activar',
+                                        style: const TextStyle(fontSize: 13)),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'delete',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.delete_outline, size: 18),
+                                    SizedBox(width: 10),
+                                    Text('Eliminar', style: TextStyle(fontSize: 13)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                
+                // Fila 2: Fecha y Hora (compacta)
+                Row(
+                  children: [
+                    // Icono calendario pequeño
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: _color.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Icon(
+                        Icons.calendar_today_rounded,
+                        color: _color,
+                        size: 14,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    // Fecha
+                    Text(
+                      dateText,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    // Separador
+                    Container(
+                      width: 1,
+                      height: 14,
+                      color: Colors.grey.shade300,
+                    ),
+                    const SizedBox(width: 10),
+                    // Icono reloj
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: _color.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Icon(
+                        Icons.access_time_rounded,
+                        color: _color,
+                        size: 14,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    // Hora
+                    Text(
+                      '${alert.date.hour.toString().padLeft(2, '0')}:${alert.date.minute.toString().padLeft(2, '0')}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                
+                // Fila 3: Objeto (si existe)
+                if (alert.object?.isNotEmpty ?? false) ...[
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          color: _color.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(5),
                         ),
-                      ],
+                        child: Icon(
+                          Icons.inventory_2_outlined,
+                          color: _color,
+                          size: 12,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          alert.object!,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ],
                   ),
-                ),
-                const SizedBox(width: 12),
-                // Menú de opciones
-                PopupMenuButton<String>(
-                  icon: Icon(
-                    Icons.more_vert_rounded,
-                    color: Colors.grey.shade600,
-                    size: 24,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  onSelected: (v) {
-                    if (isPasada) {
-                      if (v == 'delete') onDelete();
-                    } else {
-                      switch (v) {
-                        case 'toggle':
-                          onToggleActive();
-                          break;
-                        case 'delete':
-                          onDelete();
-                          break;
-                      }
-                    }
-                  },
-                  itemBuilder: (ctx) => isPasada
-                      ? [
-                          const PopupMenuItem(
-                            value: 'delete',
-                            child: Row(
-                              children: [
-                                Icon(Icons.delete_outline, size: 20),
-                                SizedBox(width: 12),
-                                Text('Eliminar'),
-                              ],
-                            ),
-                          ),
-                        ]
-                      : [
-                          PopupMenuItem(
-                            value: 'toggle',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  alert.active
-                                      ? Icons.pause_circle_outline
-                                      : Icons.play_circle_outline,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 12),
-                                Text(alert.active ? 'Desactivar' : 'Activar'),
-                              ],
-                            ),
-                          ),
-                          const PopupMenuItem(
-                            value: 'delete',
-                            child: Row(
-                              children: [
-                                Icon(Icons.delete_outline, size: 20),
-                                SizedBox(width: 12),
-                                Text('Eliminar'),
-                              ],
-                            ),
-                          ),
-                        ],
-                ),
+                ],
               ],
             ),
           ),

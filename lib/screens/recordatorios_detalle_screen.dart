@@ -7,6 +7,7 @@ import '../providers/recordatorio_provider.dart';
 import '../models/recordatorio_exception.dart';
 import '../models/recordatorio.dart';
 import '../services/trash_service.dart';
+import '../services/session_manager.dart';
 import '../models/trash_item.dart';
 
 enum AlertPriority { baja, media, alta }
@@ -144,10 +145,11 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
             // Llamar a la API para actualizar
             final provider = context.read<RecordatorioProvider>();
             final tituloOriginal = alert.title;
+            final userId = SessionManager.instance.userId ?? 0;
 
             final recordatorioActualizado = Recordatorio(
               idRecordatorio: alert.id,
-              idUsuario: 0,
+              idUsuario: userId,
               titulo: editedAlert.title,
               descripcion: editedAlert.description,
               fechaHora: editedAlert.date,
