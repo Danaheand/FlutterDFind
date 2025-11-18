@@ -763,7 +763,7 @@ class _AlertCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 16),
-                      // Fecha con icono
+                      // Fecha y hora con icono
                       Row(
                         children: [
                           Container(
@@ -779,12 +779,27 @@ class _AlertCard extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          Text(
-                            dateText,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey.shade700,
-                              fontWeight: FontWeight.w600,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  dateText,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey.shade700,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  '${alert.date.hour.toString().padLeft(2, '0')}:${alert.date.minute.toString().padLeft(2, '0')}',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade500,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
