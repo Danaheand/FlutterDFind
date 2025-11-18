@@ -539,13 +539,6 @@ class _AlertsScreenState extends State<AlertsScreen> {
         automaticallyImplyLeading: false,
         title: const Text('Recordatorios'),
         actions: [
-          // Botón de refrescar
-          if (!provider.isLoading)
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              tooltip: 'Recargar',
-              onPressed: _loadUserAndRecordatorios,
-            ),
           if (tabIndex == 1 && pasadas.isNotEmpty)
             IconButton(
               icon: Icon(selectionMode ? Icons.close : Icons.select_all),
