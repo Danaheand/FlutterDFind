@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
 import '../providers/recordatorio_provider.dart';
 import '../models/recordatorio_exception.dart';
@@ -125,208 +126,82 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
   }
 
   void _showEditDialog() {
-    final titleCtrl = TextEditingController(text: alert.title);
-    final descCtrl = TextEditingController(text: alert.description);
-    final locationCtrl = TextEditingController(text: alert.location ?? '');
-    final objectCtrl = TextEditingController(text: alert.object ?? '');
-
-    DateTime editDate = alert.date;
-    AlertPriority editPriority = alert.priority;
-    Color? editColor = alert.color ?? _defaultColorFor(alert.priority);
-
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Editar Recordatorio'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                TextField(
-                  controller: titleCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                    prefixIcon: Icon(Icons.title),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: descCtrl,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'Descripción',
-                    prefixIcon: Icon(Icons.notes),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: locationCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Lugar (opcional)',
-                    prefixIcon: Icon(Icons.place_outlined),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: objectCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Artículo (opcional)',
-                    prefixIcon: Icon(Icons.inventory_2_outlined),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: editDate,
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime(2100),
-                    );
-                    if (picked != null) {
-                      setState(() => editDate = picked);
-                    }
-                  },
-                  child: InputDecorator(
-                    decoration: const InputDecoration(
-                      labelText: 'Fecha',
-                      border: OutlineInputBorder(),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    ),
-                    child: Text(
-                      '${editDate.day.toString().padLeft(2, '0')}/${editDate.month.toString().padLeft(2, '0')}/${editDate.year}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<AlertPriority>(
-                  value: editPriority,
-                  // initialValue: editPriority,
-                  decoration: const InputDecoration(
-                    labelText: 'Prioridad',
-                    prefixIcon: Icon(Icons.priority_high_rounded),
-                  ),
-                  items: const [
-                    DropdownMenuItem(
-                        value: AlertPriority.baja, child: Text('Baja')),
-                    DropdownMenuItem(
-                        value: AlertPriority.media, child: Text('Media')),
-                    DropdownMenuItem(
-                        value: AlertPriority.alta, child: Text('Alta')),
-                  ],
-                  onChanged: (val) {
-                    setState(() {
-                      editPriority = val!;
-                      editColor = _defaultColorFor(editPriority);
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton.icon(
-              onPressed: () async {
-                final tituloOriginal =
-                    alert.title; // Guardar título original para el PUT
+      builder: (context) => _EditAlertModal(
+        alert: alert,
+        onSave: (editedAlert) async {
+          try {
+            // Mostrar indicador de carga
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => const Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
 
-                try {
-                  // Llamar a la API para actualizar
-                  final provider = context.read<RecordatorioProvider>();
+            // Llamar a la API para actualizar
+            final provider = context.read<RecordatorioProvider>();
+            final tituloOriginal = alert.title;
 
-                  final recordatorioActualizado = Recordatorio(
-                    idRecordatorio: alert.id,
-                    idUsuario: 0, // Se requiere pero no se usa en PUT
-                    titulo: titleCtrl.text.trim(),
-                    descripcion: descCtrl.text.trim(),
-                    fechaHora: editDate,
-                    prioridad: editPriority.name,
-                    ubicacion: locationCtrl.text.trim().isEmpty
-                        ? null
-                        : locationCtrl.text.trim(),
-                    objeto: objectCtrl.text.trim().isEmpty
-                        ? null
-                        : objectCtrl.text.trim(),
-                    esRepetitivo: alert.repetitive,
-                    frecuenciaRepeticion: alert.repeatFrequency,
-                    diasSeleccionados: alert.selectedWeekdays?.join(','),
-                  );
+            final recordatorioActualizado = Recordatorio(
+              idRecordatorio: alert.id,
+              idUsuario: 0,
+              titulo: editedAlert.title,
+              descripcion: editedAlert.description,
+              fechaHora: editedAlert.date,
+              prioridad: editedAlert.priority.name,
+              ubicacion: editedAlert.location,
+              objeto: editedAlert.object,
+              esRepetitivo: editedAlert.repetitive,
+              frecuenciaRepeticion: editedAlert.repeatFrequency,
+              diasSeleccionados: editedAlert.selectedWeekdays?.join(','),
+            );
 
-                  await provider.actualizarRecordatorio(
-                    tituloOriginal,
-                    recordatorioActualizado,
-                  );
+            await provider.actualizarRecordatorio(
+              tituloOriginal,
+              recordatorioActualizado,
+            );
 
-                  // Actualizar el estado local
-                  if (mounted) {
-                    setState(() {
-                      alert = AlertData(
-                        id: alert.id,
-                        title: titleCtrl.text.trim(),
-                        description: descCtrl.text.trim(),
-                        date: editDate,
-                        priority: editPriority,
-                        location: locationCtrl.text.trim().isEmpty
-                            ? null
-                            : locationCtrl.text.trim(),
-                        object: objectCtrl.text.trim().isEmpty
-                            ? null
-                            : objectCtrl.text.trim(),
-                        repetitive: alert.repetitive,
-                        repeatFrequency: alert.repeatFrequency,
-                        active: alert.active,
-                        color: editColor,
-                        imagePath: alert.imagePath,
-                        selectedWeekdays: alert.selectedWeekdays,
-                        createdAt: alert.createdAt,
-                        updatedAt: DateTime.now(),
-                      );
-                    });
+            // Cerrar indicador de carga
+            if (mounted) Navigator.pop(context);
 
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Recordatorio actualizado exitosamente'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  }
-                } on RecordatorioException catch (e) {
-                  Navigator.pop(context);
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error: ${e.message}'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  Navigator.pop(context);
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error inesperado: $e'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                }
-              },
-              icon: const Icon(Icons.save),
-              label: const Text('Guardar'),
-            ),
-          ],
-        ),
+            // Volver al diálogo
+            if (mounted) {
+              Navigator.pop(context);
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('✅ Recordatorio actualizado exitosamente'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          } on RecordatorioException catch (e) {
+            if (mounted) Navigator.pop(context);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error: ${e.message}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          } catch (e) {
+            if (mounted) Navigator.pop(context);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error inesperado: $e'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
+        },
       ),
+      barrierDismissible: false,
     );
   }
 
@@ -1136,3 +1011,533 @@ class _ImageViewer extends StatelessWidget {
     );
   }
 }
+
+// Modal para editar recordatorios con todas las características (similar a crear)
+class _EditAlertModal extends StatefulWidget {
+  final AlertData? alert;
+  final Function(AlertData) onSave;
+
+  const _EditAlertModal({
+    required this.alert,
+    required this.onSave,
+  });
+
+  @override
+  State<_EditAlertModal> createState() => _EditAlertModalState();
+}
+
+class _EditAlertModalState extends State<_EditAlertModal> {
+  late TextEditingController titleCtrl;
+  late TextEditingController descCtrl;
+  late TextEditingController locationCtrl;
+
+  late DateTime date;
+  late AlertPriority priority;
+  bool repetitive = false;
+  String? repeatFrequency;
+  List<int> selectedWeekdays = [];
+
+  Color? customColor;
+  final _picker = ImagePicker();
+  XFile? _pickedImage;
+
+  @override
+  void initState() {
+    super.initState();
+    final a = widget.alert;
+    titleCtrl = TextEditingController(text: a?.title ?? '');
+    descCtrl = TextEditingController(text: a?.description ?? '');
+    locationCtrl = TextEditingController(text: a?.location ?? '');
+    date = a?.date ?? DateTime.now();
+    priority = a?.priority ?? AlertPriority.baja;
+    repetitive = a?.repetitive ?? false;
+    repeatFrequency = a?.repeatFrequency;
+    selectedWeekdays = List.from(a?.selectedWeekdays ?? []);
+    customColor = a?.color ?? _defaultColorFor(priority);
+    _pickedImage = null;
+  }
+
+  @override
+  void dispose() {
+    titleCtrl.dispose();
+    descCtrl.dispose();
+    locationCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickFromGallery() async {
+    final img =
+        await _picker.pickImage(source: ImageSource.gallery, maxWidth: 1920);
+    if (img != null) setState(() => _pickedImage = img);
+  }
+
+  Future<void> _pickFromCamera() async {
+    final img =
+        await _picker.pickImage(source: ImageSource.camera, maxWidth: 1920);
+    if (img != null) setState(() => _pickedImage = img);
+  }
+
+  void _clearImage() {
+    setState(() => _pickedImage = null);
+  }
+
+  void _openColorPicker() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Elegir color'),
+        content: SingleChildScrollView(
+          child: BlockPicker(
+            pickerColor: customColor ?? _defaultColorFor(priority),
+            onColorChanged: (c) => setState(() => customColor = c),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWeekdaySelector() {
+    final weekdays = [
+      {'name': 'L', 'fullName': 'Lunes', 'value': 1},
+      {'name': 'M', 'fullName': 'Martes', 'value': 2},
+      {'name': 'X', 'fullName': 'Miércoles', 'value': 3},
+      {'name': 'J', 'fullName': 'Jueves', 'value': 4},
+      {'name': 'V', 'fullName': 'Viernes', 'value': 5},
+      {'name': 'S', 'fullName': 'Sábado', 'value': 6},
+      {'name': 'D', 'fullName': 'Domingo', 'value': 7},
+    ];
+
+    final allDaysSelected = selectedWeekdays.length == 7;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            children: [
+              TextButton.icon(
+                onPressed: () {
+                  setState(() {
+                    if (allDaysSelected) {
+                      selectedWeekdays.clear();
+                    } else {
+                      selectedWeekdays = [1, 2, 3, 4, 5, 6, 7];
+                    }
+                  });
+                },
+                icon: Icon(
+                  allDaysSelected ? Icons.check_circle : Icons.circle_outlined,
+                  color: Colors.blue,
+                ),
+                label: Text(
+                  allDaysSelected ? 'Desmarcar todos' : 'Marcar todos',
+                  style: const TextStyle(color: Colors.blue),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: weekdays.map((day) {
+            final isSelected = selectedWeekdays.contains(day['value']);
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  if (isSelected) {
+                    selectedWeekdays.remove(day['value']);
+                  } else {
+                    selectedWeekdays.add(day['value'] as int);
+                  }
+                });
+              },
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.blue : Colors.grey.shade200,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected ? Colors.blue : Colors.grey.shade400,
+                    width: 1,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    day['name'] as String,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black87,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _thumbPreview() {
+    final path = _pickedImage?.path ?? widget.alert?.imagePath;
+    if (path == null) {
+      return Container(
+        width: 72,
+        height: 72,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        alignment: Alignment.center,
+        child: const Icon(Icons.image_outlined, color: Colors.grey),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: FutureBuilder<Uint8List>(
+        future: XFile(path).readAsBytes(),
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done || !snap.hasData) {
+            return Container(
+              width: 72,
+              height: 72,
+              color: Colors.grey.shade200,
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          return Image.memory(
+            snap.data!,
+            width: 72,
+            height: 72,
+            fit: BoxFit.cover,
+          );
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final existing = widget.alert;
+
+    return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+      contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+      actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Row(
+        children: [
+          const Icon(Icons.edit_outlined, color: Colors.blue),
+          const SizedBox(width: 12),
+          const Text('Editar Recordatorio'),
+        ],
+      ),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                controller: titleCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Título',
+                  prefixIcon: Icon(Icons.title),
+                  filled: true,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: descCtrl,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: 'Descripción',
+                  prefixIcon: Icon(Icons.notes),
+                  filled: true,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Fecha y Hora',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate:
+                              date.isAfter(DateTime.now()) ? date : DateTime.now(),
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime(2100),
+                        );
+                        if (picked != null) {
+                          setState(() {
+                            date = DateTime(
+                              picked.year,
+                              picked.month,
+                              picked.day,
+                              date.hour,
+                              date.minute,
+                            );
+                          });
+                        }
+                      },
+                      child: InputDecorator(
+                        decoration: InputDecoration(
+                          labelText: 'Fecha',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          filled: true,
+                        ),
+                        child: Text(
+                          '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}',
+                          style: const TextStyle(fontSize: 15),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                        final picked = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.fromDateTime(date),
+                        );
+                        if (picked != null) {
+                          setState(() {
+                            date = DateTime(
+                              date.year,
+                              date.month,
+                              date.day,
+                              picked.hour,
+                              picked.minute,
+                            );
+                          });
+                        }
+                      },
+                      child: InputDecorator(
+                        decoration: InputDecoration(
+                          labelText: 'Hora',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          filled: true,
+                        ),
+                        child: Text(
+                          '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
+                          style: const TextStyle(fontSize: 15),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<AlertPriority>(
+                value: priority,
+                decoration: InputDecoration(
+                  labelText: 'Prioridad',
+                  prefixIcon: const Icon(Icons.priority_high_rounded),
+                  filled: true,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                items: const [
+                  DropdownMenuItem(
+                      value: AlertPriority.baja, child: Text('Baja')),
+                  DropdownMenuItem(
+                      value: AlertPriority.media, child: Text('Media')),
+                  DropdownMenuItem(
+                      value: AlertPriority.alta, child: Text('Alta')),
+                ],
+                onChanged: (val) {
+                  setState(() {
+                    priority = val!;
+                    customColor = _defaultColorFor(priority);
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  const Text('Color:'),
+                  const SizedBox(width: 12),
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: customColor ?? _defaultColorFor(priority),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.grey.shade400, width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (customColor ?? _defaultColorFor(priority))
+                              .withOpacity(0.3),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  OutlinedButton.icon(
+                    onPressed: _openColorPicker,
+                    icon: const Icon(Icons.palette_outlined),
+                    label: const Text('Cambiar'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Detalles Adicionales',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Ubicación (opcional)',
+                  prefixIcon: const Icon(Icons.location_on_outlined),
+                  filled: true,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                onChanged: (v) =>
+                    locationCtrl.text = v.trim().isEmpty ? '' : v.trim(),
+                controller: locationCtrl,
+              ),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Imagen (opcional)',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleSmall
+                        ?.copyWith(color: Colors.grey)),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _thumbPreview(),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: _pickFromGallery,
+                          icon: const Icon(Icons.photo_outlined, size: 18),
+                          label: const Text('Galería', style: TextStyle(fontSize: 12)),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: _pickFromCamera,
+                          icon: const Icon(Icons.photo_camera_outlined, size: 18),
+                          label: const Text('Cámara', style: TextStyle(fontSize: 12)),
+                        ),
+                        if (_pickedImage != null ||
+                            (existing?.imagePath?.isNotEmpty ?? false))
+                          TextButton.icon(
+                            onPressed: _clearImage,
+                            icon: const Icon(Icons.delete_outline, size: 18),
+                            label: const Text('Quitar', style: TextStyle(fontSize: 12)),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              SwitchListTile(
+                value: repetitive,
+                onChanged: (v) => setState(() => repetitive = v),
+                title: const Text('Repetir semanalmente'),
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+              ),
+              if (repetitive) ...[
+                const SizedBox(height: 12),
+                Text('Días de repetición:',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleSmall
+                        ?.copyWith(color: Colors.grey)),
+                const SizedBox(height: 12),
+                _buildWeekdaySelector(),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton.icon(
+          onPressed: () {
+            final trimmedTitle = titleCtrl.text.trim();
+            if (trimmedTitle.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('El título es requerido'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              return;
+            }
+
+            final result = AlertData(
+              id: widget.alert!.id,
+              title: trimmedTitle,
+              description: descCtrl.text.trim(),
+              date: date,
+              priority: priority,
+              location: locationCtrl.text.trim().isEmpty
+                  ? null
+                  : locationCtrl.text.trim(),
+              object: widget.alert!.object,
+              repetitive: repetitive,
+              repeatFrequency:
+                  repetitive ? (repeatFrequency ?? 'semanal') : null,
+              active: widget.alert!.active,
+              color: customColor,
+              imagePath: _pickedImage?.path ?? widget.alert!.imagePath,
+              selectedWeekdays:
+                  selectedWeekdays.isNotEmpty ? selectedWeekdays : null,
+            );
+
+            widget.onSave(result);
+            Navigator.pop(context);
+          },
+          icon: const Icon(Icons.save),
+          label: const Text('Guardar'),
+        ),
+      ],
+    );
+  }
+
+}
+
