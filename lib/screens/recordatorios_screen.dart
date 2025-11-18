@@ -508,8 +508,11 @@ class _AlertsScreenState extends State<AlertsScreen> {
                 onToggleActive: () => _toggleAlertActive(a),
                 onDelete: () async {
                   try {
-                    // Crear TrashItem y agregar a papelera
+                    // Obtener el provider antes de hacer operaciones async
+                    final provider = context.read<RecordatorioProvider>();
                     final trashService = TrashService.getInstance();
+                    
+                    // Crear TrashItem y agregar a papelera
                     final trashItem = TrashItem(
                       id: a.id,
                       name: a.title,
@@ -521,9 +524,6 @@ class _AlertsScreenState extends State<AlertsScreen> {
                     );
                     
                     await trashService.addToTrash(trashItem);
-                    
-                    // Eliminar de la API
-                    final provider = context.read<RecordatorioProvider>();
                     await provider.eliminarRecordatorio(a.title);
                     
                     // Eliminar de la lista actual
