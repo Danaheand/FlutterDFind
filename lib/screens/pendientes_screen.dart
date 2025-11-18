@@ -539,14 +539,53 @@ class _InventoryScreenState extends State<InventoryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Consumer<FontSizeProvider>(
-          builder: (context, fontSizeProvider, _) => Text(
-            'Comprados',
-            style: TextStyle(
-              fontSize: fontSizeProvider.fontSize + 4,
-              fontWeight: FontWeight.bold,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Consumer<FontSizeProvider>(
+              builder: (context, fontSizeProvider, _) => Text(
+                'Comprados',
+                style: TextStyle(
+                  fontSize: fontSizeProvider.fontSize + 4,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-          ),
+            IconButton(
+              icon: Icon(
+                Icons.delete_sweep,
+                color: Theme.of(context).brightness == Brightness.light
+                    ? AppTheme.errorLight
+                    : AppTheme.errorDark,
+              ),
+              tooltip: 'Borrar todos los comprados',
+              onPressed: () {
+                // Confirmar antes de borrar
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('¿Borrar todos los comprados?'),
+                    content: const Text(
+                        'Esta acción eliminará todos los elementos comprados. No se puede deshacer.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancelar'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _deleteAllPurchased(purchased);
+                        },
+                        child: const Text('Borrar todo',
+                            style: TextStyle(color: Colors.red)),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         Card(
@@ -595,6 +634,22 @@ class _InventoryScreenState extends State<InventoryScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  /// Elimina todos los items comprados
+  Future<void> _deleteAllPurchased(List<ShoppingItem> purchased) async {
+    debugPrint("🔴 DELETE todos los comprados: ${purchased.length} items");
+
+    for (var item in purchased) {
+      await _deleteAPI(item);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('✅ Todos los comprados han sido eliminados'),
+        duration: Duration(seconds: 2),
+      ),
     );
   }
 }
