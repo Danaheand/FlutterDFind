@@ -1082,7 +1082,7 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
     final existingPath = existing?.imagePath;
 
     return AlertDialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       titlePadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
       contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
       actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),

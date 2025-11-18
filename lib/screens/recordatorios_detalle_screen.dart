@@ -1234,7 +1234,7 @@ class _EditAlertModalState extends State<_EditAlertModal> {
     final existing = widget.alert;
 
     return AlertDialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
       titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
       contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
       actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
