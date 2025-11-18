@@ -1509,6 +1509,18 @@ class _EditAlertModalState extends State<_EditAlertModal> {
               return;
             }
 
+            // Validar que la fecha/hora no sea anterior a ahora
+            final now = DateTime.now();
+            if (date.isBefore(now)) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('❌ La fecha y hora no pueden ser anteriores a la actual'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              return;
+            }
+
             final result = AlertData(
               id: widget.alert!.id,
               title: trimmedTitle,

@@ -1322,6 +1322,20 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
             final trimmedTitle = titleCtrl.text.trim();
             if (trimmedTitle.isEmpty) return;
 
+            // Validar que la fecha/hora no sea anterior a ahora
+            final now = DateTime.now();
+            if (date.isBefore(now)) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('❌ La fecha y hora no pueden ser anteriores a la actual'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+              return;
+            }
+
             final result = AlertData(
               id: widget.alert?.id ?? 'alert${Random().nextInt(100000)}',
               title: trimmedTitle,
