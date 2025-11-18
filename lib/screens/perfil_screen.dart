@@ -190,7 +190,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showAccessibilityDialog() {
+  void _showAppSettingsDialog() {
     final fontSizeProvider =
         Provider.of<FontSizeProvider>(context, listen: false);
     final themeProvider =
@@ -200,11 +200,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('Accesibilidad'),
+          title: const Text('Configuraciones de la aplicación'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // TEMA OSCURO
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.dark_mode_outlined),
@@ -218,6 +219,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const Divider(),
+                // TAMAÑO DE LETRA
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.format_size),
@@ -272,42 +274,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                   ),
-              ],
-            ),
-          ),
-          actions: [
-            CustomTextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cerrar'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showNotificationsDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Notificaciones'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.volume_up_outlined),
-                  title: const Text('Sonido'),
-                  trailing: Switch(
-                    value: _notifSound,
-                    onChanged: (v) {
-                      setState(() => _notifSound = v);
-                    },
-                  ),
-                ),
                 const Divider(),
+                // VIBRACIÓN
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.vibration),
@@ -316,6 +284,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     value: _notifVibration,
                     onChanged: (v) {
                       setState(() => _notifVibration = v);
+                    },
+                  ),
+                ),
+                const Divider(),
+                // SONIDO
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.volume_up_outlined),
+                  title: const Text('Sonido'),
+                  trailing: Switch(
+                    value: _notifSound,
+                    onChanged: (v) {
+                      setState(() => _notifSound = v);
                     },
                   ),
                 ),
@@ -419,196 +400,211 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     final nameController = TextEditingController(text: _userName);
+    final fontSizeProvider =
+        Provider.of<FontSizeProvider>(context, listen: false);
 
     await showDialog(
       context: context,
       builder: (context) {
-        return Dialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    ClipOval(
-                      child: _profileImagePath != null
-                          ? Image.file(
-                              File(_profileImagePath!),
-                              width: 160,
-                              height: 160,
-                              fit: BoxFit.cover,
-                            )
-                          : Image.asset(
-                              'assets/img/profile_placeholder.png',
-                              width: 160,
-                              height: 160,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
+        return StatefulBuilder(
+          builder: (context, setState) => Dialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      ClipOval(
+                        child: _profileImagePath != null
+                            ? Image.file(
+                                File(_profileImagePath!),
                                 width: 160,
                                 height: 160,
-                                color: Colors.blue[100],
-                                child: Center(
-                                  child: Text(
-                                    nameController.text.isNotEmpty
-                                        ? nameController.text[0]
-                                        : '?',
-                                    style: const TextStyle(
-                                        fontSize: 60,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white),
+                                fit: BoxFit.cover,
+                              )
+                            : Image.asset(
+                                'assets/img/profile_placeholder.png',
+                                width: 160,
+                                height: 160,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(
+                                  width: 160,
+                                  height: 160,
+                                  color: Colors.blue[100],
+                                  child: Center(
+                                    child: Text(
+                                      nameController.text.isNotEmpty
+                                          ? nameController.text[0]
+                                          : '?',
+                                      style: TextStyle(
+                                          fontSize: fontSizeProvider.enabled
+                                              ? fontSizeProvider.fontSize * 3
+                                              : 60,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white),
+                                    ),
                                   ),
                                 ),
                               ),
+                      ),
+                      Positioned(
+                        bottom: 12,
+                        right: 12,
+                        child: GestureDetector(
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(20)),
+                              ),
+                              builder: (context) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 24, horizontal: 16),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      ListTile(
+                                        leading: const Icon(Icons.camera_alt,
+                                            color: Colors.blueAccent),
+                                        title: const Text('Abrir cámara'),
+                                        onTap: () async {
+                                          Navigator.pop(context);
+                                          await _pickProfileImage(
+                                              ImageSource.camera);
+                                        },
+                                      ),
+                                      ListTile(
+                                        leading: const Icon(Icons.photo_library,
+                                            color: Colors.green),
+                                        title: const Text('Abrir galería'),
+                                        onTap: () async {
+                                          Navigator.pop(context);
+                                          await _pickProfileImage(
+                                              ImageSource.gallery);
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(color: Colors.black26, blurRadius: 4)
+                              ],
                             ),
-                    ),
-                    Positioned(
-                      bottom: 12,
-                      right: 12,
-                      child: GestureDetector(
-                        onTap: () {
-                          showModalBottomSheet(
-                            context: context,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(20)),
-                            ),
-                            builder: (context) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 24, horizontal: 16),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    ListTile(
-                                      leading: const Icon(Icons.camera_alt,
-                                          color: Colors.blueAccent),
-                                      title: const Text('Abrir cámara'),
-                                      onTap: () async {
-                                        Navigator.pop(context);
-                                        await _pickProfileImage(
-                                            ImageSource.camera);
-                                      },
-                                    ),
-                                    ListTile(
-                                      leading: const Icon(Icons.photo_library,
-                                          color: Colors.green),
-                                      title: const Text('Abrir galería'),
-                                      onTap: () async {
-                                        Navigator.pop(context);
-                                        await _pickProfileImage(
-                                            ImageSource.gallery);
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          );
-                        },
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(color: Colors.black26, blurRadius: 4)
-                            ],
+                            padding: const EdgeInsets.all(8),
+                            child: const Icon(Icons.edit,
+                                size: 28, color: Colors.blueAccent),
                           ),
-                          padding: const EdgeInsets.all(8),
-                          child: const Icon(Icons.edit,
-                              size: 28, color: Colors.blueAccent),
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: nameController,
-                  textAlign: TextAlign.center,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre',
-                    border: OutlineInputBorder(),
-                  ),
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                const SizedBox(height: 12),
-                // Mostrar información adicional del usuario
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.email, size: 16, color: Colors.grey),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              _userEmail,
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Icon(Icons.calendar_today,
-                              size: 16, color: Colors.grey),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              _currentUser!.fechaCreacionIso.isNotEmpty
-                                  ? 'Miembro desde: ${_formatDate(_currentUser!.fechaCreacionIso)}'
-                                  : 'Miembro desde: -',
-                              style: const TextStyle(
-                                  fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w500),
-                            ),
-                          ),
-                        ],
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    CustomTextButton(
-                      onPressed: () async {
-                        final newName = nameController.text.trim();
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: nameController,
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(
+                      labelText: 'Nombre',
+                      border: OutlineInputBorder(),
+                    ),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: fontSizeProvider.enabled
+                            ? fontSizeProvider.fontSize + 4
+                            : 18),
+                  ),
+                  const SizedBox(height: 12),
+                  // Mostrar información adicional del usuario
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.email, size: 16, color: Colors.grey),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _userEmail,
+                                style: TextStyle(
+                                    fontSize: fontSizeProvider.enabled
+                                        ? fontSizeProvider.fontSize
+                                        : 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.calendar_today,
+                                size: 16, color: Colors.grey),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _currentUser!.fechaCreacionIso.isNotEmpty
+                                    ? 'Miembro desde: ${_formatDate(_currentUser!.fechaCreacionIso)}'
+                                    : 'Miembro desde: -',
+                                style: TextStyle(
+                                    fontSize: fontSizeProvider.enabled
+                                        ? fontSizeProvider.fontSize
+                                        : 14,
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      CustomTextButton(
+                        onPressed: () async {
+                          final newName = nameController.text.trim();
 
-                        if (_currentUser == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    'No se pudo obtener la información del usuario.')),
-                          );
-                          return;
-                        }
+                          if (_currentUser == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'No se pudo obtener la información del usuario.')),
+                            );
+                            return;
+                          }
 
-                        if (newName.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content:
-                                    Text('El nombre no puede estar vacío.')),
-                          );
-                          return;
-                        }
+                          if (newName.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('El nombre no puede estar vacío.')),
+                            );
+                            return;
+                          }
 
-                        // Si el nombre no cambió, no hacer nada
-                        if (newName == _currentUser!.nombreUsuario) {
+                          // Si el nombre no cambió, no hacer nada
+                          if (newName == _currentUser!.nombreUsuario) {
                           Navigator.pop(context);
                           return;
                         }
@@ -680,6 +676,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ],
             ),
+          ),
           ),
         );
       },
@@ -895,35 +892,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           fontSize: fontSizeProvider.fontSize,
                         )),
                     const SizedBox(height: 16),
-                    // NOTIFICACIONES
+                    // CONFIGURACIONES DE LA APLICACIÓN
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: _buildCard(
                         margin: EdgeInsets.zero,
                         child: ListTile(
-                          leading:
-                              const Icon(Icons.notifications_active_outlined),
-                          title: const Text('Notificaciones'),
+                          leading: const Icon(Icons.settings_outlined),
+                          title: const Text('Configuraciones de la aplicación'),
                           subtitle: const Text(
-                              'Controla recordatorios y avisos de la app'),
+                              'Tema, vibración y sonido'),
                           trailing:
                               const Icon(Icons.arrow_forward_ios, size: 16),
-                          onTap: _showNotificationsDialog,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // ACCESIBILIDAD
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: _buildCard(
-                        margin: EdgeInsets.zero,
-                        child: ListTile(
-                          leading: const Icon(Icons.accessibility),
-                          title: const Text('Accesibilidad'),
-                          trailing:
-                              const Icon(Icons.arrow_forward_ios, size: 16),
-                          onTap: _showAccessibilityDialog,
+                          onTap: _showAppSettingsDialog,
                         ),
                       ),
                     ),
