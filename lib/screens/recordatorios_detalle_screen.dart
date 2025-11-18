@@ -542,7 +542,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
             ),
           ),
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
@@ -558,120 +558,61 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Botón Completar - Ancho completo
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      final confirmar = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Completar recordatorio'),
-                          content: const Text(
-                              '¿Deseas marcar este recordatorio como completado? Esto lo eliminará permanentemente.'),
-                          actions: [
-                            TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text('Cancelar')),
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, true),
-                              child: const Text('Completar',
-                                  style: TextStyle(color: Colors.blue)),
-                            ),
-                          ],
-                        ),
-                      );
-
-                      if (confirmar == true && mounted) {
-                        try {
-                          // Enviar el recordatorio a la papelera
-                          final trashService = TrashService.getInstance();
-                          
-                          // Crear un TrashItem a partir del recordatorio
-                          final trashItem = TrashItem(
-                            id: alert.id,
-                            name: alert.title,
-                            placeName: alert.location ?? 'Sin ubicación',
-                            category: 'Recordatorio - ${alert.priority.name}',
-                            quantity: null,
-                            deletedAt: DateTime.now(),
-                            originalType: 'alert',
-                          );
-                          
-                          // Agregar a la papelera
-                          await trashService.addToTrash(trashItem);
-                          
-                          // Eliminar de la API
-                          final provider = context.read<RecordatorioProvider>();
-                          await provider.eliminarRecordatorio(alert.title);
-
-                          if (mounted) {
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                    '✅ Recordatorio completado y enviado a la papelera'),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                          }
-                        } on RecordatorioException catch (e) {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Error: ${e.message}'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        } catch (e) {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Error inesperado: $e'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        }
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
-                    ),
-                    icon: const Icon(Icons.check_circle_outline, size: 22),
-                    label: const Text('Completar',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600)),
-                  ),
-                  const SizedBox(height: 10),
-                  // Fila con Desactivar y Eliminar
-                  Row(
+                  // Botones en columna vertical - ajustados al contenedor
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () async {
-                            try {
-                              // Llamar a la API para toggle activo
-                              final provider =
-                                  context.read<RecordatorioProvider>();
-                              await provider
-                                  .toggleActivoRecordatorio(alert.title);
+                      // Botón Completar
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          final confirmar = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Completar recordatorio'),
+                              content: const Text(
+                                  '¿Deseas marcar este recordatorio como completado? Esto lo eliminará permanentemente.'),
+                              actions: [
+                                TextButton(
+                                    onPressed: () => Navigator.pop(context, false),
+                                    child: const Text('Cancelar')),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text('Completar',
+                                      style: TextStyle(color: Colors.blue)),
+                                ),
+                              ],
+                            ),
+                          );
 
-                              // Actualizar el estado local
-                              setState(() {
-                                alert.active = !alert.active;
-                              });
+                          if (confirmar == true && mounted) {
+                            try {
+                              // Enviar el recordatorio a la papelera
+                              final trashService = TrashService.getInstance();
+                              
+                              // Crear un TrashItem a partir del recordatorio
+                              final trashItem = TrashItem(
+                                id: alert.id,
+                                name: alert.title,
+                                placeName: alert.location ?? 'Sin ubicación',
+                                category: 'Recordatorio - ${alert.priority.name}',
+                                quantity: null,
+                                deletedAt: DateTime.now(),
+                                originalType: 'alert',
+                              );
+                              
+                              // Agregar a la papelera
+                              await trashService.addToTrash(trashItem);
+                              
+                              // Eliminar de la API
+                              final provider = context.read<RecordatorioProvider>();
+                              await provider.eliminarRecordatorio(alert.title);
 
                               if (mounted) {
+                                Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(alert.active
-                                        ? 'Recordatorio activado'
-                                        : 'Recordatorio desactivado'),
+                                  const SnackBar(
+                                    content: Text(
+                                        '✅ Recordatorio completado y enviado a la papelera'),
                                     backgroundColor: Colors.green,
                                   ),
                                 );
@@ -695,121 +636,179 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                                 );
                               }
                             }
-                          },
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.grey.shade700,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            side: BorderSide(
-                                color: Colors.grey.shade300, width: 1.5),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
-                          ),
-                          icon: Icon(
-                            alert.active
-                                ? Icons.pause_circle_outline
-                                : Icons.play_circle_outline,
-                            size: 20,
-                          ),
-                          label: Text(
-                            alert.active ? 'Desactivar' : 'Activar',
-                            style: const TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w600),
-                          ),
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          elevation: 2,
+                        ),
+                        icon: const Icon(Icons.check_circle_outline, size: 22),
+                        label: const Text('Completar',
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.bold)),
+                      ),
+                      const SizedBox(height: 10),
+                      // Botón Desactivar/Activar
+                      OutlinedButton.icon(
+                        onPressed: () async {
+                          try {
+                            // Llamar a la API para toggle activo
+                            final provider =
+                                context.read<RecordatorioProvider>();
+                            await provider
+                                .toggleActivoRecordatorio(alert.title);
+
+                            // Actualizar el estado local
+                            setState(() {
+                              alert.active = !alert.active;
+                            });
+
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(alert.active
+                                      ? 'Recordatorio activado'
+                                      : 'Recordatorio desactivado'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          } on RecordatorioException catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error: ${e.message}'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error inesperado: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.grey.shade700,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: BorderSide(
+                              color: Colors.grey.shade300, width: 1.5),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        icon: Icon(
+                          alert.active
+                              ? Icons.pause_circle_outline
+                              : Icons.play_circle_outline,
+                          size: 22,
+                        ),
+                        label: Text(
+                          alert.active ? 'Desactivar' : 'Activar',
+                          style: const TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: TextButton.icon(
-                          onPressed: () async {
-                            final confirmar = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Eliminar'),
-                                content: const Text(
-                                    '¿Estás seguro de que deseas eliminar este recordatorio?'),
-                                actions: [
-                                  TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, false),
-                                      child: const Text('Cancelar')),
-                                  TextButton(
+                      const SizedBox(height: 10),
+                      // Botón Eliminar
+                      TextButton.icon(
+                        onPressed: () async {
+                          final confirmar = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Eliminar'),
+                              content: const Text(
+                                  '¿Estás seguro de que deseas eliminar este recordatorio?'),
+                              actions: [
+                                TextButton(
                                     onPressed: () =>
-                                        Navigator.pop(context, true),
-                                    child: const Text('Eliminar',
-                                        style: TextStyle(color: Colors.red)),
+                                        Navigator.pop(context, false),
+                                    child: const Text('Cancelar')),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, true),
+                                  child: const Text('Eliminar',
+                                      style: TextStyle(color: Colors.red)),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirmar == true && mounted) {
+                            try {
+                              // Enviar el recordatorio a la papelera
+                              final trashService = TrashService.getInstance();
+                              
+                              // Crear un TrashItem a partir del recordatorio
+                              final trashItem = TrashItem(
+                                id: alert.id,
+                                name: alert.title,
+                                placeName: alert.location ?? 'Sin ubicación',
+                                category: 'Recordatorio - ${alert.priority.name}',
+                                quantity: null,
+                                deletedAt: DateTime.now(),
+                                originalType: 'alert',
+                              );
+                              
+                              // Agregar a la papelera
+                              await trashService.addToTrash(trashItem);
+                              
+                              // Eliminar de la API
+                              final provider =
+                                  context.read<RecordatorioProvider>();
+                              await provider
+                                  .eliminarRecordatorio(alert.title);
+
+                              if (mounted) {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        '♻️ Recordatorio enviado a la papelera'),
+                                    backgroundColor: Colors.green,
                                   ),
-                                ],
-                              ),
-                            );
-
-                            if (confirmar == true && mounted) {
-                              try {
-                                // Enviar el recordatorio a la papelera
-                                final trashService = TrashService.getInstance();
-                                
-                                // Crear un TrashItem a partir del recordatorio
-                                final trashItem = TrashItem(
-                                  id: alert.id,
-                                  name: alert.title,
-                                  placeName: alert.location ?? 'Sin ubicación',
-                                  category: 'Recordatorio - ${alert.priority.name}',
-                                  quantity: null,
-                                  deletedAt: DateTime.now(),
-                                  originalType: 'alert',
                                 );
-                                
-                                // Agregar a la papelera
-                                await trashService.addToTrash(trashItem);
-                                
-                                // Eliminar de la API
-                                final provider =
-                                    context.read<RecordatorioProvider>();
-                                await provider
-                                    .eliminarRecordatorio(alert.title);
-
-                                if (mounted) {
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                          '♻️ Recordatorio enviado a la papelera'),
-                                      backgroundColor: Colors.green,
-                                    ),
-                                  );
-                                }
-                              } on RecordatorioException catch (e) {
-                                if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Error: ${e.message}'),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                }
-                              } catch (e) {
-                                if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Error inesperado: $e'),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                }
+                              }
+                            } on RecordatorioException catch (e) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error: ${e.message}'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error inesperado: $e'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
                               }
                             }
-                          },
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.red,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            backgroundColor: Colors.red.shade50,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
-                          ),
-                          icon: const Icon(Icons.delete_outline, size: 20),
-                          label: const Text('Eliminar',
-                              style: TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.w600)),
+                          }
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.red,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          backgroundColor: Colors.red.shade50,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
+                        icon: const Icon(Icons.delete_outline, size: 22),
+                        label: const Text('Eliminar',
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),
