@@ -567,22 +567,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const Icon(Icons.calendar_today,
                               size: 16, color: Colors.grey),
                           const SizedBox(width: 8),
-                          Text(
-                            'Miembro desde: ${_formatDate(_currentUser!.fechaCreacionIso)}',
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(Icons.tag, size: 16, color: Colors.grey),
-                          const SizedBox(width: 8),
-                          Text(
-                            'ID: ${_currentUser!.idUsuario}',
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.grey),
+                          Expanded(
+                            child: Text(
+                              _currentUser!.fechaCreacionIso.isNotEmpty
+                                  ? 'Miembro desde: ${_formatDate(_currentUser!.fechaCreacionIso)}'
+                                  : 'Miembro desde: -',
+                              style: const TextStyle(
+                                  fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w500),
+                            ),
                           ),
                         ],
                       ),
@@ -734,6 +726,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (user != null) {
         print('📊 Usuario obtenido: ${user.nombreUsuario} (${user.email})');
+        print('📅 Fecha de creación: ${user.fechaCreacionIso}');
 
         // Usar los datos locales primero para mostrar algo rápidamente
         setState(() {

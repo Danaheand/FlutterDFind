@@ -15,10 +15,17 @@ class _LoginScreenState extends State<AppLoginScreen> {
   final _passCtrl = TextEditingController();
   bool _obscure = true;
   bool _error = false;
+  bool _isLoading = false;
 
   Future<void> _login() async {
-    setState(() => _error = false);
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    setState(() {
+      _error = false;
+      _isLoading = true;
+    });
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      setState(() => _isLoading = false);
+      return;
+    }
 
     try {
       // Primero probar conectividad
@@ -43,9 +50,13 @@ class _LoginScreenState extends State<AppLoginScreen> {
         await SessionManager.instance.setUserSession(result['data']);
 
         if (!mounted) return;
+        setState(() => _isLoading = false);
         Navigator.of(context).pushReplacementNamed('/main');
       } else {
-        setState(() => _error = true);
+        setState(() {
+          _error = true;
+          _isLoading = false;
+        });
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -58,7 +69,10 @@ class _LoginScreenState extends State<AppLoginScreen> {
     } catch (e, st) {
       print('❌ Error login: $e');
       print('📍 Stack trace: $st');
-      setState(() => _error = true);
+      setState(() {
+        _error = true;
+        _isLoading = false;
+      });
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -139,11 +153,19 @@ class _LoginScreenState extends State<AppLoginScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _login,
+                      onPressed: _isLoading ? null : _login,
                       style: ElevatedButton.styleFrom(
                           minimumSize: const Size.fromHeight(48)),
-                      child: const Text('Entrar',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text('Entrar',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                   const SizedBox(height: 16),
