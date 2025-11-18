@@ -400,6 +400,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     final nameController = TextEditingController(text: _userName);
+    final emailController = TextEditingController(text: _userEmail);
     final fontSizeProvider =
         Provider.of<FontSizeProvider>(context, listen: false);
 
@@ -528,55 +529,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             : 18),
                   ),
                   const SizedBox(height: 12),
-                  // Mostrar información adicional del usuario
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(8),
+                  TextField(
+                    controller: emailController,
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(
+                      labelText: 'Correo Electrónico',
+                      border: OutlineInputBorder(),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.email, size: 16, color: Colors.grey),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                _userEmail,
-                                style: TextStyle(
-                                    fontSize: fontSizeProvider.enabled
-                                        ? fontSizeProvider.fontSize
-                                        : 14),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Icon(Icons.calendar_today,
-                                size: 16, color: Colors.grey),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                _currentUser!.fechaCreacionIso.isNotEmpty
-                                    ? 'Miembro desde: ${_formatDate(_currentUser!.fechaCreacionIso)}'
-                                    : 'Miembro desde: -',
-                                style: TextStyle(
-                                    fontSize: fontSizeProvider.enabled
-                                        ? fontSizeProvider.fontSize
-                                        : 14,
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.w500),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                    keyboardType: TextInputType.emailAddress,
+                    style: TextStyle(
+                        fontSize: fontSizeProvider.enabled
+                            ? fontSizeProvider.fontSize
+                            : 14),
                   ),
+                  const SizedBox(height: 12),
+                  // Mostrar información adicional del usuario
+                  if (_currentUser!.fechaCreacionIso.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_today,
+                              size: 16, color: Colors.grey),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Miembro desde: ${_formatDate(_currentUser!.fechaCreacionIso)}',
+                              style: TextStyle(
+                                  fontSize: fontSizeProvider.enabled
+                                      ? fontSizeProvider.fontSize
+                                      : 14,
+                                  color: Colors.black87,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -584,6 +577,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       CustomTextButton(
                         onPressed: () async {
                           final newName = nameController.text.trim();
+                          final newEmail = emailController.text.trim();
 
                           if (_currentUser == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -603,11 +597,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             return;
                           }
 
-                          // Si el nombre no cambió, no hacer nada
-                          if (newName == _currentUser!.nombreUsuario) {
-                          Navigator.pop(context);
-                          return;
-                        }
+                          if (newEmail.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('El correo no puede estar vacío.')),
+                            );
+                            return;
+                          }
+
+                          // Si nada cambió, no hacer nada
+                          final nameChanged = newName != _currentUser!.nombreUsuario;
+                          final emailChanged = newEmail != _currentUser!.email;
+                          
+                          if (!nameChanged && !emailChanged) {
+                            Navigator.pop(context);
+                            return;
+                          }
 
                         try {
                           // Mostrar indicador de carga
@@ -619,14 +625,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           );
 
+                          // TODO: Agregar la API para cambiar el correo cuando esté disponible
                           // Llamar a la API para actualizar perfil por correo
                           final updatedUser = await RemoteUserRepository
                               .instance
                               .updateProfileByEmail(
                             correoActual: _currentUser!.email,
                             nuevoNombre: newName,
-                            nuevoCorreo:
-                                null, // Por ahora solo cambiamos nombre
+                            nuevoCorreo: emailChanged ? newEmail : null,
                           );
 
                           // Cerrar indicador de carga

@@ -319,10 +319,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
               ? const Center(child: CircularProgressIndicator())
               : _buildNormalView(),
           Align(
-            alignment: Alignment.topCenter,
+            alignment: Alignment.bottomCenter,
             child: ConfettiWidget(
               confettiController: _confettiController,
-              blastDirection: -1.57, // hacia arriba
+              blastDirection: 1.57, // hacia arriba
               emissionFrequency: 0.08,
               numberOfParticles: 20,
               maxBlastForce: 30,
