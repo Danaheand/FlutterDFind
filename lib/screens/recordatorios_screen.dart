@@ -905,7 +905,8 @@ class _AlertEditDialogState extends State<_AlertEditDialog> {
     final a = widget.alert;
     titleCtrl = TextEditingController(text: a?.title ?? '');
     descCtrl = TextEditingController(text: a?.description ?? '');
-    date = a?.date ?? DateTime.now();
+    // Si es nuevo recordatorio, usar hora actual + 5 minutos
+    date = a?.date ?? DateTime.now().add(const Duration(minutes: 5));
     priority = a?.priority ?? AlertPriority.baja;
     location = a?.location;
     object = a?.object;
