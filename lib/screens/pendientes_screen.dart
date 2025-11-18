@@ -45,7 +45,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
     InventoryScreen.addFromAlertGlobal = addFromAlert;
     _trashService = TrashService.getInstance();
     _confettiController = ConfettiController(
-      duration: const Duration(seconds: 1),
+      duration: const Duration(milliseconds: 500),
     );
     _initialize();
   }
@@ -204,9 +204,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
           item.isPurchased = data["estaComprado"];
         });
 
-        if (item.isPurchased) {
-          _playConfetti();
-        }
+        // Verificar si el lugar está completo
+        _checkPlaceCompletion(item.placeName);
         return;
       }
 
@@ -216,9 +215,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
           item.isPurchased = !item.isPurchased;
         });
 
-        if (item.isPurchased) {
-          _playConfetti();
-        }
+        // Verificar si el lugar está completo
+        _checkPlaceCompletion(item.placeName);
         return;
       }
 
@@ -281,11 +279,24 @@ class _InventoryScreenState extends State<InventoryScreen> {
     await _deleteAPI(item);
   }
 
+  /// Verifica si todos los items de un lugar están completos
+  void _checkPlaceCompletion(String place) {
+    final itemsInPlace = _items.where((i) => i.placeName == place).toList();
+    
+    if (itemsInPlace.isEmpty) return;
+    
+    final allCompleted = itemsInPlace.every((i) => i.isPurchased);
+    
+    if (allCompleted) {
+      _playConfetti();
+    }
+  }
+
   void _playConfetti() {
     _confettiController.play();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('¡Tarea completada! 🎉'),
+        content: Text('¡Lugar completado! 🎉'),
         duration: Duration(seconds: 2),
       ),
     );

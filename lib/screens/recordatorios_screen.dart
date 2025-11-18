@@ -13,6 +13,7 @@ import '../providers/recordatorio_provider.dart';
 import '../models/recordatorio.dart';
 import '../models/recordatorio_exception.dart';
 import '../models/trash_item.dart';
+import 'widgets/tips_recordatorios.dart';
 
 // Variable global eliminada, se declara dentro de la clase correspondiente
 typedef DeleteAlertCallback = void Function(AlertData alert);
@@ -637,6 +638,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               children: [
                                 _buildTabBar(),
+                                const TipsRecordatorios(),
                                 _buildSection('Importantes', importantes),
                                 _buildSection('Actuales', proximas),
                                 _buildSection('Desactivadas', desactivadas),
