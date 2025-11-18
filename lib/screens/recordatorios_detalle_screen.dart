@@ -272,11 +272,11 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
         children: [
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Imagen o ícono
+                  // Imagen o ícono (más pequeña)
                   if (alert.imagePath != null && alert.imagePath!.isNotEmpty)
                     GestureDetector(
                       onTap: () {
@@ -289,20 +289,20 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                         );
                       },
                       child: Container(
-                        width: 200,
-                        height: 200,
+                        width: 140,
+                        height: 140,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
                           ],
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(12),
                           child: FutureBuilder<Uint8List>(
                             future: XFile(alert.imagePath!).readAsBytes(),
                             builder: (context, snap) {
@@ -326,67 +326,69 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                       ),
                     ),
                   if (alert.imagePath != null && alert.imagePath!.isNotEmpty)
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                   Text(
                     alert.title,
                     style: const TextStyle(
-                      fontSize: 26,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: _color.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
                       'Prioridad ${_getPriorityText()}',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: _color,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 16),
+                  // Sección "Vence en" más compacta
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade200),
                     ),
                     child: Column(
                       children: [
                         Text(
                           isPast ? 'VENCIÓ' : 'VENCE EN',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: Colors.grey.shade600,
-                            letterSpacing: 1.2,
+                            letterSpacing: 0.8,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         Text(
                           _formatTimeRemaining(alert.date),
                           style: const TextStyle(
-                            fontSize: 22,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         Text(
-                          '${alert.date.day} de ${_getMonthName(alert.date.month)} ${alert.date.year}, ${_formatTime(alert.date)}',
+                          '${alert.date.day} de ${_getMonthName(alert.date.month)} ${alert.date.year} • ${_formatTime(alert.date)}',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 12,
                             color: Colors.grey.shade600,
                           ),
                           textAlign: TextAlign.center,
@@ -394,27 +396,27 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 16),
                   // Línea divisora
                   Divider(
                     color: Colors.grey.shade300,
                     thickness: 1,
-                    height: 40,
+                    height: 20,
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'DETALLES',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: Colors.grey.shade600,
                         letterSpacing: 1.2,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
 
                   // Descripción (siempre se muestra)
                   _SimpleDetailItem(
@@ -424,7 +426,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                         ? alert.description
                         : 'Sin descripción',
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
 
                   // Artículo (solo si tiene valor)
                   if (alert.object != null && alert.object!.isNotEmpty) ...[
@@ -433,7 +435,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                       label: 'Artículo',
                       value: alert.object!,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                   ],
 
                   // Ubicación (solo si tiene valor)
@@ -443,7 +445,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                       label: 'Ubicación',
                       value: alert.location!,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                   ],
 
                   // Estado activo
@@ -454,7 +456,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                     label: 'Estado',
                     value: alert.active ? 'Activo' : 'Inactivo',
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
 
                   // Repetición (solo si es repetitivo y tiene días seleccionados)
                   if (alert.repetitive &&
@@ -462,7 +464,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                       alert.selectedWeekdays!.isNotEmpty) ...[
                     _SimpleRepetitionDetail(
                         selectedWeekdays: alert.selectedWeekdays!),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                   ],
 
                   // Frecuencia de repetición (solo si tiene valor)
@@ -474,7 +476,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                       label: 'Frecuencia',
                       value: alert.repeatFrequency!,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                   ],
 
                   // Ruta de imagen (solo si tiene valor)
@@ -485,31 +487,31 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                       label: 'Imagen',
                       value: 'Imagen adjunta',
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                   ],
 
                   // Sección de metadatos (fechas) - Solo si alguna existe
                   if (alert.createdAt != null || alert.updatedAt != null) ...[
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     Divider(
                       color: Colors.grey.shade300,
                       thickness: 1,
-                      height: 40,
+                      height: 20,
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         'INFORMACIÓN DEL SISTEMA',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: Colors.grey.shade600,
                           letterSpacing: 1.2,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     Row(
                       children: [
                         // Fecha de creación
