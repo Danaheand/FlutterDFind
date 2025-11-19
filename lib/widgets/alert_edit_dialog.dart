@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:Dfind/models/alert_data.dart';
-import 'package:Dfind/screens/recordatorios_detalle_screen.dart';
 import 'package:Dfind/services/notification_service.dart';
 import 'package:Dfind/utils/alert_utils.dart';
 import 'package:Dfind/widgets/custom_text_button.dart';

@@ -1,3 +1,5 @@
+import 'package:Dfind/models/trash_item.dart';
+import 'package:Dfind/services/trash_service.dart';
 import 'package:flutter/foundation.dart';
 import '../models/recordatorio.dart';
 import '../models/recordatorio_exception.dart';
@@ -8,6 +10,7 @@ import '../services/session_manager.dart';
 /// Utiliza ChangeNotifier para notificar cambios a los widgets que escuchan
 class RecordatorioProvider extends ChangeNotifier {
   final RecordatorioRepository _repository;
+  final trashService = TrashService.getInstance();
 
   // Estado
   List<Recordatorio> _recordatorios = [];
@@ -226,6 +229,7 @@ class RecordatorioProvider extends ChangeNotifier {
 
     try {
       print('📱 Provider: Cambiando estado de "$titulo"');
+      _setLoading(true);
 
       final recordatorioActualizado =
           await _repository.toggleActivoRecordatorio(titulo);
@@ -235,7 +239,7 @@ class RecordatorioProvider extends ChangeNotifier {
       if (index != -1) {
         _recordatorios[index] = recordatorioActualizado;
       }
-
+      _setLoading(false);
       print(
           '✅ Provider: Estado cambiado (activo=${recordatorioActualizado.activo})');
       notifyListeners();
@@ -313,6 +317,7 @@ class RecordatorioProvider extends ChangeNotifier {
 
   /// Método privado para actualizar el estado de carga
   void _setLoading(bool value) {
+    print('🔵 Provider: isLoading = $value');
     _isLoading = value;
     notifyListeners();
   }

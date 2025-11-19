@@ -1,5 +1,4 @@
 import 'package:Dfind/models/alert_data.dart';
-import 'package:Dfind/screens/recordatorios_detalle_screen.dart';
 import 'package:flutter/material.dart';
 
 Color defaultColorFor(AlertPriority p) {
@@ -31,3 +30,15 @@ String dateLabel(DateTime date) {
   final y = date.year.toString();
   return '$d/$m/$y';
 }
+
+// AlertData _recordatorioToAlertData(Recordatorio r) {
+//   return AlertData(
+//     id: r.idRecordatorio ?? '',
+//     title: r.titulo,
+//     description: r.descripcion,
+//     dateTime: r.fechaHora,
+//     priority: AlertPriorityExtension.fromString(r.prioridad),
+//     location: r.ubicacion,
+//     object: r.objeto,
+//   );
+// }

@@ -1,14 +1,13 @@
-import 'dart:math';
 import 'package:Dfind/models/alert_data.dart';
 import 'package:Dfind/screens/widgets/tips_recordatorios.dart';
 import 'package:Dfind/utils/alert_utils.dart';
 import 'package:Dfind/widgets/alert_card.dart';
 import 'package:Dfind/widgets/alert_edit_dialog.dart';
+import 'package:Dfind/widgets/alert_tab_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
-import 'recordatorios_detalle_screen.dart' as detail;
-import '../services/notification_service.dart';
+import "alert_detail_screen_modern.dart";
+// import 'recordatorios_detalle_screen.dart' as detail;
 import '../services/session_manager.dart';
 import '../services/trash_service.dart';
 import '../widgets/custom_text_button.dart';
@@ -41,19 +40,23 @@ class _AlertsScreenState extends State<AlertsScreen> {
   }
 
   Future<void> _loadUserAndRecordatorios() async {
-    try {
-      // Obtener email del usuario desde SessionManager
-      _userEmail = SessionManager.instance.userEmail;
-      _userId = SessionManager.instance.userId;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        // Obtener email del usuario desde SessionManager
+        _userEmail = SessionManager.instance.userEmail;
+        _userId = SessionManager.instance.userId;
 
-      if (_userEmail != null && _userId != null && mounted) {
-        // Cargar recordatorios del servidor
-        final provider = context.read<RecordatorioProvider>();
-        await provider.cargarRecordatorios();
+        if (_userEmail != null && _userId != null && mounted) {
+          // Cargar recordatorios del servidor
+          print('🔵 Cargando recordatorios para $_userEmail...');
+          final provider = context.read<RecordatorioProvider>();
+          await provider.cargarRecordatorios();
+          print('✅ Recordatorios cargados para $_userEmail');
+        }
+      } catch (e) {
+        print('❌ Error cargando recordatorios: $e');
       }
-    } catch (e) {
-      print('❌ Error cargando recordatorios: $e');
-    }
+    });
   }
 
   void _onAlertDeleted(AlertData alert) {
@@ -131,29 +134,33 @@ class _AlertsScreenState extends State<AlertsScreen> {
     );
   }
 
-  List<AlertData> get _alerts {
-    final provider = context.read<RecordatorioProvider>();
-    return provider.recordatorios.map(_recordatorioToAlertData).toList();
+  List<AlertData> _getAlerts(RecordatorioProvider provider) {
+    print('🔵 Obteniendo recordatorios desde el provider...');
+    final recordatorios =
+        provider.recordatorios.map(_recordatorioToAlertData).toList();
+    print('🟣 Total recordatorios cargados: ${recordatorios.length}');
+    return recordatorios;
   }
 
-  List<AlertData> get actuales =>
-      _alerts.where((a) => a.active && a.date.isAfter(DateTime.now())).toList();
-  List<AlertData> get pasadas => _alerts
-      .where((a) => a.active && a.date.isBefore(DateTime.now()))
-      .toList();
-  List<AlertData> get importantes => _alerts
+  List<AlertData> _getPasadas(List<AlertData> alerts) =>
+      alerts.where((a) => a.active && a.date.isBefore(DateTime.now())).toList();
+
+  List<AlertData> _getImportantes(List<AlertData> alerts) => alerts
       .where((a) =>
           a.priority == AlertPriority.alta &&
           a.active &&
           a.date.isAfter(DateTime.now()))
       .toList();
-  List<AlertData> get proximas => _alerts
+
+  List<AlertData> _getProximas(List<AlertData> alerts) => alerts
       .where((a) =>
           a.active &&
           a.date.isAfter(DateTime.now()) &&
           a.priority != AlertPriority.alta)
       .toList();
-  List<AlertData> get desactivadas => _alerts.where((a) => !a.active).toList();
+
+  List<AlertData> _getDesactivadas(List<AlertData> alerts) =>
+      alerts.where((a) => !a.active).toList();
 
   Future<void> _toggleAlertActive(AlertData alert) async {
     if (_userEmail == null) return;
@@ -270,8 +277,9 @@ class _AlertsScreenState extends State<AlertsScreen> {
     if (_userEmail == null || selectedAlerts.isEmpty) return;
 
     final provider = context.read<RecordatorioProvider>();
+    final alerts = _getAlerts(provider);
     final alertsToDelete =
-        _alerts.where((a) => selectedAlerts.contains(a.id)).toList();
+        alerts.where((a) => selectedAlerts.contains(a.id)).toList();
 
     // Confirmar eliminación
     final confirmar = await showDialog<bool>(
@@ -343,65 +351,6 @@ class _AlertsScreenState extends State<AlertsScreen> {
     }
   }
 
-  Widget _buildTabBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          Expanded(
-            child: InkWell(
-              onTap: () => setState(() => tabIndex = 0),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color:
-                      tabIndex == 0 ? Colors.blue.shade50 : Colors.transparent,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Center(
-                  child: Text(
-                    'Actuales',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color:
-                          tabIndex == 0 ? Colors.blue.shade800 : Colors.black54,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: InkWell(
-              onTap: () => setState(() => tabIndex = 1),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color:
-                      tabIndex == 1 ? Colors.blue.shade50 : Colors.transparent,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Center(
-                  child: Text(
-                    'Pasadas',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color:
-                          tabIndex == 1 ? Colors.blue.shade800 : Colors.black54,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSection(String title, List<AlertData> alerts,
       {bool showSelection = false}) {
     return Column(
@@ -439,22 +388,22 @@ class _AlertsScreenState extends State<AlertsScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => detail.AlertDetailScreen(
+                            builder: (context) => AlertDetailScreenModern(
                               alert: AlertData(
-                                id: a.id,
-                                title: a.title,
-                                description: a.description,
-                                date: a.date,
-                                priority:
-                                    AlertPriority.values[a.priority.index],
-                                location: a.location,
-                                object: a.object,
-                                repetitive: a.repetitive,
-                                repeatFrequency: a.repeatFrequency,
-                                active: a.active,
-                                color: a.color,
-                                imagePath: a.imagePath,
-                              ),
+                                  id: a.id,
+                                  title: a.title,
+                                  description: a.description,
+                                  date: a.date,
+                                  priority:
+                                      AlertPriority.values[a.priority.index],
+                                  location: a.location,
+                                  object: a.object,
+                                  repetitive: a.repetitive,
+                                  repeatFrequency: a.repeatFrequency,
+                                  active: a.active,
+                                  color: a.color,
+                                  imagePath: a.imagePath,
+                                  selectedWeekdays: a.selectedWeekdays),
                             ),
                           ),
                         );
@@ -465,28 +414,12 @@ class _AlertsScreenState extends State<AlertsScreen> {
                       try {
                         // Obtener el provider antes de hacer operaciones async
                         final provider = context.read<RecordatorioProvider>();
-                        // final trashService = TrashService.getInstance();
-
-                        // Crear TrashItem y agregar a papelera
-                        // final trashItem = TrashItem(
-                        //   id: a.id,
-                        //   name: a.title,
-                        //   placeName: a.location ?? 'Sin ubicación',
-                        //   category: 'Recordatorio - ${a.priority.name}',
-                        //   quantity: null,
-                        //   deletedAt: DateTime.now(),
-                        //   originalType: 'alert',
-                        // );
 
                         // await trashService.addToTrash(trashItem);
                         await provider.eliminarRecordatorio(a.title);
 
-                        // Eliminar de la lista actual
+                        // El provider ya actualizó su lista
                         if (mounted) {
-                          setState(() {
-                            _alerts.removeWhere((alert) => alert.id == a.id);
-                          });
-
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('♻️ Recordatorio eliminado'),
@@ -523,14 +456,21 @@ class _AlertsScreenState extends State<AlertsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.read<RecordatorioProvider>();
+    final provider = context.watch<RecordatorioProvider>();
+
+    // Calcular las listas de alertas una sola vez al inicio del build
+    final alerts = _getAlerts(provider);
+    final importantes = _getImportantes(alerts);
+    final proximas = _getProximas(alerts);
+    final desactivadas = _getDesactivadas(alerts);
+    final pasadas = _getPasadas(alerts);
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: const Text('Recordatorios'),
         actions: [
-          if (_alerts.isNotEmpty)
+          if (alerts.isNotEmpty)
             IconButton(
               icon: Icon(
                   selectionMode ? Icons.close : Icons.check_box_outline_blank),
@@ -577,7 +517,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                     ],
                   ),
                 )
-              : _alerts.isEmpty
+              : alerts.isEmpty
                   ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -603,7 +543,11 @@ class _AlertsScreenState extends State<AlertsScreen> {
                           ? ListView(
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               children: [
-                                _buildTabBar(),
+                                AlertTabBar(
+                                  tabIndex: tabIndex,
+                                  onTabChanged: (index) =>
+                                      setState(() => tabIndex = index),
+                                ),
                                 const TipsRecordatorios(),
                                 _buildSection('Importantes', importantes,
                                     showSelection: true),
@@ -619,7 +563,11 @@ class _AlertsScreenState extends State<AlertsScreen> {
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 8),
                                   children: [
-                                    _buildTabBar(),
+                                    AlertTabBar(
+                                      tabIndex: tabIndex,
+                                      onTabChanged: (index) =>
+                                          setState(() => tabIndex = index),
+                                    ),
                                     _buildSection('Pasadas', pasadas,
                                         showSelection: true),
                                   ],

@@ -290,7 +290,7 @@ class AlertCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                alert.active ? 'Pausar' : 'Activar',
+                alert.active ? 'Completar' : 'Activar',
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,

@@ -1,5 +1,10 @@
 import 'dart:typed_data';
 import 'package:Dfind/models/alert_data.dart';
+import 'package:Dfind/utils/date_format_utils.dart';
+import 'package:Dfind/widgets/alert_detail_items/compact_detail_item.dart';
+import 'package:Dfind/widgets/alert_detail_items/simple_detail_item.dart';
+import 'package:Dfind/widgets/alert_detail_items/simple_repetition_detail.dart';
+import 'package:Dfind/widgets/image_viewer.dart';
 import 'package:flutter/material.dart';
 import "package:Dfind/utils/alert_utils.dart";
 import 'package:image_picker/image_picker.dart';
@@ -13,24 +18,6 @@ import '../services/session_manager.dart';
 import '../models/trash_item.dart';
 
 // enum AlertPriority { baja, media, alta }
-
-class WeekDay {
-  final String label;
-  final String fullName;
-  final int value;
-
-  WeekDay(this.label, this.fullName, this.value);
-}
-
-final List<WeekDay> weekDays = [
-  WeekDay('L', 'Lunes', 1),
-  WeekDay('M', 'Martes', 2),
-  WeekDay('X', 'Miércoles', 3),
-  WeekDay('J', 'Jueves', 4),
-  WeekDay('V', 'Viernes', 5),
-  WeekDay('S', 'Sábado', 6),
-  WeekDay('D', 'Domingo', 7),
-];
 
 // Color defaultColorFor(AlertPriority p) {
 //   switch (p) {
@@ -95,6 +82,8 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
   void initState() {
     super.initState();
     alert = widget.alert;
+    print(
+        "alerta detalle: {${alert.title} - ${alert.id} - ${alert.date} - ${alert.priority} - ${alert.active} ${alert.location} ${alert.object}}");
   }
 
   String _getPriorityText() {
@@ -111,21 +100,6 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
   Color get _color {
     if (!alert.active) return Colors.grey.shade400;
     return alert.color ?? defaultColorFor(alert.priority);
-  }
-
-  String _formatTime(DateTime date) {
-    final hour = date.hour.toString().padLeft(2, '0');
-    final minute = date.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
-  }
-
-  String _formatDateTimeCompact(DateTime date) {
-    final day = date.day.toString().padLeft(2, '0');
-    final month = date.month.toString().padLeft(2, '0');
-    final year = date.year.toString().substring(2);
-    final hour = date.hour.toString().padLeft(2, '0');
-    final minute = date.minute.toString().padLeft(2, '0');
-    return '$day/$month/$year\n$hour:$minute';
   }
 
   void _showEditDialog() {
@@ -209,49 +183,6 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
     );
   }
 
-  String _formatTimeRemaining(DateTime date) {
-    final now = DateTime.now();
-    final difference = date.difference(now);
-
-    if (difference.isNegative) {
-      final absDiff = difference.abs();
-      if (absDiff.inDays > 0) {
-        return 'Hace ${absDiff.inDays} día${absDiff.inDays > 1 ? 's' : ''}';
-      } else if (absDiff.inHours > 0) {
-        return 'Hace ${absDiff.inHours} hora${absDiff.inHours > 1 ? 's' : ''}';
-      } else {
-        return 'Hace ${absDiff.inMinutes} minuto${absDiff.inMinutes > 1 ? 's' : ''}';
-      }
-    }
-
-    if (difference.inDays > 0) {
-      final hours = difference.inHours % 24;
-      return '${difference.inDays} día${difference.inDays > 1 ? 's' : ''} y $hours hora${hours != 1 ? 's' : ''}';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} hora${difference.inHours > 1 ? 's' : ''}';
-    } else {
-      return '${difference.inMinutes} minuto${difference.inMinutes > 1 ? 's' : ''}';
-    }
-  }
-
-  String _getMonthName(int month) {
-    const months = [
-      'Enero',
-      'Febrero',
-      'Marzo',
-      'Abril',
-      'Mayo',
-      'Junio',
-      'Julio',
-      'Agosto',
-      'Septiembre',
-      'Octubre',
-      'Noviembre',
-      'Diciembre'
-    ];
-    return months[month - 1];
-  }
-
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
@@ -287,8 +218,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) =>
-                                _ImageViewer(path: alert.imagePath!),
+                            builder: (_) => ImageViewer(path: alert.imagePath!),
                           ),
                         );
                       },
@@ -380,7 +310,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          _formatTimeRemaining(alert.date),
+                          formatTimeRemaining(alert.date),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -390,7 +320,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '${alert.date.day} de ${_getMonthName(alert.date.month)} ${alert.date.year} • ${_formatTime(alert.date)}',
+                          '${alert.date.day} de ${getMonthName(alert.date.month)} ${alert.date.year} • ${formatTime(alert.date)}',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey.shade600,
@@ -423,7 +353,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                   const SizedBox(height: 12),
 
                   // Descripción (siempre se muestra)
-                  _SimpleDetailItem(
+                  SimpleDetailItem(
                     icon: Icons.description_outlined,
                     label: 'Descripción',
                     value: alert.description.isNotEmpty
@@ -434,7 +364,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
 
                   // Artículo (solo si tiene valor)
                   if (alert.object != null && alert.object!.isNotEmpty) ...[
-                    _SimpleDetailItem(
+                    SimpleDetailItem(
                       icon: Icons.inventory_2_outlined,
                       label: 'Artículo',
                       value: alert.object!,
@@ -444,7 +374,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
 
                   // Ubicación (solo si tiene valor)
                   if (alert.location != null && alert.location!.isNotEmpty) ...[
-                    _SimpleDetailItem(
+                    SimpleDetailItem(
                       icon: Icons.location_on_outlined,
                       label: 'Ubicación',
                       value: alert.location!,
@@ -453,7 +383,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                   ],
 
                   // Estado activo
-                  _SimpleDetailItem(
+                  SimpleDetailItem(
                     icon: alert.active
                         ? Icons.check_circle_outline
                         : Icons.pause_circle_outline,
@@ -466,7 +396,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                   if (alert.repetitive &&
                       alert.selectedWeekdays != null &&
                       alert.selectedWeekdays!.isNotEmpty) ...[
-                    _SimpleRepetitionDetail(
+                    SimpleRepetitionDetail(
                         selectedWeekdays: alert.selectedWeekdays!),
                     const SizedBox(height: 12),
                   ],
@@ -475,7 +405,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                   if (alert.repetitive &&
                       alert.repeatFrequency != null &&
                       alert.repeatFrequency!.isNotEmpty) ...[
-                    _SimpleDetailItem(
+                    SimpleDetailItem(
                       icon: Icons.event_repeat,
                       label: 'Frecuencia',
                       value: alert.repeatFrequency!,
@@ -486,7 +416,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                   // Ruta de imagen (solo si tiene valor)
                   if (alert.imagePath != null &&
                       alert.imagePath!.isNotEmpty) ...[
-                    _SimpleDetailItem(
+                    SimpleDetailItem(
                       icon: Icons.image_outlined,
                       label: 'Imagen',
                       value: 'Imagen adjunta',
@@ -521,10 +451,10 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                         // Fecha de creación
                         if (alert.createdAt != null)
                           Expanded(
-                            child: _CompactDetailItem(
+                            child: CompactDetailItem(
                               icon: Icons.calendar_today_outlined,
                               label: 'Creado el',
-                              value: _formatDateTimeCompact(alert.createdAt!),
+                              value: formatDateTimeCompact(alert.createdAt!),
                             ),
                           ),
                         if (alert.createdAt != null && alert.updatedAt != null)
@@ -532,10 +462,10 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                         // Fecha de actualización
                         if (alert.updatedAt != null)
                           Expanded(
-                            child: _CompactDetailItem(
+                            child: CompactDetailItem(
                               icon: Icons.update_outlined,
                               label: 'Actualizado el',
-                              value: _formatDateTimeCompact(alert.updatedAt!),
+                              value: formatDateTimeCompact(alert.updatedAt!),
                             ),
                           ),
                       ],
@@ -829,195 +759,12 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
 }
 
 // Widget para mostrar un item de detalle (solo texto, sin tarjeta)
-class _SimpleDetailItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _SimpleDetailItem({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 22, color: Colors.grey.shade600),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                value,
-                style: const TextStyle(fontSize: 16, color: Colors.black87),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 // Widget para mostrar repetición (sin tarjeta, estilo simple)
-class _SimpleRepetitionDetail extends StatelessWidget {
-  final List<int> selectedWeekdays;
-
-  const _SimpleRepetitionDetail({required this.selectedWeekdays});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(Icons.repeat_rounded, size: 22, color: Colors.grey.shade600),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Repetición',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: weekDays.map((day) {
-                  final isSelected = selectedWeekdays.contains(day.value);
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: isSelected ? Colors.blue : Colors.grey.shade200,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          day.label,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: isSelected
-                                ? Colors.white
-                                : Colors.grey.shade600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 // Widget compacto para mostrar información de sistema (lado a lado)
-class _CompactDetailItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _CompactDetailItem({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(icon, size: 20, color: Colors.grey.shade600),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade600,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.black87,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 // Widget para visualizar la imagen en pantalla completa
-class _ImageViewer extends StatelessWidget {
-  const _ImageViewer({required this.path});
-  final String path;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text('Imagen del Recordatorio'),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-      ),
-      body: Center(
-        child: FutureBuilder<Uint8List>(
-          future: XFile(path).readAsBytes(),
-          builder: (context, snap) {
-            if (snap.connectionState != ConnectionState.done || !snap.hasData) {
-              return const CircularProgressIndicator(color: Colors.white);
-            }
-            return InteractiveViewer(
-              minScale: 0.5,
-              maxScale: 4.0,
-              child: Image.memory(snap.data!),
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
 
 // Modal para editar recordatorios con todas las características (similar a crear)
 class _EditAlertModal extends StatefulWidget {
