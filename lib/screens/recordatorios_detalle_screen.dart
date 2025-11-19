@@ -1,5 +1,7 @@
 import 'dart:typed_data';
+import 'package:Dfind/models/alert_data.dart';
 import 'package:flutter/material.dart';
+import "package:Dfind/utils/alert_utils.dart";
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
@@ -10,7 +12,7 @@ import '../services/trash_service.dart';
 import '../services/session_manager.dart';
 import '../models/trash_item.dart';
 
-enum AlertPriority { baja, media, alta }
+// enum AlertPriority { baja, media, alta }
 
 class WeekDay {
   final String label;
@@ -30,52 +32,52 @@ final List<WeekDay> weekDays = [
   WeekDay('D', 'Domingo', 7),
 ];
 
-Color _defaultColorFor(AlertPriority p) {
-  switch (p) {
-    case AlertPriority.alta:
-      return Colors.red.shade400;
-    case AlertPriority.media:
-      return Colors.amber.shade600;
-    case AlertPriority.baja:
-      return Colors.blue.shade400;
-  }
-}
+// Color defaultColorFor(AlertPriority p) {
+//   switch (p) {
+//     case AlertPriority.alta:
+//       return Colors.red.shade400;
+//     case AlertPriority.media:
+//       return Colors.amber.shade600;
+//     case AlertPriority.baja:
+//       return Colors.blue.shade400;
+//   }
+// }
 
-class AlertData {
-  String id;
-  String title;
-  String description;
-  DateTime date;
-  AlertPriority priority;
-  String? location;
-  String? object;
-  bool repetitive;
-  String? repeatFrequency;
-  bool active;
-  Color? color;
-  String? imagePath;
-  List<int>? selectedWeekdays;
-  DateTime? createdAt;
-  DateTime? updatedAt;
+// class AlertData {
+//   String id;
+//   String title;
+//   String description;
+//   DateTime date;
+//   AlertPriority priority;
+//   String? location;
+//   String? object;
+//   bool repetitive;
+//   String? repeatFrequency;
+//   bool active;
+//   Color? color;
+//   String? imagePath;
+//   List<int>? selectedWeekdays;
+//   DateTime? createdAt;
+//   DateTime? updatedAt;
 
-  AlertData({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.date,
-    required this.priority,
-    this.location,
-    this.object,
-    this.repetitive = false,
-    this.repeatFrequency,
-    this.active = true,
-    this.color,
-    this.imagePath,
-    this.selectedWeekdays,
-    this.createdAt,
-    this.updatedAt,
-  });
-}
+//   AlertData({
+//     required this.id,
+//     required this.title,
+//     required this.description,
+//     required this.date,
+//     required this.priority,
+//     this.location,
+//     this.object,
+//     this.repetitive = false,
+//     this.repeatFrequency,
+//     this.active = true,
+//     this.color,
+//     this.imagePath,
+//     this.selectedWeekdays,
+//     this.createdAt,
+//     this.updatedAt,
+//   });
+// }
 
 class AlertDetailScreen extends StatefulWidget {
   final AlertData alert;
@@ -108,7 +110,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
 
   Color get _color {
     if (!alert.active) return Colors.grey.shade400;
-    return alert.color ?? _defaultColorFor(alert.priority);
+    return alert.color ?? defaultColorFor(alert.priority);
   }
 
   String _formatTime(DateTime date) {
@@ -172,7 +174,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
             // Volver al diálogo
             if (mounted) {
               Navigator.pop(context);
-              
+
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('✅ Recordatorio actualizado exitosamente'),
@@ -575,7 +577,8 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                                   '¿Deseas marcar este recordatorio como completado? Esto lo eliminará permanentemente.'),
                               actions: [
                                 TextButton(
-                                    onPressed: () => Navigator.pop(context, false),
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
                                     child: const Text('Cancelar')),
                                 TextButton(
                                   onPressed: () => Navigator.pop(context, true),
@@ -590,23 +593,25 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                             try {
                               // Enviar el recordatorio a la papelera
                               final trashService = TrashService.getInstance();
-                              
+
                               // Crear un TrashItem a partir del recordatorio
                               final trashItem = TrashItem(
                                 id: alert.id,
                                 name: alert.title,
                                 placeName: alert.location ?? 'Sin ubicación',
-                                category: 'Recordatorio - ${alert.priority.name}',
+                                category:
+                                    'Recordatorio - ${alert.priority.name}',
                                 quantity: null,
                                 deletedAt: DateTime.now(),
                                 originalType: 'alert',
                               );
-                              
+
                               // Agregar a la papelera
                               await trashService.addToTrash(trashItem);
-                              
+
                               // Eliminar de la API
-                              final provider = context.read<RecordatorioProvider>();
+                              final provider =
+                                  context.read<RecordatorioProvider>();
                               await provider.eliminarRecordatorio(alert.title);
 
                               if (mounted) {
@@ -735,8 +740,7 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                                         Navigator.pop(context, false),
                                     child: const Text('Cancelar')),
                                 TextButton(
-                                  onPressed: () =>
-                                      Navigator.pop(context, true),
+                                  onPressed: () => Navigator.pop(context, true),
                                   child: const Text('Eliminar',
                                       style: TextStyle(color: Colors.red)),
                                 ),
@@ -748,26 +752,26 @@ class _AlertDetailScreenState extends State<AlertDetailScreen> {
                             try {
                               // Enviar el recordatorio a la papelera
                               final trashService = TrashService.getInstance();
-                              
+
                               // Crear un TrashItem a partir del recordatorio
                               final trashItem = TrashItem(
                                 id: alert.id,
                                 name: alert.title,
                                 placeName: alert.location ?? 'Sin ubicación',
-                                category: 'Recordatorio - ${alert.priority.name}',
+                                category:
+                                    'Recordatorio - ${alert.priority.name}',
                                 quantity: null,
                                 deletedAt: DateTime.now(),
                                 originalType: 'alert',
                               );
-                              
+
                               // Agregar a la papelera
                               await trashService.addToTrash(trashItem);
-                              
+
                               // Eliminar de la API
                               final provider =
                                   context.read<RecordatorioProvider>();
-                              await provider
-                                  .eliminarRecordatorio(alert.title);
+                              await provider.eliminarRecordatorio(alert.title);
 
                               if (mounted) {
                                 Navigator.pop(context);
@@ -1056,7 +1060,7 @@ class _EditAlertModalState extends State<_EditAlertModal> {
     repetitive = a?.repetitive ?? false;
     repeatFrequency = a?.repeatFrequency;
     selectedWeekdays = List.from(a?.selectedWeekdays ?? []);
-    customColor = a?.color ?? _defaultColorFor(priority);
+    customColor = a?.color ?? defaultColorFor(priority);
     _pickedImage = null;
   }
 
@@ -1091,7 +1095,7 @@ class _EditAlertModalState extends State<_EditAlertModal> {
         title: const Text('Elegir color'),
         content: SingleChildScrollView(
           child: BlockPicker(
-            pickerColor: customColor ?? _defaultColorFor(priority),
+            pickerColor: customColor ?? defaultColorFor(priority),
             onColorChanged: (c) => setState(() => customColor = c),
           ),
         ),
@@ -1277,7 +1281,10 @@ class _EditAlertModalState extends State<_EditAlertModal> {
               const SizedBox(height: 20),
               const Text(
                 'Fecha y Hora',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey),
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey),
               ),
               const SizedBox(height: 12),
               Row(
@@ -1287,8 +1294,9 @@ class _EditAlertModalState extends State<_EditAlertModal> {
                       onTap: () async {
                         final picked = await showDatePicker(
                           context: context,
-                          initialDate:
-                              date.isAfter(DateTime.now()) ? date : DateTime.now(),
+                          initialDate: date.isAfter(DateTime.now())
+                              ? date
+                              : DateTime.now(),
                           firstDate: DateTime.now(),
                           lastDate: DateTime(2100),
                         );
@@ -1310,8 +1318,8 @@ class _EditAlertModalState extends State<_EditAlertModal> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
                           filled: true,
                         ),
                         child: Text(
@@ -1347,8 +1355,8 @@ class _EditAlertModalState extends State<_EditAlertModal> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
                           filled: true,
                         ),
                         child: Text(
@@ -1367,7 +1375,8 @@ class _EditAlertModalState extends State<_EditAlertModal> {
                   labelText: 'Prioridad',
                   prefixIcon: const Icon(Icons.priority_high_rounded),
                   filled: true,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
                 items: const [
                   DropdownMenuItem(
@@ -1380,7 +1389,7 @@ class _EditAlertModalState extends State<_EditAlertModal> {
                 onChanged: (val) {
                   setState(() {
                     priority = val!;
-                    customColor = _defaultColorFor(priority);
+                    customColor = defaultColorFor(priority);
                   });
                 },
               ),
@@ -1393,12 +1402,12 @@ class _EditAlertModalState extends State<_EditAlertModal> {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: customColor ?? _defaultColorFor(priority),
+                      color: customColor ?? defaultColorFor(priority),
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.grey.shade400, width: 2),
                       boxShadow: [
                         BoxShadow(
-                          color: (customColor ?? _defaultColorFor(priority))
+                          color: (customColor ?? defaultColorFor(priority))
                               .withOpacity(0.3),
                           blurRadius: 8,
                         ),
@@ -1416,7 +1425,10 @@ class _EditAlertModalState extends State<_EditAlertModal> {
               const SizedBox(height: 20),
               const Text(
                 'Detalles Adicionales',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey),
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -1424,7 +1436,8 @@ class _EditAlertModalState extends State<_EditAlertModal> {
                   labelText: 'Ubicación (opcional)',
                   prefixIcon: const Icon(Icons.location_on_outlined),
                   filled: true,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
                 onChanged: (v) =>
                     locationCtrl.text = v.trim().isEmpty ? '' : v.trim(),
@@ -1453,19 +1466,23 @@ class _EditAlertModalState extends State<_EditAlertModal> {
                         OutlinedButton.icon(
                           onPressed: _pickFromGallery,
                           icon: const Icon(Icons.photo_outlined, size: 18),
-                          label: const Text('Galería', style: TextStyle(fontSize: 12)),
+                          label: const Text('Galería',
+                              style: TextStyle(fontSize: 12)),
                         ),
                         OutlinedButton.icon(
                           onPressed: _pickFromCamera,
-                          icon: const Icon(Icons.photo_camera_outlined, size: 18),
-                          label: const Text('Cámara', style: TextStyle(fontSize: 12)),
+                          icon:
+                              const Icon(Icons.photo_camera_outlined, size: 18),
+                          label: const Text('Cámara',
+                              style: TextStyle(fontSize: 12)),
                         ),
                         if (_pickedImage != null ||
                             (existing?.imagePath?.isNotEmpty ?? false))
                           TextButton.icon(
                             onPressed: _clearImage,
                             icon: const Icon(Icons.delete_outline, size: 18),
-                            label: const Text('Quitar', style: TextStyle(fontSize: 12)),
+                            label: const Text('Quitar',
+                                style: TextStyle(fontSize: 12)),
                           ),
                       ],
                     ),
@@ -1517,7 +1534,8 @@ class _EditAlertModalState extends State<_EditAlertModal> {
             if (date.isBefore(now)) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('❌ La fecha y hora no pueden ser anteriores a la actual'),
+                  content: Text(
+                      '❌ La fecha y hora no pueden ser anteriores a la actual'),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -1553,6 +1571,4 @@ class _EditAlertModalState extends State<_EditAlertModal> {
       ],
     );
   }
-
 }
-

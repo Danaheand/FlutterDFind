@@ -12,7 +12,7 @@ class TipsSection extends StatefulWidget {
 
 class _TipsSectionState extends State<TipsSection> {
   bool _expandNewItems = false;
-  bool _expandTips = false;  // Tips expandidos por defecto
+  bool _expandTips = false; // Tips expandidos por defecto
   final List<String> _newItems = [];
 
   @override
@@ -23,7 +23,8 @@ class _TipsSectionState extends State<TipsSection> {
       TipItem(
         icon: Icons.add_circle_outline,
         title: 'Crear un pendiente',
-        description: 'Toca el botón "+" para añadir un nuevo artículo a tu lista',
+        description:
+            'Toca el botón "+" para añadir un nuevo artículo a tu lista',
         color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
       ),
       TipItem(
@@ -111,8 +112,9 @@ class _TipsSectionState extends State<TipsSection> {
                     ),
                     child: Icon(
                       Icons.lightbulb_rounded,
-                      color:
-                          isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
+                      color: isLight
+                          ? AppTheme.primaryLight
+                          : AppTheme.primaryDark,
                       size: 28,
                     ),
                   ),
@@ -148,7 +150,8 @@ class _TipsSectionState extends State<TipsSection> {
                   ),
                   Icon(
                     _expandTips ? Icons.expand_less : Icons.expand_more,
-                    color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
+                    color:
+                        isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
                     size: 24,
                   ),
                 ],
@@ -161,7 +164,8 @@ class _TipsSectionState extends State<TipsSection> {
             Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
-                children: tips.map((tip) => _buildTipCard(context, tip)).toList(),
+                children:
+                    tips.map((tip) => _buildTipCard(context, tip)).toList(),
               ),
             ),
 
@@ -174,14 +178,18 @@ class _TipsSectionState extends State<TipsSection> {
                   const Divider(height: 0),
                   const SizedBox(height: 8),
                   GestureDetector(
-                    onTap: () => setState(() => _expandNewItems = !_expandNewItems),
+                    onTap: () =>
+                        setState(() => _expandNewItems = !_expandNewItems),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(
                         color: isLight ? AppTheme.cardLight : AppTheme.cardDark,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isLight ? AppTheme.dividerLight : AppTheme.dividerDark,
+                          color: isLight
+                              ? AppTheme.dividerLight
+                              : AppTheme.dividerDark,
                           width: 1,
                         ),
                       ),
@@ -193,13 +201,16 @@ class _TipsSectionState extends State<TipsSection> {
                               children: [
                                 Icon(
                                   Icons.new_releases_rounded,
-                                  color: isLight ? AppTheme.successLight : AppTheme.successDark,
+                                  color: isLight
+                                      ? AppTheme.successLight
+                                      : AppTheme.successDark,
                                   size: 20,
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Consumer<FontSizeProvider>(
-                                    builder: (context, fontSizeProvider, _) => Text(
+                                    builder: (context, fontSizeProvider, _) =>
+                                        Text(
                                       'Nuevos items (${_newItems.length})',
                                       style: TextStyle(
                                         fontSize: fontSizeProvider.fontSize,
@@ -215,7 +226,9 @@ class _TipsSectionState extends State<TipsSection> {
                             ),
                           ),
                           Icon(
-                            _expandNewItems ? Icons.expand_less : Icons.expand_more,
+                            _expandNewItems
+                                ? Icons.expand_less
+                                : Icons.expand_more,
                             color: AppTheme.getTextSecondary(context),
                             size: 20,
                           ),
@@ -227,7 +240,9 @@ class _TipsSectionState extends State<TipsSection> {
                     Padding(
                       padding: const EdgeInsets.only(top: 8, bottom: 12),
                       child: Column(
-                        children: _newItems.map((item) => _buildNewItemCard(context, item)).toList(),
+                        children: _newItems
+                            .map((item) => _buildNewItemCard(context, item))
+                            .toList(),
                       ),
                     ),
                 ],
@@ -245,12 +260,13 @@ class _TipsSectionState extends State<TipsSection> {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isLight 
+        color: isLight
             ? AppTheme.successLight.withOpacity(0.1)
             : AppTheme.successDark.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: (isLight ? AppTheme.successLight : AppTheme.successDark).withOpacity(0.3),
+          color: (isLight ? AppTheme.successLight : AppTheme.successDark)
+              .withOpacity(0.3),
           width: 1,
         ),
       ),
@@ -259,7 +275,8 @@ class _TipsSectionState extends State<TipsSection> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: (isLight ? AppTheme.successLight : AppTheme.successDark).withOpacity(0.2),
+              color: (isLight ? AppTheme.successLight : AppTheme.successDark)
+                  .withOpacity(0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(

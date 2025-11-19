@@ -33,7 +33,8 @@ class _TipsRecordatoriosState extends State<TipsRecordatorios> {
       TipItem(
         icon: Icons.priority_high,
         title: 'Gestiona prioridades',
-        description: 'Asigna prioridades (Alta, Media, Baja) a tus recordatorios',
+        description:
+            'Asigna prioridades (Alta, Media, Baja) a tus recordatorios',
         color: isLight ? AppTheme.warningLight : AppTheme.warningDark,
       ),
       TipItem(
@@ -41,6 +42,27 @@ class _TipsRecordatoriosState extends State<TipsRecordatorios> {
         title: 'Añade ubicaciones',
         description: 'Indica dónde y qué objeto necesitas recordar',
         color: isLight ? AppTheme.secondaryLight : AppTheme.secondaryDark,
+      ),
+      TipItem(
+        icon: Icons.touch_app,
+        title: 'Mantén presionado para seleccionar',
+        description:
+            'Mantén presionado sobre cualquier alerta para activar el modo de selección múltiple',
+        color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
+      ),
+      TipItem(
+        icon: Icons.swipe_right,
+        title: 'Desliza a la derecha para activar',
+        description:
+            'Desliza una alerta hacia la derecha para activarla o pausarla. Verás un fondo verde indicando la acción',
+        color: isLight ? AppTheme.successLight : AppTheme.successDark,
+      ),
+      TipItem(
+        icon: Icons.swipe_left,
+        title: 'Desliza a la izquierda para eliminar',
+        description:
+            'Desliza una alerta hacia la izquierda para eliminarla. Aparecerá un fondo rojo como confirmación visual',
+        color: isLight ? Colors.red.shade400 : Colors.red.shade600,
       ),
     ];
 
@@ -108,8 +130,9 @@ class _TipsRecordatoriosState extends State<TipsRecordatorios> {
                     ),
                     child: Icon(
                       Icons.lightbulb_rounded,
-                      color:
-                          isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
+                      color: isLight
+                          ? AppTheme.primaryLight
+                          : AppTheme.primaryDark,
                       size: 28,
                     ),
                   ),
@@ -145,7 +168,8 @@ class _TipsRecordatoriosState extends State<TipsRecordatorios> {
                   ),
                   Icon(
                     _expandTips ? Icons.expand_less : Icons.expand_more,
-                    color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
+                    color:
+                        isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
                     size: 24,
                   ),
                 ],
@@ -158,7 +182,8 @@ class _TipsRecordatoriosState extends State<TipsRecordatorios> {
             Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
-                children: tips.map((tip) => _buildTipCard(context, tip)).toList(),
+                children:
+                    tips.map((tip) => _buildTipCard(context, tip)).toList(),
               ),
             ),
         ],
