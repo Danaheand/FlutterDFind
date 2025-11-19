@@ -45,7 +45,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
     InventoryScreen.addFromAlertGlobal = addFromAlert;
     _trashService = TrashService.getInstance();
     _confettiController = ConfettiController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 400),
     );
     _initialize();
   }
@@ -58,22 +58,22 @@ class _InventoryScreenState extends State<InventoryScreen> {
   }
 
   Future<void> _initialize() async {
-    debugPrint("🔵 Inicializando pantalla Pendientes...");
+    debugPrint("Inicializando pantalla Pendientes...");
 
     try {
       _correoUsuario = SessionManager.instance.userEmail ?? "";
 
       if (_correoUsuario.isEmpty) {
-        debugPrint("❌ ERROR: correoUsuario está vacío");
+        debugPrint("ERROR: correoUsuario está vacío");
         return;
       }
 
-      debugPrint("✔ Usuario logueado: $_correoUsuario");
+      debugPrint("Usuario logueado: $_correoUsuario");
 
       await _trashService.loadTrashItems();
       await _loadItemsFromAPI();
     } catch (e, st) {
-      debugPrint("❌ ERROR en init(): $e");
+      debugPrint("ERROR en init(): $e");
       debugPrint("$st");
     }
   }
@@ -82,21 +82,21 @@ class _InventoryScreenState extends State<InventoryScreen> {
   //                            API CALLS
   // ================================================================
 
-  /// 🔵 GET — Cargar pendientes desde API (TRAER TODOS, sin soloComprados)
+  /// GET — Cargar pendientes desde API (TRAER TODOS, sin soloComprados)
   Future<void> _loadItemsFromAPI() async {
     setState(() => _loading = true);
-    debugPrint("🔵 GET pendientes desde API...");
+    debugPrint(" GET pendientes desde API...");
 
     final url = Uri.parse(
       "$baseUrl/api/Pendientes/by-email/$_correoUsuario",
     );
 
-    debugPrint("🌐 URL GET Pendientes: $url");
+    debugPrint("URL GET Pendientes: $url");
 
     try {
       final res = await http.get(url);
-      debugPrint("✔ GET status: ${res.statusCode}");
-      debugPrint("✔ GET body: ${res.body}");
+      debugPrint("GET status: ${res.statusCode}");
+      debugPrint("GET body: ${res.body}");
 
       if (res.statusCode == 200) {
         final List data = jsonDecode(res.body);
@@ -114,22 +114,22 @@ class _InventoryScreenState extends State<InventoryScreen> {
             ),
           );
         }
-        debugPrint("📦 Items cargados en memoria: ${_items.length}");
+        debugPrint("Items cargados en memoria: ${_items.length}");
         setState(() {});
       } else {
-        debugPrint("❌ Error GET: ${res.body}");
+        debugPrint("Error GET: ${res.body}");
       }
     } catch (e, st) {
-      debugPrint("❌ Excepción en GET: $e");
+      debugPrint("Excepción en GET: $e");
       debugPrint("$st");
     }
 
     setState(() => _loading = false);
   }
 
-  /// 🟢 POST — Crear un pendiente
+  /// POST — Crear un pendiente
   Future<void> _createItem(String name, String place, int quantity) async {
-    debugPrint("🟢 POST creando pendiente: $name");
+    debugPrint("POST creando pendiente: $name");
 
     final url = Uri.parse("$baseUrl/api/Pendientes");
 
@@ -141,8 +141,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
       "cantidad": quantity,
     };
 
-    debugPrint("🌐 URL POST Pendiente: $url");
-    debugPrint("📦 Body POST: $body");
+    debugPrint(" URL POST Pendiente: $url");
+    debugPrint("Body POST: $body");
 
     try {
       final res = await http.post(
@@ -151,8 +151,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
         body: jsonEncode(body),
       );
 
-      debugPrint("✔ POST status: ${res.statusCode}");
-      debugPrint("✔ POST body: ${res.body}");
+      debugPrint("POST status: ${res.statusCode}");
+      debugPrint("POST body: ${res.body}");
 
       if (res.statusCode == 200 || res.statusCode == 201) {
         final p = jsonDecode(res.body);
@@ -169,19 +169,19 @@ class _InventoryScreenState extends State<InventoryScreen> {
             ),
           );
         });
-        debugPrint("📦 Items tras crear: ${_items.length}");
+        debugPrint("Items tras crear: ${_items.length}");
       } else {
-        debugPrint("❌ Error POST: ${res.body}");
+        debugPrint("Error POST: ${res.body}");
       }
     } catch (e, st) {
-      debugPrint("❌ Excepción POST: $e");
+      debugPrint("Excepción POST: $e");
       debugPrint("$st");
     }
   }
 
-  /// 🟣 PUT — Marcar comprado/no comprado (maneja 200/204)
+  /// PUT — Marcar comprado/no comprado (maneja 200/204)
   Future<void> _toggleAPI(ShoppingItem item) async {
-    debugPrint("🟣 TOGGLE pendiente: ${item.name}");
+    debugPrint("TOGGLE pendiente: ${item.name}");
 
     final url = Uri.parse(
       "$baseUrl/api/Pendientes/by-email/$_correoUsuario/toggle-comprado-por-nombre"
@@ -189,13 +189,13 @@ class _InventoryScreenState extends State<InventoryScreen> {
       "&lugar=${Uri.encodeComponent(item.placeName)}",
     );
 
-    debugPrint("🌐 URL TOGGLE: $url");
+    debugPrint("URL TOGGLE: $url");
 
     try {
       final res = await http.put(url);
 
-      debugPrint("✔ TOGGLE status: ${res.statusCode}");
-      debugPrint("✔ TOGGLE body: ${res.body}");
+      debugPrint("TOGGLE status: ${res.statusCode}");
+      debugPrint("TOGGLE body: ${res.body}");
 
       if (res.statusCode == 200 && res.body.isNotEmpty) {
         final data = jsonDecode(res.body);
@@ -210,7 +210,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       }
 
       if (res.statusCode == 204) {
-        debugPrint("✔ TOGGLE 204 sin body, cambio local de estado.");
+        debugPrint("TOGGLE 204 sin body, cambio local de estado.");
         setState(() {
           item.isPurchased = !item.isPurchased;
         });
@@ -221,17 +221,17 @@ class _InventoryScreenState extends State<InventoryScreen> {
       }
 
       debugPrint(
-        "❌ Error TOGGLE: Código ${res.statusCode} | Body: ${res.body}",
+        "Error TOGGLE: Código ${res.statusCode} | Body: ${res.body}",
       );
     } catch (e, st) {
-      debugPrint("❌ Excepción TOGGLE: $e");
+      debugPrint("Excepción TOGGLE: $e");
       debugPrint("$st");
     }
   }
 
-  /// 🔴 PUT — Eliminar pendiente
+  /// PUT — Eliminar pendiente
   Future<void> _deleteAPI(ShoppingItem item) async {
-    debugPrint("🔴 DELETE (lógico) pendiente: ${item.name}");
+    debugPrint("DELETE (lógico) pendiente: ${item.name}");
 
     final url = Uri.parse(
       "$baseUrl/api/Pendientes/by-email/$_correoUsuario/eliminar-por-nombre"
@@ -239,22 +239,22 @@ class _InventoryScreenState extends State<InventoryScreen> {
       "&lugar=${Uri.encodeComponent(item.placeName)}",
     );
 
-    debugPrint("🌐 URL DELETE: $url");
+    debugPrint("URL DELETE: $url");
 
     try {
       final res = await http.put(url);
 
-      debugPrint("✔ DELETE status: ${res.statusCode}");
-      debugPrint("✔ DELETE body: ${res.body}");
+      debugPrint("DELETE status: ${res.statusCode}");
+      debugPrint("DELETE body: ${res.body}");
 
       if (res.statusCode == 200 || res.statusCode == 204) {
         setState(() => _items.remove(item));
-        debugPrint("📦 Items tras eliminar: ${_items.length}");
+        debugPrint("Items tras eliminar: ${_items.length}");
       } else {
-        debugPrint("❌ Error DELETE: ${res.body}");
+        debugPrint("Error DELETE: ${res.body}");
       }
     } catch (e, st) {
-      debugPrint("❌ Excepción DELETE: $e");
+      debugPrint("Excepción DELETE: $e");
       debugPrint("$st");
     }
   }
@@ -319,15 +319,26 @@ class _InventoryScreenState extends State<InventoryScreen> {
               ? const Center(child: CircularProgressIndicator())
               : _buildNormalView(),
           Align(
-            alignment: Alignment.bottomCenter,
-            child: ConfettiWidget(
-              confettiController: _confettiController,
-              blastDirection: 1.57, // hacia arriba
-              emissionFrequency: 0.08,
-              numberOfParticles: 20,
-              maxBlastForce: 30,
-              minBlastForce: 10,
-              shouldLoop: false,
+            alignment: Alignment.topCenter,
+            child: IgnorePointer(
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirection: -1.57,
+                emissionFrequency: 0.8,
+                numberOfParticles: 200,
+                maxBlastForce: 500,
+                minBlastForce: 300,
+                gravity: 1.0,
+                shouldLoop: false,
+                colors: const [
+                  Colors.blue,
+                  Colors.red,
+                  Colors.green,
+                  Colors.yellow,
+                  Colors.purple,
+                  Colors.orange,
+                ],
+              ),
             ),
           ),
         ],
@@ -639,7 +650,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
   /// Elimina todos los items comprados
   Future<void> _deleteAllPurchased(List<ShoppingItem> purchased) async {
-    debugPrint("🔴 DELETE todos los comprados: ${purchased.length} items");
+    debugPrint("DELETE todos los comprados: ${purchased.length} items");
 
     for (var item in purchased) {
       await _deleteAPI(item);
@@ -647,7 +658,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('✅ Todos los comprados han sido eliminados'),
+        content: Text('Todos los comprados han sido eliminados'),
         duration: Duration(seconds: 2),
       ),
     );
