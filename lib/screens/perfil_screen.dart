@@ -1307,10 +1307,13 @@ Widget _buildInitialCircle(
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                             )),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
+                    const SizedBox(height: 16),
+                    GridView.count(
+                      crossAxisCount: 4,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
                       children: colorOptions.map((c) {
                         final selected = _initialColor.value == c.value;
                         return GestureDetector(
@@ -1323,26 +1326,38 @@ Widget _buildInitialCircle(
                             });
                             Navigator.pop(ctx);
                           },
-                          child: Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: c,
-                              border: Border.all(
-                                color: selected ? Colors.black : Colors.white,
-                                width: 3,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: c,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: c.withOpacity(0.4),
+                                      blurRadius: 8,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
+                                ),
                               ),
-                              boxShadow: selected
-                                  ? [
-                                      const BoxShadow(
-                                        color: Colors.black26,
-                                        blurRadius: 8,
-                                        spreadRadius: 2,
-                                      ),
-                                    ]
-                                  : [],
-                            ),
+                              if (selected)
+                                Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 3,
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.check,
+                                    color: Colors.white,
+                                    size: 28,
+                                  ),
+                                ),
+                            ],
                           ),
                         );
                       }).toList(),
