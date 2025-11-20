@@ -1,16 +1,18 @@
-import 'package:Dfind/models/trash_item.dart';
 import 'package:Dfind/services/trash_service.dart';
 import 'package:flutter/foundation.dart';
 import '../models/recordatorio.dart';
 import '../models/recordatorio_exception.dart';
 import '../repository/recordatorio_repository.dart';
 import '../services/session_manager.dart';
+import '../services/background_notification_service.dart';
 
 /// Provider para gestionar el estado de los recordatorios en la aplicación
 /// Utiliza ChangeNotifier para notificar cambios a los widgets que escuchan
 class RecordatorioProvider extends ChangeNotifier {
   final RecordatorioRepository _repository;
   final trashService = TrashService.getInstance();
+  final BackgroundNotificationService _notificationService =
+      BackgroundNotificationService();
 
   // Estado
   List<Recordatorio> _recordatorios = [];
@@ -105,6 +107,10 @@ class RecordatorioProvider extends ChangeNotifier {
       // Agregar a la lista local
       _recordatorios.add(recordatorioCreado);
 
+      // Programar notificación para el recordatorio
+      await _notificationService
+          .scheduleNotificationForRecordatorio(recordatorioCreado);
+
       print('✅ Provider: Recordatorio creado exitosamente');
       _setLoading(false);
 
@@ -155,6 +161,12 @@ class RecordatorioProvider extends ChangeNotifier {
         _recordatorios[index] = recordatorioActualizado;
       }
 
+      // Cancelar notificación anterior y programar nueva
+      await _notificationService
+          .cancelNotificationForRecordatorio(tituloOriginal);
+      await _notificationService
+          .scheduleNotificationForRecordatorio(recordatorioActualizado);
+
       print('✅ Provider: Recordatorio actualizado exitosamente');
       _setLoading(false);
 
@@ -192,6 +204,9 @@ class RecordatorioProvider extends ChangeNotifier {
       print('📱 Provider: Eliminando recordatorio "$titulo"');
 
       await _repository.eliminarRecordatorio(titulo);
+
+      // Cancelar notificación del recordatorio eliminado
+      await _notificationService.cancelNotificationForRecordatorio(titulo);
 
       // Eliminar de la lista local
       _recordatorios.removeWhere((r) => r.titulo == titulo);
@@ -239,6 +254,17 @@ class RecordatorioProvider extends ChangeNotifier {
       if (index != -1) {
         _recordatorios[index] = recordatorioActualizado;
       }
+
+      // Gestionar notificación según el estado
+      if (recordatorioActualizado.activo) {
+        // Si se activa, programar notificación
+        await _notificationService
+            .scheduleNotificationForRecordatorio(recordatorioActualizado);
+      } else {
+        // Si se desactiva, cancelar notificación
+        await _notificationService.cancelNotificationForRecordatorio(titulo);
+      }
+
       _setLoading(false);
       print(
           '✅ Provider: Estado cambiado (activo=${recordatorioActualizado.activo})');
@@ -312,6 +338,8 @@ class RecordatorioProvider extends ChangeNotifier {
     _recordatorios = [];
     _error = null;
     _isLoading = false;
+    // Cancelar todas las notificaciones al limpiar
+    _notificationService.cancelAllNotifications();
     notifyListeners();
   }
 

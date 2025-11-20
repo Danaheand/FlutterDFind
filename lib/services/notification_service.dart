@@ -9,19 +9,22 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _notifications =
+      FlutterLocalNotificationsPlugin();
 
   Future<void> initialize() async {
     try {
       tz.initializeTimeZones();
-      
-      const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-      const DarwinInitializationSettings iosSettings = DarwinInitializationSettings(
+
+      const AndroidInitializationSettings androidSettings =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
+      const DarwinInitializationSettings iosSettings =
+          DarwinInitializationSettings(
         requestAlertPermission: true,
         requestBadgePermission: true,
         requestSoundPermission: true,
       );
-      
+
       const InitializationSettings settings = InitializationSettings(
         android: androidSettings,
         iOS: iosSettings,
@@ -40,13 +43,13 @@ class NotificationService {
       // Solicitar permiso de notificaciones
       final notificationStatus = await Permission.notification.request();
       print('Permiso de notificaciones: $notificationStatus');
-      
+
       // Para Android 13+
       if (await Permission.scheduleExactAlarm.isDenied) {
         final alarmStatus = await Permission.scheduleExactAlarm.request();
         print('Permiso de alarma exacta: $alarmStatus');
       }
-      
+
       // Para Android 12+
       if (await Permission.scheduleExactAlarm.isDenied) {
         await Permission.scheduleExactAlarm.request();
@@ -64,44 +67,52 @@ class NotificationService {
     String? payload,
   }) async {
     try {
-    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'alarm_channel',
-      'Alarmas',
-      channelDescription: 'Notificaciones de alarmas importantes',
-      importance: Importance.max,
-      priority: Priority.high,
-      sound: const RawResourceAndroidNotificationSound('alarm_sound'), // Opcional: sonido personalizado
-      enableVibration: true,
-      vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
-      fullScreenIntent: true, // Mostrar en pantalla completa
-      category: AndroidNotificationCategory.alarm,
-    );
+      print('📅 Programando notificación ID:$id para: $scheduledDate');
+      print('   Título: $title');
+      print('   Ahora: ${DateTime.now()}');
 
-    const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
-      sound: 'alarm_sound.caf', // Opcional: sonido personalizado
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-      interruptionLevel: InterruptionLevel.critical,
-    );
+      final AndroidNotificationDetails androidDetails =
+          AndroidNotificationDetails(
+        'alarm_channel',
+        'Alarmas',
+        channelDescription: 'Notificaciones de alarmas importantes',
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+        enableVibration: true,
+        vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
+        fullScreenIntent: true, // Mostrar en pantalla completa
+        category: AndroidNotificationCategory.alarm,
+      );
 
-    final NotificationDetails notificationDetails = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
+      const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        interruptionLevel: InterruptionLevel.critical,
+      );
 
-    await _notifications.zonedSchedule(
-      id,
-      title,
-      body,
-      tz.TZDateTime.from(scheduledDate, tz.local),
-      notificationDetails,
-      payload: payload,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.dateAndTime,
-    );
+      final NotificationDetails notificationDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await _notifications.zonedSchedule(
+        id,
+        title,
+        body,
+        tz.TZDateTime.from(scheduledDate, tz.local),
+        notificationDetails,
+        payload: payload,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.dateAndTime,
+      );
+
+      print('✅ Notificación ID:$id programada exitosamente');
     } catch (e) {
-      print('Error programando notificación: $e');
+      print('❌ Error programando notificación ID:$id: $e');
+      rethrow;
     }
   }
 
@@ -117,17 +128,17 @@ class NotificationService {
       for (int i = 0; i < weekdays.length; i++) {
         final weekday = weekdays[i];
         final notificationId = baseId + i;
-        
+
         // Calcular la próxima fecha para este día de la semana
         DateTime nextDate = _getNextWeekday(scheduledDate, weekday);
-        
+
         final androidDetails = AndroidNotificationDetails(
           'alarm_channel',
           'Alarmas',
           channelDescription: 'Notificaciones de alarmas importantes',
           importance: Importance.max,
           priority: Priority.high,
-          sound: const RawResourceAndroidNotificationSound('alarm_sound'),
+          playSound: true,
           enableVibration: true,
           vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
           fullScreenIntent: true,
@@ -135,7 +146,6 @@ class NotificationService {
         );
 
         const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
-          sound: 'alarm_sound.caf',
           presentAlert: true,
           presentBadge: true,
           presentSound: true,
@@ -154,7 +164,8 @@ class NotificationService {
           tz.TZDateTime.from(nextDate, tz.local),
           notificationDetails,
           payload: payload,
-          uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
           matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
         );
       }
@@ -166,13 +177,24 @@ class NotificationService {
   DateTime _getNextWeekday(DateTime from, int weekday) {
     int daysToAdd = (weekday - from.weekday) % 7;
     if (daysToAdd == 0 && from.isBefore(DateTime.now())) {
-      daysToAdd = 7; // Si es el mismo día pero ya pasó, programar para la próxima semana
+      daysToAdd =
+          7; // Si es el mismo día pero ya pasó, programar para la próxima semana
     }
-    return DateTime(from.year, from.month, from.day, from.hour, from.minute).add(Duration(days: daysToAdd));
+    return DateTime(from.year, from.month, from.day, from.hour, from.minute)
+        .add(Duration(days: daysToAdd));
   }
 
   String _getWeekdayName(int weekday) {
-    const names = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    const names = [
+      '',
+      'Lunes',
+      'Martes',
+      'Miércoles',
+      'Jueves',
+      'Viernes',
+      'Sábado',
+      'Domingo'
+    ];
     return names[weekday];
   }
 
@@ -192,7 +214,7 @@ class NotificationService {
     // Prueba inmediata de notificación (en 3 segundos)
     try {
       final now = DateTime.now().add(const Duration(seconds: 3));
-      
+
       const androidDetails = AndroidNotificationDetails(
         'test_channel',
         'Prueba',
@@ -218,10 +240,11 @@ class NotificationService {
         'Esta es una notificación de prueba en 3 segundos',
         tz.TZDateTime.from(now, tz.local),
         notificationDetails,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.dateAndTime,
       );
-      
+
       print('✅ Notificación de prueba programada');
     } catch (e) {
       print('❌ Error en notificación de prueba: $e');

@@ -13,6 +13,7 @@ import 'theme/app_theme.dart';
 import 'services/notification_service.dart';
 import 'services/session_manager.dart';
 import 'services/trash_service.dart';
+import 'services/background_notification_service.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -78,7 +79,12 @@ void main() async {
 
   // Solo inicializar notificaciones en dispositivos móviles (no en web)
   try {
+    print('🔔 Inicializando NotificationService...');
     await NotificationService().initialize();
+
+    // Inicializar el servicio de notificaciones en background
+    print('📱 Inicializando BackgroundNotificationService...');
+    await BackgroundNotificationService().initialize();
   } catch (e) {
     print('Error inicializando notificaciones (probablemente web): $e');
   }
@@ -109,7 +115,8 @@ class MyApp extends StatelessWidget {
             title: 'DFind',
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
-            themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            themeMode:
+                themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
             home: const AppLoginScreen(),
             routes: {
               '/main': (context) => const MainScaffold(),

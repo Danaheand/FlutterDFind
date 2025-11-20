@@ -11,6 +11,7 @@ import '../services/trash_service.dart';
 import '../services/session_manager.dart';
 import '../models/trash_item.dart';
 import '../widgets/custom_text_button.dart';
+import '../widgets/notification_test_widget.dart';
 import 'recordatorios_screen.dart';
 import 'pendientes_screen.dart';
 import '../repository/remote_user_repository.dart';
@@ -48,7 +49,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showTrashDialog() {
     // Obtener elementos de papelera del servicio
     final trashItems = _trashService.getTrashItems();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -78,7 +79,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         final color = item.originalType == 'alert'
                             ? Colors.orange
                             : Colors.blue;
-                        
+
                         return Card(
                           margin: const EdgeInsets.only(bottom: 8),
                           child: ListTile(
@@ -95,8 +96,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       color: Colors.green),
                                   onPressed: () async {
                                     try {
-                                      await _trashService
-                                          .restoreItem(item.id);
+                                      await _trashService.restoreItem(item.id);
 
                                       // Si es un item de compra, restaurar al InventoryScreen
                                       if (item.originalType ==
@@ -104,8 +104,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         if (InventoryScreen
                                                 .addFromAlertGlobal !=
                                             null) {
-                                          InventoryScreen.addFromAlertGlobal!(
-                                              item.name);
+                                          InventoryScreen
+                                              .addFromAlertGlobal!(item.name);
                                         }
                                       }
 
@@ -121,8 +121,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         SnackBar(
-                                            content: Text(
-                                                'Error al restaurar: $e')),
+                                            content:
+                                                Text('Error al restaurar: $e')),
                                       );
                                     }
                                   },
@@ -193,8 +193,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showAppSettingsDialog() {
     final fontSizeProvider =
         Provider.of<FontSizeProvider>(context, listen: false);
-    final themeProvider =
-        Provider.of<ThemeProvider>(context, listen: false);
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
 
     showDialog(
       context: context,
@@ -607,82 +606,84 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           }
 
                           // Si nada cambió, no hacer nada
-                          final nameChanged = newName != _currentUser!.nombreUsuario;
+                          final nameChanged =
+                              newName != _currentUser!.nombreUsuario;
                           final emailChanged = newEmail != _currentUser!.email;
-                          
+
                           if (!nameChanged && !emailChanged) {
                             Navigator.pop(context);
                             return;
                           }
 
-                        try {
-                          // Mostrar indicador de carga
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (context) => const Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                          );
+                          try {
+                            // Mostrar indicador de carga
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (context) => const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
 
-                          // TODO: Agregar la API para cambiar el correo cuando esté disponible
-                          // Llamar a la API para actualizar perfil por correo
-                          final updatedUser = await RemoteUserRepository
-                              .instance
-                              .updateProfileByEmail(
-                            correoActual: _currentUser!.email,
-                            nuevoNombre: newName,
-                            nuevoCorreo: emailChanged ? newEmail : null,
-                          );
+                            // TODO: Agregar la API para cambiar el correo cuando esté disponible
+                            // Llamar a la API para actualizar perfil por correo
+                            final updatedUser = await RemoteUserRepository
+                                .instance
+                                .updateProfileByEmail(
+                              correoActual: _currentUser!.email,
+                              nuevoNombre: newName,
+                              nuevoCorreo: emailChanged ? newEmail : null,
+                            );
 
-                          // Cerrar indicador de carga
-                          if (mounted) Navigator.pop(context);
+                            // Cerrar indicador de carga
+                            if (mounted) Navigator.pop(context);
 
-                          // Actualizar estado local con la respuesta de la API
-                          setState(() {
-                            _currentUser = updatedUser;
-                            _userName = updatedUser.nombreUsuario;
-                            _userEmail = updatedUser.email;
-                          });
+                            // Actualizar estado local con la respuesta de la API
+                            setState(() {
+                              _currentUser = updatedUser;
+                              _userName = updatedUser.nombreUsuario;
+                              _userEmail = updatedUser.email;
+                            });
 
-                          // Guardar en SessionManager
-                          await SessionManager.instance.setUser(updatedUser);
+                            // Guardar en SessionManager
+                            await SessionManager.instance.setUser(updatedUser);
 
-                          if (!mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content:
-                                  Text('✅ Perfil actualizado correctamente'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                          Navigator.pop(context);
-                        } catch (e) {
-                          // Cerrar indicador de carga si está abierto
-                          if (mounted) Navigator.pop(context);
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text('✅ Perfil actualizado correctamente'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                            Navigator.pop(context);
+                          } catch (e) {
+                            // Cerrar indicador de carga si está abierto
+                            if (mounted) Navigator.pop(context);
 
-                          print('Error actualizando perfil: $e');
-                          if (!mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('❌ Error al actualizar perfil: $e'),
-                              backgroundColor: Colors.red,
-                              duration: const Duration(seconds: 4),
-                            ),
-                          );
-                        }
-                      },
-                      child: const Text('Guardar'),
-                    ),
-                    CustomTextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cerrar'),
-                    ),
-                  ],
-                ),
-              ],
+                            print('Error actualizando perfil: $e');
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content:
+                                    Text('❌ Error al actualizar perfil: $e'),
+                                backgroundColor: Colors.red,
+                                duration: const Duration(seconds: 4),
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text('Guardar'),
+                      ),
+                      CustomTextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cerrar'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
           ),
         );
       },
@@ -906,13 +907,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: ListTile(
                           leading: const Icon(Icons.settings_outlined),
                           title: const Text('Configuraciones de la aplicación'),
-                          subtitle: const Text(
-                              'Tema, vibración y sonido'),
+                          subtitle: const Text('Tema, vibración y sonido'),
                           trailing:
                               const Icon(Icons.arrow_forward_ios, size: 16),
                           onTap: _showAppSettingsDialog,
                         ),
                       ),
+                    ),
+                    const SizedBox(height: 16),
+                    // PRUEBA DE NOTIFICACIONES
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: NotificationTestWidget(),
                     ),
                     const SizedBox(height: 16),
                     // PAPELERA DE RECICLAJE
