@@ -583,9 +583,14 @@ Widget _buildAvatar() {
                     ),
                   const SizedBox(height: 24),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       CustomTextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancelar'),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
                         onPressed: () async {
                           final newName = nameController.text.trim();
                           final newEmail = emailController.text.trim();
@@ -724,10 +729,6 @@ Widget _buildAvatar() {
                           }
                         },
                         child: const Text('Guardar'),
-                      ),
-                      CustomTextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Cerrar'),
                       ),
                     ],
                   ),
