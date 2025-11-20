@@ -2,22 +2,19 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+
 import '../models/user.dart';
 
 class RemoteUserRepository {
+  final String _baseUrl = 'https://dfindapi-yfcq.onrender.com'; // o la que ya usas
+
   RemoteUserRepository._internal();
 
-  /// Singleton
   static final RemoteUserRepository instance = RemoteUserRepository._internal();
 
-  /// ⚠️ Cambia esta URL por la de tu API en Render (sin / al final)
-  static const String _baseUrl = 'https://dfindapi-yfcq.onrender.com';
 
   Uri _uri(String path) => Uri.parse('$_baseUrl$path');
 
-  // ======================
-  // LOGIN
-  // ======================
   Future<User> login({
     required String email,
     required String contrasenaHash,
@@ -31,7 +28,6 @@ class RemoteUserRepository {
 
     final bodyJson = jsonEncode(bodyMap);
 
-    // Logs para depurar
     print('POST $url');
     print('Body: $bodyJson');
 
@@ -56,9 +52,6 @@ class RemoteUserRepository {
     }
   }
 
-  // ======================
-  // REGISTRO
-  // ======================
   Future<User> register({
     required String nombreUsuario,
     required String email,
@@ -103,10 +96,6 @@ class RemoteUserRepository {
       );
     }
   }
-
-  // ======================
-  // OBTENER PERFIL POR EMAIL
-  // ======================
   Future<User> getUserProfile({
     required String email,
   }) async {
@@ -134,44 +123,63 @@ class RemoteUserRepository {
     }
   }
 
-  // ======================
-  // ACTUALIZAR PERFIL POR CORREO
-  // ======================
   Future<User> updateProfileByEmail({
     required String correoActual,
     String? nuevoNombre,
     String? nuevoCorreo,
+    String? avatarTipo,
+    String? avatarClave,
   }) async {
-    final url = _uri('/api/Auth/profile/by-email/$correoActual');
-
-    final bodyMap = {
-      "nombreUsuario": nuevoNombre,
-      "correo": nuevoCorreo,
+    final url = _uri('/api/Users/profile');
+    
+    // Construir body solo con los campos que se van a cambiar
+    final body = <String, dynamic>{
+      'correo': correoActual, // Siempre necesario para identificar al usuario
     };
-
-    final bodyJson = jsonEncode(bodyMap);
+    
+    // Agregar solo los campos que cambiarán
+    if (nuevoNombre != null) body['nombreUsuario'] = nuevoNombre;
+    if (nuevoCorreo != null) body['nuevoCorreo'] = nuevoCorreo;
+    if (avatarTipo != null) {
+      body['avatarTipo'] = avatarTipo;
+      print('🎨 Avatar Tipo a guardar: $avatarTipo');
+    }
+    if (avatarClave != null) {
+      body['avatarClave'] = avatarClave;
+      print('🎨 Avatar Clave a guardar: $avatarClave');
+    }
 
     print('PUT $url');
-    print('Body: $bodyJson');
+    print('Body: ${jsonEncode(body)}');
 
-    final resp = await http.put(
+    final response = await http.put(
       url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: bodyJson,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
     );
 
-    print('Resp status: ${resp.statusCode}');
-    print('Resp body: ${resp.body}');
+    print('Resp status: ${response.statusCode}');
+    print('Resp body: ${response.body}');
 
-    if (resp.statusCode == 200) {
-      final data = jsonDecode(resp.body) as Map<String, dynamic>;
-      return User.fromJson(data);
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      // Si el servidor devuelve JSON, parsearlo. Si no (204), hacer GET para obtener el usuario actualizado
+      if (response.body.isNotEmpty) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        print('🎨 Usuario actualizado desde response: $data');
+        return User.fromJson(data);
+      } else {
+        // Status 204: obtener el usuario con el correo actualizado
+        // Si cambió el correo, usar el nuevo. Si no, usar el actual
+        final emailActualizado = nuevoCorreo ?? correoActual;
+        
+        // Esperar un poco antes de hacer el GET para que el servidor procese el cambio
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        print('🎨 Obteniendo usuario actualizado con email: $emailActualizado');
+        return getUserProfile(email: emailActualizado);
+      }
     } else {
-      throw Exception(
-        'Error al actualizar perfil: ${resp.statusCode} - ${resp.body}',
-      );
+      throw Exception('Error actualizando perfil: ${response.body}');
     }
   }
 }

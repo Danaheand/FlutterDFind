@@ -5,6 +5,8 @@ class User {
   final String contrasenaHash;
   final String fechaCreacionIso;
   final String telefono;
+  final String? avatarTipo;
+  final String? avatarClave; 
 
   User({
     required this.idUsuario,
@@ -13,28 +15,39 @@ class User {
     required this.contrasenaHash,
     required this.fechaCreacionIso,
     this.telefono = '',
+    this.avatarTipo,
+    this.avatarClave,
   });
 
   Map<String, dynamic> toJson() => {
-    'id_usuario': idUsuario,
-    'nombre_usuario': nombreUsuario,
-    'email': email,
-    'contrasena_hash': contrasenaHash,
-    'fecha_creacion': fechaCreacionIso,
-    'telefono': telefono,
-  };
+        'id_usuario': idUsuario,
+        'nombre_usuario': nombreUsuario,
+        'email': email,
+        'contrasena_hash': contrasenaHash,
+        'fecha_creacion': fechaCreacionIso,
+        'telefono': telefono,
+        'avatarTipo': avatarTipo,
+        'avatarClave': avatarClave,
+      };
 
   factory User.fromJson(Map<String, dynamic> json) {
-    // Debug: imprimir el JSON recibido
-    print('📄 User.fromJson recibió: $json');
-    
+    // Debug opcional
+    print('User.fromJson recibió: $json');
+
     return User(
       idUsuario: _parseIntSafely(json['id_usuario'] ?? json['idUsuario']),
-      nombreUsuario: _parseStringSafely(json['nombre_usuario'] ?? json['nombreUsuario']),
+      nombreUsuario:
+          _parseStringSafely(json['nombre_usuario'] ?? json['nombreUsuario']),
       email: _parseStringSafely(json['email'] ?? json['correo']),
-      contrasenaHash: _parseStringSafely(json['contrasena_hash'] ?? json['contrasenaHash']),
-      fechaCreacionIso: _parseStringSafely(json['fecha_creacion'] ?? json['fechaCreacion']),
+      contrasenaHash: _parseStringSafely(
+          json['contrasena_hash'] ?? json['contrasenaHash']),
+      fechaCreacionIso:
+          _parseStringSafely(json['fecha_creacion'] ?? json['fechaCreacion']),
       telefono: _parseStringSafely(json['telefono']),
+      avatarTipo:
+          json['avatar_tipo'] as String? ?? json['avatarTipo'] as String?,
+      avatarClave:
+          json['avatar_clave'] as String? ?? json['avatarClave'] as String?,
     );
   }
 
@@ -60,6 +73,8 @@ class User {
     String? contrasenaHash,
     String? fechaCreacionIso,
     String? telefono,
+    String? avatarTipo,
+    String? avatarClave,
   }) {
     return User(
       idUsuario: idUsuario ?? this.idUsuario,
@@ -68,6 +83,8 @@ class User {
       contrasenaHash: contrasenaHash ?? this.contrasenaHash,
       fechaCreacionIso: fechaCreacionIso ?? this.fechaCreacionIso,
       telefono: telefono ?? this.telefono,
+      avatarTipo: avatarTipo ?? this.avatarTipo,
+      avatarClave: avatarClave ?? this.avatarClave,
     );
   }
 }
