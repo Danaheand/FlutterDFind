@@ -524,35 +524,62 @@ class _AlertsScreenState extends State<AlertsScreen> {
                     ],
                   ),
                 )
-              : alerts.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.notifications_none,
-                              size: 64,
-                              color: AppTheme.getTextSecondary(context)),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No tienes recordatorios',
-                            style: TextStyle(
-                                fontSize: 18,
-                                color: AppTheme.getTextSecondary(context)),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Presiona + para crear uno',
-                            style: TextStyle(
-                                color: AppTheme.getTextSecondary(context)),
-                          ),
-                        ],
-                      ),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _loadUserAndRecordatorios,
-                      child: tabIndex == 0
-                          ? ListView(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
+              : RefreshIndicator(
+                  onRefresh: _loadUserAndRecordatorios,
+                  child: tabIndex == 0
+                      ? ListView(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          children: [
+                            AlertTabBar(
+                              tabIndex: tabIndex,
+                              onTabChanged: (index) =>
+                                  setState(() => tabIndex = index),
+                            ),
+                            const TipsRecordatorios(),
+                            if (alerts.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 32),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.notifications_none,
+                                        size: 64,
+                                        color:
+                                            AppTheme.getTextSecondary(context)),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'No tienes recordatorios',
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          color: AppTheme.getTextSecondary(
+                                              context)),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Presiona + para crear uno',
+                                      style: TextStyle(
+                                          color: AppTheme.getTextSecondary(
+                                              context)),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            else ...[
+                              _buildSection('Importantes', importantes,
+                                  showSelection: true),
+                              _buildSection('Actuales', proximas,
+                                  showSelection: true),
+                              _buildSection('Desactivadas', desactivadas,
+                                  showSelection: true),
+                            ],
+                          ],
+                        )
+                      : Stack(
+                          children: [
+                            ListView(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8),
                               children: [
                                 AlertTabBar(
                                   tabIndex: tabIndex,
@@ -560,53 +587,58 @@ class _AlertsScreenState extends State<AlertsScreen> {
                                       setState(() => tabIndex = index),
                                 ),
                                 const TipsRecordatorios(),
-                                _buildSection('Importantes', importantes,
-                                    showSelection: true),
-                                _buildSection('Actuales', proximas,
-                                    showSelection: true),
-                                _buildSection('Desactivadas', desactivadas,
-                                    showSelection: true),
-                              ],
-                            )
-                          : Stack(
-                              children: [
-                                ListView(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8),
-                                  children: [
-                                    AlertTabBar(
-                                      tabIndex: tabIndex,
-                                      onTabChanged: (index) =>
-                                          setState(() => tabIndex = index),
-                                    ),
-                                    _buildSection('Pasadas', pasadas,
-                                        showSelection: true),
-                                  ],
-                                ),
-                                if (selectionMode && selectedAlerts.isNotEmpty)
-                                  Positioned(
-                                    left: 0,
-                                    right: 0,
-                                    bottom: 0,
-                                    child: Container(
-                                      color:
-                                          Theme.of(context).colorScheme.surface,
-                                      padding: const EdgeInsets.all(12),
-                                      child: ElevatedButton.icon(
-                                        icon: const Icon(Icons.delete),
-                                        label: const Text(
-                                            'Eliminar Seleccionadas'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.red,
-                                          foregroundColor: Colors.white,
+                                if (pasadas.isNotEmpty)
+                                  _buildSection('Pasadas', pasadas,
+                                      showSelection: true)
+                                else
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 32),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.check_circle_outline,
+                                            size: 64,
+                                            color: AppTheme.getTextSecondary(
+                                                context)),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'No hay alertas pasadas',
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              color: AppTheme.getTextSecondary(
+                                                  context)),
                                         ),
-                                        onPressed: _deleteSelected,
-                                      ),
+                                      ],
                                     ),
                                   ),
                               ],
                             ),
-                    ),
+                            if (selectionMode && selectedAlerts.isNotEmpty)
+                              Positioned(
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                child: Container(
+                                  color:
+                                      Theme.of(context).colorScheme.surface,
+                                  padding: const EdgeInsets.all(12),
+                                  child: ElevatedButton.icon(
+                                    icon: const Icon(Icons.delete),
+                                    label: const Text(
+                                        'Eliminar Seleccionadas'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    onPressed: _deleteSelected,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                ),
     );
   }
 }
