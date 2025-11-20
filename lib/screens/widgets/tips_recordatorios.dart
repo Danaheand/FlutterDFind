@@ -44,25 +44,11 @@ class _TipsRecordatoriosState extends State<TipsRecordatorios> {
         color: isLight ? AppTheme.secondaryLight : AppTheme.secondaryDark,
       ),
       TipItem(
-        icon: Icons.touch_app,
-        title: 'Mantén presionado para seleccionar',
+        icon: Icons.gesture,
+        title: 'Gestos en alertas',
         description:
-            'Mantén presionado sobre cualquier alerta para activar el modo de selección múltiple',
+            'Mantén presionado para seleccionar múltiples. Desliza derecha para activar (verde). Desliza izquierda para eliminar (rojo).',
         color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
-      ),
-      TipItem(
-        icon: Icons.swipe_right,
-        title: 'Desliza a la derecha para activar',
-        description:
-            'Desliza una alerta hacia la derecha para activarla o pausarla. Verás un fondo verde indicando la acción',
-        color: isLight ? AppTheme.successLight : AppTheme.successDark,
-      ),
-      TipItem(
-        icon: Icons.swipe_left,
-        title: 'Desliza a la izquierda para eliminar',
-        description:
-            'Desliza una alerta hacia la izquierda para eliminarla. Aparecerá un fondo rojo como confirmación visual',
-        color: isLight ? Colors.red.shade400 : Colors.red.shade600,
       ),
     ];
 
