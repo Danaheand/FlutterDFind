@@ -277,7 +277,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('Configuraciones de la aplicación'),
+          title: const Text('Configuración'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -996,7 +996,7 @@ Widget _buildInitialCircle(
                         margin: EdgeInsets.zero,
                         child: ListTile(
                           leading: const Icon(Icons.settings_outlined),
-                          title: const Text('Configuraciones de la aplicación'),
+                          title: const Text('Configuración'),
                           subtitle: const Text('Tema, vibración y sonido'),
                           trailing:
                               const Icon(Icons.arrow_forward_ios, size: 16),
