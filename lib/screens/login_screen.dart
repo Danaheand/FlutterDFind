@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../services/session_manager.dart';
+import '../providers/font_size_provider.dart';
 
 class AppLoginScreen extends StatefulWidget {
   const AppLoginScreen({super.key});

@@ -4,6 +4,7 @@ import '../models/alert_data.dart';
 import '../models/recordatorio.dart';
 import '../models/recordatorio_exception.dart';
 import '../providers/recordatorio_provider.dart';
+import '../providers/font_size_provider.dart';
 import '../services/session_manager.dart';
 import '../services/trash_service.dart';
 import '../models/trash_item.dart';
@@ -379,17 +380,20 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        isCompleted ? '✓' : timeInfo['timeText'],
-                        style: TextStyle(
-                          fontSize: 48,
-                          fontWeight: FontWeight.w900,
-                          color: isCompleted
-                              ? const Color(0xFF10B981)
-                              : (isEditing
-                                  ? const Color(0xFF3B82F6)
-                                  : const Color(0xFFEF4444)),
-                          height: 1.1,
+                      Consumer<FontSizeProvider>(
+                        builder: (context, fontSizeProvider, _) => Text(
+                          isCompleted ? '✓' : timeInfo['timeText'],
+                          style: TextStyle(
+                            fontSize:
+                                fontSizeProvider.getScaledSize(48),
+                            fontWeight: FontWeight.w900,
+                            color: isCompleted
+                                ? const Color(0xFF10B981)
+                                : (isEditing
+                                    ? const Color(0xFF3B82F6)
+                                    : const Color(0xFFEF4444)),
+                            height: 1.1,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -630,20 +634,21 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
 
   Widget _buildTitle() {
     if (isEditing) {
-      return TextField(
-        controller: titleController,
-        style: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).brightness == Brightness.light
-              ? const Color(0xFF1E293B)
-              : Colors.white,
-        ),
-        decoration: InputDecoration(
-          hintText: 'Título de la alerta',
-          hintStyle: TextStyle(
+      return Consumer<FontSizeProvider>(
+        builder: (context, fontSizeProvider, _) => TextField(
+          controller: titleController,
+          style: TextStyle(
+            fontSize: fontSizeProvider.getScaledSize(24),
+            fontWeight: FontWeight.bold,
             color: Theme.of(context).brightness == Brightness.light
-                ? Colors.grey[400]
+                ? const Color(0xFF1E293B)
+                : Colors.white,
+          ),
+          decoration: InputDecoration(
+            hintText: 'Título de la alerta',
+            hintStyle: TextStyle(
+              color: Theme.of(context).brightness == Brightness.light
+                  ? Colors.grey[400]
                 : Colors.grey[600],
           ),
           filled: true,
@@ -674,79 +679,86 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
           ),
           contentPadding: const EdgeInsets.all(16),
         ),
+        ),
       );
     }
 
-    return Text(
-      data.title,
-      style: TextStyle(
-        fontSize: 24,
-        fontWeight: FontWeight.bold,
-        color: Theme.of(context).brightness == Brightness.light
-            ? const Color(0xFF1E293B)
-            : Colors.white,
+    return Consumer<FontSizeProvider>(
+      builder: (context, fontSizeProvider, _) => Text(
+        data.title,
+        style: TextStyle(
+          fontSize: fontSizeProvider.getScaledSize(24),
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).brightness == Brightness.light
+              ? const Color(0xFF1E293B)
+              : Colors.white,
+        ),
       ),
     );
   }
 
   Widget _buildDescription() {
     if (isEditing) {
-      return TextField(
-        controller: descriptionController,
-        maxLines: 3,
+      return Consumer<FontSizeProvider>(
+        builder: (context, fontSizeProvider, _) => TextField(
+          controller: descriptionController,
+          maxLines: 3,
+          style: TextStyle(
+            fontSize: fontSizeProvider.getScaledSize(15),
+            color: Theme.of(context).brightness == Brightness.light
+                ? const Color(0xFF475569)
+                : Colors.grey[300],
+            height: 1.5,
+          ),
+          decoration: InputDecoration(
+            hintText: 'Describe los detalles de tu alerta...',
+            hintStyle: TextStyle(
+              color: Theme.of(context).brightness == Brightness.light
+                  ? Colors.grey[400]
+                  : Colors.grey[600],
+            ),
+            filled: true,
+            fillColor: Theme.of(context).brightness == Brightness.light
+                ? Colors.grey[50]
+                : AppTheme.cardDark,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? const Color(0xFFE2E8F0)
+                      : Colors.grey[700]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? const Color(0xFFE2E8F0)
+                      : Colors.grey[700]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? const Color(0xFF3B82F6)
+                      : AppTheme.primaryDark,
+                  width: 2),
+            ),
+            contentPadding: const EdgeInsets.all(16),
+          ),
+        ),
+      );
+    }
+
+    return Consumer<FontSizeProvider>(
+      builder: (context, fontSizeProvider, _) => Text(
+        data.description,
         style: TextStyle(
-          fontSize: 15,
+          fontSize: fontSizeProvider.getScaledSize(15),
           color: Theme.of(context).brightness == Brightness.light
               ? const Color(0xFF475569)
               : Colors.grey[300],
           height: 1.5,
         ),
-        decoration: InputDecoration(
-          hintText: 'Describe los detalles de tu alerta...',
-          hintStyle: TextStyle(
-            color: Theme.of(context).brightness == Brightness.light
-                ? Colors.grey[400]
-                : Colors.grey[600],
-          ),
-          filled: true,
-          fillColor: Theme.of(context).brightness == Brightness.light
-              ? Colors.grey[50]
-              : AppTheme.cardDark,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-                color: Theme.of(context).brightness == Brightness.light
-                    ? const Color(0xFFE2E8F0)
-                    : Colors.grey[700]!),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-                color: Theme.of(context).brightness == Brightness.light
-                    ? const Color(0xFFE2E8F0)
-                    : Colors.grey[700]!),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-                color: Theme.of(context).brightness == Brightness.light
-                    ? const Color(0xFF3B82F6)
-                    : AppTheme.primaryDark,
-                width: 2),
-          ),
-          contentPadding: const EdgeInsets.all(16),
-        ),
-      );
-    }
-
-    return Text(
-      data.description,
-      style: TextStyle(
-        fontSize: 15,
-        color: Theme.of(context).brightness == Brightness.light
-            ? const Color(0xFF475569)
-            : Colors.grey[300],
-        height: 1.5,
       ),
     );
   }

@@ -1,7 +1,9 @@
 import 'package:Dfind/models/alert_data.dart';
 import 'package:Dfind/utils/alert_utils.dart';
+import 'package:Dfind/providers/font_size_provider.dart';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class AlertCard extends StatelessWidget {
   const AlertCard({
@@ -83,21 +85,23 @@ class AlertCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Título grande y prominente
-                      Text(
-                        alert.title,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: alert.active
-                              ? Theme.of(context).brightness == Brightness.light
-                                  ? Colors.black87
-                                  : Colors.white
-                              : Colors.black38,
-                          letterSpacing: -0.5,
-                          height: 1.2,
+                      Consumer<FontSizeProvider>(
+                        builder: (context, fontSizeProvider, _) => Text(
+                          alert.title,
+                          style: TextStyle(
+                            fontSize: fontSizeProvider.getScaledSize(22),
+                            fontWeight: FontWeight.w700,
+                            color: alert.active
+                                ? Theme.of(context).brightness == Brightness.light
+                                    ? Colors.black87
+                                    : Colors.white
+                                : Colors.black38,
+                            letterSpacing: -0.5,
+                            height: 1.2,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 16),
                       // Fecha y hora con icono
@@ -120,24 +124,30 @@ class AlertCard extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  dateText,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Theme.of(context).brightness == Brightness.light
-                                        ? Colors.grey.shade700
-                                        : Colors.grey.shade300,
-                                    fontWeight: FontWeight.w600,
+                                Consumer<FontSizeProvider>(
+                                  builder: (context, fontSizeProvider, _) =>
+                                      Text(
+                                    dateText,
+                                    style: TextStyle(
+                                      fontSize: fontSizeProvider.getScaledSize(16),
+                                      color: Theme.of(context).brightness == Brightness.light
+                                          ? Colors.grey.shade700
+                                          : Colors.grey.shade300,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
-                                Text(
-                                  '${alert.date.hour.toString().padLeft(2, '0')}:${alert.date.minute.toString().padLeft(2, '0')}',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Theme.of(context).brightness == Brightness.light
-                                        ? Colors.grey.shade500
-                                        : Colors.grey.shade400,
-                                    fontWeight: FontWeight.w500,
+                                Consumer<FontSizeProvider>(
+                                  builder: (context, fontSizeProvider, _) =>
+                                      Text(
+                                    '${alert.date.hour.toString().padLeft(2, '0')}:${alert.date.minute.toString().padLeft(2, '0')}',
+                                    style: TextStyle(
+                                      fontSize: fontSizeProvider.getScaledSize(14),
+                                      color: Theme.of(context).brightness == Brightness.light
+                                          ? Colors.grey.shade500
+                                          : Colors.grey.shade400,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ),
                               ],

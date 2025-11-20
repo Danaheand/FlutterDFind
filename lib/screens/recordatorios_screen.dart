@@ -12,6 +12,7 @@ import '../services/session_manager.dart';
 import '../services/trash_service.dart';
 import '../widgets/custom_text_button.dart';
 import '../providers/recordatorio_provider.dart';
+import '../providers/font_size_provider.dart';
 import '../models/recordatorio.dart';
 import '../models/recordatorio_exception.dart';
 import '../models/trash_item.dart';
@@ -195,9 +196,13 @@ class _AlertsScreenState extends State<AlertsScreen> {
   Widget _sectionHeader(String text) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+      child: Consumer<FontSizeProvider>(
+        builder: (context, fontSizeProvider, _) => Text(
+          text,
+          style: TextStyle(
+              fontSize: fontSizeProvider.getScaledSize(18),
+              fontWeight: FontWeight.w700),
+        ),
       ),
     );
   }
