@@ -11,7 +11,6 @@ import '../services/trash_service.dart';
 import '../services/session_manager.dart';
 import '../models/trash_item.dart';
 import '../widgets/custom_text_button.dart';
-import '../widgets/notification_test_widget.dart';
 import 'recordatorios_screen.dart';
 import 'pendientes_screen.dart';
 import '../repository/remote_user_repository.dart';
@@ -913,12 +912,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: _showAppSettingsDialog,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    // PRUEBA DE NOTIFICACIONES
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: NotificationTestWidget(),
                     ),
                     const SizedBox(height: 16),
                     // PAPELERA DE RECICLAJE
