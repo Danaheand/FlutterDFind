@@ -164,6 +164,21 @@ class _AlertsScreenState extends State<AlertsScreen> {
   List<AlertData> _getDesactivadas(List<AlertData> alerts) =>
       alerts.where((a) => !a.active).toList();
 
+  /// Verifica si se pueden completar las alertas seleccionadas
+  /// No se pueden completar alertas desactivadas o pasadas
+  bool _canCompleteSelection() {
+    if (selectedAlerts.isEmpty) return false;
+
+    final provider = context.read<RecordatorioProvider>();
+    final alerts = _getAlerts(provider);
+    final selectedAlertsList =
+        alerts.where((a) => selectedAlerts.contains(a.id)).toList();
+
+    // Verificar que ninguna alerta seleccionada esté desactivada o sea pasada
+    return selectedAlertsList
+        .every((a) => a.active && a.date.isAfter(DateTime.now()));
+  }
+
   Future<void> _toggleAlertActive(AlertData alert) async {
     if (_userEmail == null) return;
 
@@ -178,6 +193,109 @@ class _AlertsScreenState extends State<AlertsScreen> {
                 ? 'Recordatorio pausado'
                 : 'Recordatorio activado'),
             duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } on RecordatorioException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.message}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _completeSelected() async {
+    if (_userEmail == null || selectedAlerts.isEmpty) return;
+
+    final provider = context.read<RecordatorioProvider>();
+    final alerts = _getAlerts(provider);
+    final alertsToComplete =
+        alerts.where((a) => selectedAlerts.contains(a.id)).toList();
+
+    // Validar que no se intenten completar alertas desactivadas o pasadas
+    final alertasInvalidas = alertsToComplete.where((a) {
+      return !a.active || a.date.isBefore(DateTime.now());
+    }).toList();
+
+    if (alertasInvalidas.isNotEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'No se pueden completar alertas desactivadas o pasadas (${alertasInvalidas.length})'),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
+
+    // Confirmar completado
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar completado'),
+        content: Text(
+            '¿Marcar como completadas ${alertsToComplete.length} recordatorio(s)?'),
+        actions: [
+          CustomTextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          CustomTextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child:
+                const Text('Completar', style: TextStyle(color: Colors.green)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar != true) return;
+
+    try {
+      for (var alert in alertsToComplete) {
+        // Guardar datos completos del AlertData en la papelera
+        // final alertDataMap = {
+        //   'id': alert.id,
+        //   'title': alert.title,
+        //   'description': alert.description,
+        //   'date': alert.date.toIso8601String(),
+        //   'priority': alert.priority.name,
+        //   'location': alert.location,
+        //   'object': alert.object,
+        //   'repetitive': alert.repetitive,
+        //   'repeatFrequency': alert.repeatFrequency,
+        //   'active': alert.active,
+        //   'color': alert.color?.value,
+        //   'imagePath': alert.imagePath,
+        //   'selectedWeekdays': alert.selectedWeekdays,
+        //   'createdAt': alert.createdAt?.toIso8601String(),
+        //   'updatedAt': alert.updatedAt?.toIso8601String(),
+        //   'completed': true, // Marcar como completado
+        // };
+
+        // Completar en la API
+        await provider.toggleActivoRecordatorio(alert.title);
+        AlertsScreen.onAlertDeleted?.call(alert);
+      }
+
+      setState(() {
+        selectedAlerts.clear();
+        selectionMode = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '✅ ${alertsToComplete.length} recordatorio(s) completado(s)'),
+            backgroundColor: Colors.green,
           ),
         );
       }
@@ -463,7 +581,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('♻️ Recordatorio enviado a la papelera'),
+                              content:
+                                  Text('♻️ Recordatorio enviado a la papelera'),
                               backgroundColor: Colors.green,
                               duration: Duration(seconds: 2),
                             ),
@@ -544,17 +663,19 @@ class _AlertsScreenState extends State<AlertsScreen> {
                     children: [
                       Icon(Icons.error_outline,
                           size: 64,
-                          color: Theme.of(context).brightness == Brightness.light
-                              ? Colors.red
-                              : AppTheme.errorDark),
+                          color:
+                              Theme.of(context).brightness == Brightness.light
+                                  ? Colors.red
+                                  : AppTheme.errorDark),
                       const SizedBox(height: 16),
                       Text(
                         provider.error!,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            color: Theme.of(context).brightness == Brightness.light
-                                ? Colors.red
-                                : AppTheme.errorDark),
+                            color:
+                                Theme.of(context).brightness == Brightness.light
+                                    ? Colors.red
+                                    : AppTheme.errorDark),
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
@@ -566,60 +687,62 @@ class _AlertsScreenState extends State<AlertsScreen> {
                 )
               : RefreshIndicator(
                   onRefresh: _loadUserAndRecordatorios,
-                  child: tabIndex == 0
-                      ? ListView(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          children: [
-                            AlertTabBar(
-                              tabIndex: tabIndex,
-                              onTabChanged: (index) =>
-                                  setState(() => tabIndex = index),
-                            ),
-                            const TipsRecordatorios(),
-                            if (alerts.isEmpty)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 32),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.notifications_none,
-                                        size: 64,
-                                        color:
-                                            AppTheme.getTextSecondary(context)),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'No tienes recordatorios',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          color: AppTheme.getTextSecondary(
-                                              context)),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Presiona + para crear uno',
-                                      style: TextStyle(
-                                          color: AppTheme.getTextSecondary(
-                                              context)),
-                                    ),
-                                  ],
+                  child: Stack(
+                    children: [
+                      tabIndex == 0
+                          ? ListView(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              children: [
+                                AlertTabBar(
+                                  tabIndex: tabIndex,
+                                  onTabChanged: (index) =>
+                                      setState(() => tabIndex = index),
                                 ),
-                              )
-                            else ...[
-                              _buildSection('Importantes', importantes,
-                                  showSelection: true),
-                              _buildSection('Actuales', proximas,
-                                  showSelection: true),
-                              _buildSection('Desactivadas', desactivadas,
-                                  showSelection: true),
-                            ],
-                          ],
-                        )
-                      : Stack(
-                          children: [
-                            ListView(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 8),
+                                const TipsRecordatorios(),
+                                if (alerts.isEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 32),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.notifications_none,
+                                            size: 64,
+                                            color: AppTheme.getTextSecondary(
+                                                context)),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'No tienes recordatorios',
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              color: AppTheme.getTextSecondary(
+                                                  context)),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Presiona + para crear uno',
+                                          style: TextStyle(
+                                              color: AppTheme.getTextSecondary(
+                                                  context)),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                else ...[
+                                  _buildSection('Importantes', importantes,
+                                      showSelection: true),
+                                  _buildSection('Actuales', proximas,
+                                      showSelection: true),
+                                  _buildSection('Desactivadas', desactivadas,
+                                      showSelection: true),
+                                ],
+                                if (selectionMode && selectedAlerts.isNotEmpty)
+                                  const SizedBox(height: 80),
+                              ],
+                            )
+                          : ListView(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
                               children: [
                                 AlertTabBar(
                                   tabIndex: tabIndex,
@@ -653,31 +776,64 @@ class _AlertsScreenState extends State<AlertsScreen> {
                                       ],
                                     ),
                                   ),
+                                if (selectionMode && selectedAlerts.isNotEmpty)
+                                  const SizedBox(height: 80),
                               ],
                             ),
-                            if (selectionMode && selectedAlerts.isNotEmpty)
-                              Positioned(
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                child: Container(
-                                  color:
-                                      Theme.of(context).colorScheme.surface,
-                                  padding: const EdgeInsets.all(12),
-                                  child: ElevatedButton.icon(
+                      if (selectionMode && selectedAlerts.isNotEmpty)
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            color: Theme.of(context).colorScheme.surface,
+                            padding: const EdgeInsets.all(12),
+                            child: tabIndex == 0
+                                ? Row(
+                                    children: [
+                                      Expanded(
+                                        child: ElevatedButton.icon(
+                                          icon: const Icon(Icons.check_circle),
+                                          label: const Text('Completar'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor:
+                                                _canCompleteSelection()
+                                                    ? Colors.green
+                                                    : Colors.grey,
+                                            foregroundColor: Colors.white,
+                                          ),
+                                          onPressed: _canCompleteSelection()
+                                              ? _completeSelected
+                                              : null,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: ElevatedButton.icon(
+                                          icon: const Icon(Icons.delete),
+                                          label: const Text('Eliminar'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.red,
+                                            foregroundColor: Colors.white,
+                                          ),
+                                          onPressed: _deleteSelected,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : ElevatedButton.icon(
                                     icon: const Icon(Icons.delete),
-                                    label: const Text(
-                                        'Eliminar Seleccionadas'),
+                                    label: const Text('Eliminar Seleccionadas'),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.red,
                                       foregroundColor: Colors.white,
                                     ),
                                     onPressed: _deleteSelected,
                                   ),
-                                ),
-                              ),
-                          ],
+                          ),
                         ),
+                    ],
+                  ),
                 ),
     );
   }
