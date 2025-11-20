@@ -8,6 +8,8 @@ import '../providers/recordatorio_provider.dart';
 import '../services/trash_service.dart';
 import '../services/session_manager.dart';
 import '../widgets/custom_text_button.dart';
+import '../widgets/palette.dart';
+import '../widgets/paletteActual.dart';
 import '../theme/app_theme.dart';
 import 'pendientes_screen.dart';
 import '../repository/remote_user_repository.dart';
@@ -56,15 +58,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.delete_outline,
-                          size: 64,
-                          color: AppTheme.getTextSecondary(context)),
+                          size: 64, color: AppTheme.getTextSecondary(context)),
                       const SizedBox(height: 12),
                       Text('No hay elementos eliminados',
                           style: TextStyle(
-                              fontSize:
-                                  fontSizeProvider.getScaledSize(14),
-                              color:
-                                  AppTheme.getTextSecondary(context))),
+                              fontSize: fontSizeProvider.getScaledSize(14),
+                              color: AppTheme.getTextSecondary(context))),
                     ],
                   )
                 : SingleChildScrollView(
@@ -83,16 +82,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           return Card(
                             margin: const EdgeInsets.only(bottom: 8),
-                            color: Theme.of(context).brightness ==
-                                    Brightness.light
-                                ? Colors.white
-                                : AppTheme.cardDark,
+                            color:
+                                Theme.of(context).brightness == Brightness.light
+                                    ? Colors.white
+                                    : AppTheme.cardDark,
                             child: ListTile(
                               leading: Icon(icon, color: color),
                               title: Text(item.name,
                                   style: TextStyle(
-                                      fontSize: fontSizeProvider
-                                          .getScaledSize(16),
+                                      fontSize:
+                                          fontSizeProvider.getScaledSize(16),
                                       color: Theme.of(context).brightness ==
                                               Brightness.light
                                           ? Colors.black87
@@ -100,11 +99,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               subtitle: Text(
                                 '${item.placeName} • ${item.deletedAt.day}/${item.deletedAt.month}/${item.deletedAt.year}',
                                 style: TextStyle(
-                                    fontSize: fontSizeProvider
-                                        .getScaledSize(12),
-                                    color:
-                                        AppTheme.getTextSecondary(
-                                            context)),
+                                    fontSize:
+                                        fontSizeProvider.getScaledSize(12),
+                                    color: AppTheme.getTextSecondary(context)),
                               ),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -120,16 +117,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         // Si es un recordatorio, restaurarlo al proveedor
                                         if (item.originalType == 'alert') {
                                           try {
-                                            final alertData =
-                                                _trashService
-                                                    .trashItemToAlertData(
-                                                        item);
+                                            final alertData = _trashService
+                                                .trashItemToAlertData(item);
                                             final provider = context
                                                 .read<RecordatorioProvider>();
-                                            
+
                                             // Obtener el idUsuario actual
-                                            final userId = SessionManager
-                                                .instance.userId;
+                                            final userId =
+                                                SessionManager.instance.userId;
                                             if (userId != null) {
                                               // Crear un Recordatorio a partir de AlertData
                                               final recordatorio = Recordatorio(
@@ -140,21 +135,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                 fechaHora: alertData.date,
                                                 prioridad:
                                                     alertData.priority.name,
-                                                ubicacion:
-                                                    alertData.location,
+                                                ubicacion: alertData.location,
                                                 objeto: alertData.object,
                                                 esRepetitivo:
                                                     alertData.repetitive,
                                                 frecuenciaRepeticion:
                                                     alertData.repeatFrequency,
                                                 activo: alertData.active,
-                                                rutaImagen:
-                                                    alertData.imagePath,
+                                                rutaImagen: alertData.imagePath,
                                               );
-                                              
+
                                               // Crear el recordatorio en el servidor
-                                              await provider
-                                                  .crearRecordatorio(
+                                              await provider.crearRecordatorio(
                                                 recordatorio,
                                                 autoReload: true,
                                               );
@@ -172,8 +164,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                   .addFromAlertGlobal !=
                                               null) {
                                             InventoryScreen
-                                                .addFromAlertGlobal!(
-                                                    item.name);
+                                                .addFromAlertGlobal!(item.name);
                                           }
                                         }
 
@@ -221,27 +212,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   final confirmed = await showDialog<bool>(
                     context: context,
                     builder: (context) => Consumer<FontSizeProvider>(
-                      builder: (context, fontSizeProvider, _) =>
-                          AlertDialog(
+                      builder: (context, fontSizeProvider, _) => AlertDialog(
                         title: Text('Vaciar Papelera',
                             style: TextStyle(
-                                fontSize:
-                                    fontSizeProvider.getScaledSize(18),
+                                fontSize: fontSizeProvider.getScaledSize(18),
                                 fontWeight: FontWeight.bold)),
                         content: Text(
                             '¿Estás seguro de que quieres eliminar permanentemente todos los elementos?',
                             style: TextStyle(
-                                fontSize:
-                                    fontSizeProvider.getScaledSize(14))),
+                                fontSize: fontSizeProvider.getScaledSize(14))),
                         actions: [
                           CustomTextButton(
-                            onPressed: () =>
-                                Navigator.pop(context, false),
+                            onPressed: () => Navigator.pop(context, false),
                             child: const Text('Cancelar'),
                           ),
                           CustomTextButton(
-                            onPressed: () =>
-                                Navigator.pop(context, true),
+                            onPressed: () => Navigator.pop(context, true),
                             child: const Text('Eliminar Todo',
                                 style: TextStyle(color: Colors.red)),
                           ),
@@ -256,25 +242,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     await _trashService.emptyTrash();
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Papelera vaciada')),
+                        const SnackBar(content: Text('Papelera vaciada')),
                       );
                       Navigator.pop(context);
                     }
                   } catch (e) {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content:
-                                Text('Error al vaciar: $e')),
+                        SnackBar(content: Text('Error al vaciar: $e')),
                       );
                     }
                   }
                 },
                 child: Text('Vaciar Papelera',
                     style: TextStyle(
-                        fontSize:
-                            fontSizeProvider.getScaledSize(14))),
+                        fontSize: fontSizeProvider.getScaledSize(14))),
               ),
             CustomTextButton(
               onPressed: () => Navigator.pop(context),
@@ -1030,7 +1012,8 @@ Widget _buildInitialCircle(
                         margin: EdgeInsets.zero,
                         child: ListTile(
                           leading: Icon(Icons.delete_outline,
-                              color: Theme.of(context).brightness == Brightness.light
+                              color: Theme.of(context).brightness ==
+                                      Brightness.light
                                   ? Colors.orange
                                   : AppTheme.warningDark),
                           title: const Text('Papelera'),
@@ -1043,19 +1026,77 @@ Widget _buildInitialCircle(
                       ),
                     ),
                     const SizedBox(height: 16),
+                    // PALETA DE COLORES
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: _buildCard(
+                        margin: EdgeInsets.zero,
+                        child: ListTile(
+                          leading: Icon(Icons.palette_outlined,
+                              color: Theme.of(context).brightness ==
+                                      Brightness.light
+                                  ? Colors.purple
+                                  : Colors.purpleAccent),
+                          title: const Text('Paleta de Colores'),
+                          subtitle: const Text('Ver colores del tema actual'),
+                          trailing:
+                              const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const PaletteViewer(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // PALETA PERSONALIZADA
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: _buildCard(
+                        margin: EdgeInsets.zero,
+                        child: ListTile(
+                          leading: Icon(Icons.color_lens_outlined,
+                              color: Theme.of(context).brightness ==
+                                      Brightness.light
+                                  ? Colors.deepPurple
+                                  : Colors.deepPurpleAccent),
+                          title: const Text('Paleta Personalizada'),
+                          subtitle: const Text('Ver colores personalizados'),
+                          trailing:
+                              const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const CustomPaletteViewer(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     // CERRAR SESIÓN
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).brightness == Brightness.light
-                              ? Colors.white
-                              : AppTheme.cardDark,
-                          foregroundColor: Theme.of(context).brightness == Brightness.light
-                              ? Colors.red
-                              : AppTheme.errorDark,
+                          backgroundColor:
+                              Theme.of(context).brightness == Brightness.light
+                                  ? Colors.white
+                                  : AppTheme.cardDark,
+                          foregroundColor:
+                              Theme.of(context).brightness == Brightness.light
+                                  ? Colors.red
+                                  : AppTheme.errorDark,
                           side: BorderSide(
-                              color: Theme.of(context).brightness == Brightness.light
+                              color: Theme.of(context).brightness ==
+                                      Brightness.light
                                   ? Colors.redAccent
                                   : AppTheme.errorDark),
                           minimumSize: const Size.fromHeight(48),

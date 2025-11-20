@@ -129,12 +129,6 @@ class RecordatorioRepository {
       );
     }
 
-    if (recordatorio.descripcion.isEmpty) {
-      throw RecordatorioValidationException(
-        'La descripción del recordatorio es obligatoria',
-      );
-    }
-
     if (recordatorio.idUsuario <= 0) {
       throw RecordatorioValidationException(
         'El ID del usuario es obligatorio y debe ser válido',

@@ -38,6 +38,9 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
   late DateTime selectedDate;
   late AlertPriority selectedPriority;
 
+  // ScrollController para manejo de scroll
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -64,11 +67,12 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
     titleController.dispose();
     descriptionController.dispose();
     locationController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
   Color get _priorityColor {
-    if (isCompleted) return const Color(0xFF10B981); // green-500
+    if (isCompleted) return AppTheme.successLight; // green-500
     if (!data.active) return Colors.grey.shade400;
     return data.color ?? defaultColorFor(selectedPriority);
   }
@@ -261,6 +265,27 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
     });
   }
 
+  // Método para hacer scroll cuando se enfoca un campo de texto
+  void _scrollToShowField() {
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (_scrollController.hasClients) {
+        // Calculamos el scroll necesario para que el campo quede visible
+        // Dejamos espacio de 200px desde el bottom para que no quede tapado por los botones
+        final currentScroll = _scrollController.offset;
+        final maxScroll = _scrollController.position.maxScrollExtent;
+
+        // Calculamos un scroll que deje espacio suficiente (250px adicionales)
+        final targetScroll = (currentScroll + 250).clamp(0.0, maxScroll);
+
+        _scrollController.animateTo(
+          targetScroll,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final timeInfo = TimeUtils.getRelativeTime(selectedDate);
@@ -280,9 +305,130 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
 
           // ===== CAPA 2: SCROLLABLE CONTENT =====
           SingleChildScrollView(
+            controller: _scrollController,
             child: Column(
               children: [
-                SizedBox(height: screenHeight * 0.30),
+                SizedBox(height: screenHeight * 0.18),
+
+                // ===== FLOATING COUNTDOWN CARD (ahora dentro del scroll) =====
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: GestureDetector(
+                    onTap: isEditing ? _showDateTimePicker : null,
+                    child: Card(
+                      elevation: 8,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: isEditing
+                            ? const BorderSide(
+                                color: Color(0xFF3B82F6), width: 2)
+                            : BorderSide.none,
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: isEditing
+                              ? const Color(0xFF3B82F6).withOpacity(0.05)
+                              : Theme.of(context).brightness == Brightness.light
+                                  ? Colors.white
+                                  : AppTheme.cardDark,
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  isEditing
+                                      ? Icons.edit_calendar
+                                      : Icons.calendar_today,
+                                  size: 14,
+                                  color: isEditing
+                                      ? const Color(0xFF3B82F6)
+                                      : Theme.of(context).brightness ==
+                                              Brightness.light
+                                          ? const Color(0xFF64748B)
+                                          : Colors.grey[400],
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  isCompleted
+                                      ? 'LISTO'
+                                      : (isEditing
+                                          ? 'TOCA PARA CAMBIAR FECHA'
+                                          : timeInfo['label']),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 1.2,
+                                    color: isCompleted
+                                        ? const Color(0xFF10B981)
+                                        : (isEditing
+                                            ? const Color(0xFF3B82F6)
+                                            : Theme.of(context).brightness ==
+                                                    Brightness.light
+                                                ? const Color(0xFF64748B)
+                                                : Colors.grey[400]),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Consumer<FontSizeProvider>(
+                              builder: (context, fontSizeProvider, _) => Text(
+                                isCompleted ? '✓' : timeInfo['timeText'],
+                                style: TextStyle(
+                                  fontSize: fontSizeProvider.getScaledSize(48),
+                                  fontWeight: FontWeight.w900,
+                                  color: isCompleted
+                                      ? const Color(0xFF10B981)
+                                      : (isEditing
+                                          ? const Color(0xFF3B82F6)
+                                          : const Color(0xFFEF4444)),
+                                  height: 1.1,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.access_time,
+                                  size: 14,
+                                  color: isEditing
+                                      ? const Color(0xFF3B82F6)
+                                      : Theme.of(context).brightness ==
+                                              Brightness.light
+                                          ? const Color(0xFF94A3B8)
+                                          : Colors.grey[500],
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  timeInfo['formattedDate'],
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: isEditing
+                                        ? const Color(0xFF3B82F6)
+                                        : Theme.of(context).brightness ==
+                                                Brightness.light
+                                            ? const Color(0xFF64748B)
+                                            : Colors.grey[400],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
@@ -293,7 +439,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                       top: Radius.circular(30),
                     ),
                   ),
-                  padding: const EdgeInsets.fromLTRB(20, 80, 20, 20),
+                  padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -335,122 +481,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
             ),
           ),
 
-          // ===== CAPA 3: FLOATING COUNTDOWN CARD =====
-          Positioned(
-            top: screenHeight * 0.18,
-            left: 20,
-            right: 20,
-            child: GestureDetector(
-              onTap: isEditing ? _showDateTimePicker : null,
-              child: Card(
-                elevation: 8,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: isEditing
-                      ? const BorderSide(color: Color(0xFF3B82F6), width: 2)
-                      : BorderSide.none,
-                ),
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    color: isEditing
-                        ? const Color(0xFF3B82F6).withOpacity(0.05)
-                        : Theme.of(context).brightness == Brightness.light
-                            ? Colors.white
-                            : AppTheme.cardDark,
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            isEditing
-                                ? Icons.edit_calendar
-                                : Icons.calendar_today,
-                            size: 14,
-                            color: isEditing
-                                ? const Color(0xFF3B82F6)
-                                : Theme.of(context).brightness == Brightness.light
-                                    ? const Color(0xFF64748B)
-                                    : Colors.grey[400],
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            isCompleted
-                                ? 'LISTO'
-                                : (isEditing
-                                    ? 'TOCA PARA CAMBIAR FECHA'
-                                    : timeInfo['label']),
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 1.2,
-                              color: isCompleted
-                                  ? const Color(0xFF10B981)
-                                  : (isEditing
-                                      ? const Color(0xFF3B82F6)
-                                      : Theme.of(context).brightness == Brightness.light
-                                          ? const Color(0xFF64748B)
-                                          : Colors.grey[400]),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Consumer<FontSizeProvider>(
-                        builder: (context, fontSizeProvider, _) => Text(
-                          isCompleted ? '✓' : timeInfo['timeText'],
-                          style: TextStyle(
-                            fontSize:
-                                fontSizeProvider.getScaledSize(48),
-                            fontWeight: FontWeight.w900,
-                            color: isCompleted
-                                ? const Color(0xFF10B981)
-                                : (isEditing
-                                    ? const Color(0xFF3B82F6)
-                                    : const Color(0xFFEF4444)),
-                            height: 1.1,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.access_time,
-                            size: 14,
-                            color: isEditing
-                                ? const Color(0xFF3B82F6)
-                                : Theme.of(context).brightness == Brightness.light
-                                    ? const Color(0xFF94A3B8)
-                                    : Colors.grey[500],
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            timeInfo['formattedDate'],
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: isEditing
-                                  ? const Color(0xFF3B82F6)
-                                  : Theme.of(context).brightness == Brightness.light
-                                      ? const Color(0xFF64748B)
-                                      : Colors.grey[400],
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // ===== CAPA 4: GRADIENT OVERLAY =====
+          // ===== CAPA 3: GRADIENT OVERLAY =====
           Positioned(
             bottom: 0,
             left: 0,
@@ -479,7 +510,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
             ),
           ),
 
-          // ===== CAPA 5: ACTION DOCK =====
+          // ===== CAPA 4: ACTION DOCK =====
           Positioned(
             bottom: 20,
             left: 20,
@@ -656,6 +687,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
       return Consumer<FontSizeProvider>(
         builder: (context, fontSizeProvider, _) => TextField(
           controller: titleController,
+          onTap: _scrollToShowField,
           style: TextStyle(
             fontSize: fontSizeProvider.getScaledSize(24),
             fontWeight: FontWeight.bold,
@@ -668,36 +700,36 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
             hintStyle: TextStyle(
               color: Theme.of(context).brightness == Brightness.light
                   ? Colors.grey[400]
-                : Colors.grey[600],
+                  : Colors.grey[600],
+            ),
+            filled: true,
+            fillColor: Theme.of(context).brightness == Brightness.light
+                ? Colors.grey[50]
+                : AppTheme.cardDark,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? const Color(0xFFE2E8F0)
+                      : Colors.grey[700]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? const Color(0xFFE2E8F0)
+                      : Colors.grey[700]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? const Color(0xFF3B82F6)
+                      : AppTheme.primaryDark,
+                  width: 2),
+            ),
+            contentPadding: const EdgeInsets.all(16),
           ),
-          filled: true,
-          fillColor: Theme.of(context).brightness == Brightness.light
-              ? Colors.grey[50]
-              : AppTheme.cardDark,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-                color: Theme.of(context).brightness == Brightness.light
-                    ? const Color(0xFFE2E8F0)
-                    : Colors.grey[700]!),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-                color: Theme.of(context).brightness == Brightness.light
-                    ? const Color(0xFFE2E8F0)
-                    : Colors.grey[700]!),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-                color: Theme.of(context).brightness == Brightness.light
-                    ? const Color(0xFF3B82F6)
-                    : AppTheme.primaryDark,
-                width: 2),
-          ),
-          contentPadding: const EdgeInsets.all(16),
-        ),
         ),
       );
     }
@@ -721,6 +753,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
       return Consumer<FontSizeProvider>(
         builder: (context, fontSizeProvider, _) => TextField(
           controller: descriptionController,
+          onTap: _scrollToShowField,
           maxLines: 3,
           style: TextStyle(
             fontSize: fontSizeProvider.getScaledSize(15),
@@ -811,6 +844,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
         if (isEditing)
           TextField(
             controller: locationController,
+            onTap: _scrollToShowField,
             style: TextStyle(
               fontSize: 15,
               color: Theme.of(context).brightness == Brightness.light
