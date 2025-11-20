@@ -413,13 +413,21 @@ class _RequirementItem extends StatelessWidget {
           Icon(
             isValid ? Icons.check_circle : Icons.circle_outlined,
             size: 16,
-            color: isValid ? Colors.green : Colors.grey,
+            color: isValid
+                ? Colors.green
+                : Theme.of(context).brightness == Brightness.light
+                    ? Colors.grey
+                    : Colors.grey[400],
           ),
           const SizedBox(width: 8),
           Text(
             text,
             style: TextStyle(
-              color: isValid ? Colors.green : Colors.grey,
+              color: isValid
+                  ? Colors.green
+                  : Theme.of(context).brightness == Brightness.light
+                      ? Colors.grey
+                      : Colors.grey[400],
               fontSize: 13,
             ),
           ),

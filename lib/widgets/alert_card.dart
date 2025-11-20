@@ -1,4 +1,3 @@
-// import 'package:Dfind/screens/recordatorios_detalle_screen.dart';
 import 'package:Dfind/models/alert_data.dart';
 import 'package:Dfind/utils/alert_utils.dart';
 
@@ -89,7 +88,11 @@ class AlertCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
-                          color: alert.active ? Colors.black87 : Colors.black38,
+                          color: alert.active
+                              ? Theme.of(context).brightness == Brightness.light
+                                  ? Colors.black87
+                                  : Colors.white
+                              : Colors.black38,
                           letterSpacing: -0.5,
                           height: 1.2,
                         ),
@@ -121,7 +124,9 @@ class AlertCard extends StatelessWidget {
                                   dateText,
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: Colors.grey.shade700,
+                                    color: Theme.of(context).brightness == Brightness.light
+                                        ? Colors.grey.shade700
+                                        : Colors.grey.shade300,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -129,7 +134,9 @@ class AlertCard extends StatelessWidget {
                                   '${alert.date.hour.toString().padLeft(2, '0')}:${alert.date.minute.toString().padLeft(2, '0')}',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.grey.shade500,
+                                    color: Theme.of(context).brightness == Brightness.light
+                                        ? Colors.grey.shade500
+                                        : Colors.grey.shade400,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -157,11 +164,13 @@ class AlertCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: Text(
+                            child: Text(
                                 alert.object!,
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Colors.grey.shade700,
+                                  color: Theme.of(context).brightness == Brightness.light
+                                      ? Colors.grey.shade700
+                                      : Colors.grey.shade300,
                                   fontWeight: FontWeight.w500,
                                 ),
                                 maxLines: 1,
@@ -179,7 +188,9 @@ class AlertCard extends StatelessWidget {
                 PopupMenuButton<String>(
                   icon: Icon(
                     Icons.more_vert_rounded,
-                    color: Colors.grey.shade600,
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? Colors.grey.shade600
+                        : Colors.grey.shade400,
                     size: 24,
                   ),
                   shape: RoundedRectangleBorder(

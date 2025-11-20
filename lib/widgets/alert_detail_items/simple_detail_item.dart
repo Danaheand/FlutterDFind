@@ -16,7 +16,11 @@ class SimpleDetailItem extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 22, color: Colors.grey.shade600),
+        Icon(icon,
+            size: 22,
+            color: Theme.of(context).brightness == Brightness.light
+                ? Colors.grey.shade600
+                : Colors.grey.shade400),
         const SizedBox(width: 14),
         Expanded(
           child: Column(
@@ -27,13 +31,19 @@ class SimpleDetailItem extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade600,
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? Colors.grey.shade600
+                      : Colors.grey.shade400,
                 ),
               ),
               const SizedBox(height: 6),
               Text(
                 value,
-                style: const TextStyle(fontSize: 16, color: Colors.black87),
+                style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? Colors.black87
+                        : Colors.white),
               ),
             ],
           ),

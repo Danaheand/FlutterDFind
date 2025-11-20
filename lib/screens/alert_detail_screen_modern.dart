@@ -10,6 +10,7 @@ import '../models/trash_item.dart';
 import '../utils/time_utils.dart';
 import '../utils/alert_utils.dart';
 import '../widgets/weekday_indicator.dart';
+import '../theme/app_theme.dart';
 
 /// Pantalla moderna de detalle de alerta con diseño tipo hero card
 class AlertDetailScreenModern extends StatefulWidget {
@@ -246,6 +247,9 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      backgroundColor: Theme.of(context).brightness == Brightness.light
+          ? Colors.white
+          : AppTheme.backgroundDark,
       body: Stack(
         children: [
           // ===== CAPA 1: HERO BACKGROUND =====
@@ -261,9 +265,11 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                 SizedBox(height: screenHeight * 0.30),
                 Container(
                   width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? Colors.white
+                        : AppTheme.backgroundDark,
+                    borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(30),
                     ),
                   ),
@@ -330,7 +336,9 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                     borderRadius: BorderRadius.circular(20),
                     color: isEditing
                         ? const Color(0xFF3B82F6).withOpacity(0.05)
-                        : Colors.white,
+                        : Theme.of(context).brightness == Brightness.light
+                            ? Colors.white
+                            : AppTheme.cardDark,
                   ),
                   child: Column(
                     children: [
@@ -344,7 +352,9 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                             size: 14,
                             color: isEditing
                                 ? const Color(0xFF3B82F6)
-                                : const Color(0xFF64748B),
+                                : Theme.of(context).brightness == Brightness.light
+                                    ? const Color(0xFF64748B)
+                                    : Colors.grey[400],
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -361,7 +371,9 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                                   ? const Color(0xFF10B981)
                                   : (isEditing
                                       ? const Color(0xFF3B82F6)
-                                      : const Color(0xFF64748B)),
+                                      : Theme.of(context).brightness == Brightness.light
+                                          ? const Color(0xFF64748B)
+                                          : Colors.grey[400]),
                             ),
                           ),
                         ],
@@ -389,7 +401,9 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                             size: 14,
                             color: isEditing
                                 ? const Color(0xFF3B82F6)
-                                : const Color(0xFF94A3B8),
+                                : Theme.of(context).brightness == Brightness.light
+                                    ? const Color(0xFF94A3B8)
+                                    : Colors.grey[500],
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -398,7 +412,9 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                               fontSize: 13,
                               color: isEditing
                                   ? const Color(0xFF3B82F6)
-                                  : const Color(0xFF64748B),
+                                  : Theme.of(context).brightness == Brightness.light
+                                      ? const Color(0xFF64748B)
+                                      : Colors.grey[400],
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -423,11 +439,17 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
-                    colors: [
-                      Colors.white,
-                      Colors.white.withOpacity(0.8),
-                      Colors.white.withOpacity(0),
-                    ],
+                    colors: Theme.of(context).brightness == Brightness.light
+                        ? [
+                            Colors.white,
+                            Colors.white.withOpacity(0.8),
+                            Colors.white.withOpacity(0),
+                          ]
+                        : [
+                            AppTheme.backgroundDark,
+                            AppTheme.backgroundDark.withOpacity(0.8),
+                            AppTheme.backgroundDark.withOpacity(0),
+                          ],
                   ),
                 ),
               ),
@@ -473,9 +495,14 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                     child: Container(
                       height: 56,
                       decoration: BoxDecoration(
-                        color: isCompleted || isEditing
+                        color: isCompleted
                             ? const Color(0xFF10B981)
-                            : const Color(0xFF1E293B),
+                            : isEditing
+                                ? AppTheme.successDark
+                                : Theme.of(context).brightness ==
+                                        Brightness.light
+                                    ? const Color(0xFF1E293B)
+                                    : AppTheme.cardDark,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
@@ -605,26 +632,45 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
     if (isEditing) {
       return TextField(
         controller: titleController,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.bold,
-          color: Color(0xFF1E293B),
+          color: Theme.of(context).brightness == Brightness.light
+              ? const Color(0xFF1E293B)
+              : Colors.white,
         ),
         decoration: InputDecoration(
           hintText: 'Título de la alerta',
+          hintStyle: TextStyle(
+            color: Theme.of(context).brightness == Brightness.light
+                ? Colors.grey[400]
+                : Colors.grey[600],
+          ),
           filled: true,
-          fillColor: Colors.grey[50],
+          fillColor: Theme.of(context).brightness == Brightness.light
+              ? Colors.grey[50]
+              : AppTheme.cardDark,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            borderSide: BorderSide(
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFFE2E8F0)
+                    : Colors.grey[700]!),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            borderSide: BorderSide(
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFFE2E8F0)
+                    : Colors.grey[700]!),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
+            borderSide: BorderSide(
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFF3B82F6)
+                    : AppTheme.primaryDark,
+                width: 2),
           ),
           contentPadding: const EdgeInsets.all(16),
         ),
@@ -633,10 +679,12 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
 
     return Text(
       data.title,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 24,
         fontWeight: FontWeight.bold,
-        color: Color(0xFF1E293B),
+        color: Theme.of(context).brightness == Brightness.light
+            ? const Color(0xFF1E293B)
+            : Colors.white,
       ),
     );
   }
@@ -646,26 +694,45 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
       return TextField(
         controller: descriptionController,
         maxLines: 3,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 15,
-          color: Color(0xFF475569),
+          color: Theme.of(context).brightness == Brightness.light
+              ? const Color(0xFF475569)
+              : Colors.grey[300],
           height: 1.5,
         ),
         decoration: InputDecoration(
           hintText: 'Describe los detalles de tu alerta...',
+          hintStyle: TextStyle(
+            color: Theme.of(context).brightness == Brightness.light
+                ? Colors.grey[400]
+                : Colors.grey[600],
+          ),
           filled: true,
-          fillColor: Colors.grey[50],
+          fillColor: Theme.of(context).brightness == Brightness.light
+              ? Colors.grey[50]
+              : AppTheme.cardDark,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            borderSide: BorderSide(
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFFE2E8F0)
+                    : Colors.grey[700]!),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            borderSide: BorderSide(
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFFE2E8F0)
+                    : Colors.grey[700]!),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
+            borderSide: BorderSide(
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFF3B82F6)
+                    : AppTheme.primaryDark,
+                width: 2),
           ),
           contentPadding: const EdgeInsets.all(16),
         ),
@@ -674,9 +741,11 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
 
     return Text(
       data.description,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 15,
-        color: Color(0xFF475569),
+        color: Theme.of(context).brightness == Brightness.light
+            ? const Color(0xFF475569)
+            : Colors.grey[300],
         height: 1.5,
       ),
     );
@@ -688,15 +757,21 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
       children: [
         Row(
           children: [
-            const Icon(Icons.location_on, size: 16, color: Color(0xFF94A3B8)),
+            Icon(Icons.location_on,
+                size: 16,
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFF94A3B8)
+                    : Colors.grey[500]),
             const SizedBox(width: 6),
-            const Text(
+            Text(
               'UBICACIÓN',
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.2,
-                color: Color(0xFF94A3B8),
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFF94A3B8)
+                    : Colors.grey[500],
               ),
             ),
           ],
@@ -705,26 +780,39 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
         if (isEditing)
           TextField(
             controller: locationController,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 15,
-              color: Color(0xFF475569),
+              color: Theme.of(context).brightness == Brightness.light
+                  ? const Color(0xFF475569)
+                  : Colors.grey[300],
             ),
             decoration: InputDecoration(
               hintText: 'Ej: Casa, Oficina, Gimnasio...',
               filled: true,
-              fillColor: Colors.grey[50],
+              fillColor: Theme.of(context).brightness == Brightness.light
+                  ? Colors.grey[50]
+                  : AppTheme.cardDark,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                borderSide: BorderSide(
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? const Color(0xFFE2E8F0)
+                        : Colors.grey[700]!),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                borderSide: BorderSide(
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? const Color(0xFFE2E8F0)
+                        : Colors.grey[700]!),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide:
-                    const BorderSide(color: Color(0xFF3B82F6), width: 2),
+                borderSide: BorderSide(
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? const Color(0xFF3B82F6)
+                        : AppTheme.primaryDark,
+                    width: 2),
               ),
               contentPadding: const EdgeInsets.all(16),
             ),
@@ -734,14 +822,18 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.grey[50],
+              color: Theme.of(context).brightness == Brightness.light
+                  ? Colors.grey[50]
+                  : AppTheme.cardDark,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               data.location ?? '',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
-                color: Color(0xFF475569),
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFF475569)
+                    : Colors.grey[300],
               ),
             ),
           ),
@@ -785,15 +877,21 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
         children: [
           Row(
             children: [
-              const Icon(Icons.repeat, size: 16, color: Color(0xFF94A3B8)),
+              Icon(Icons.repeat,
+                  size: 16,
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? const Color(0xFF94A3B8)
+                      : Colors.grey[500]),
               const SizedBox(width: 6),
-              const Text(
+              Text(
                 'REPETICIÓN',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 1.2,
-                  color: Color(0xFF94A3B8),
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? const Color(0xFF94A3B8)
+                      : Colors.grey[500],
                 ),
               ),
               const Spacer(),
@@ -842,15 +940,21 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
       children: [
         Row(
           children: [
-            const Icon(Icons.repeat, size: 16, color: Color(0xFF94A3B8)),
+            Icon(Icons.repeat,
+                size: 16,
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFF94A3B8)
+                    : Colors.grey[500]),
             const SizedBox(width: 6),
-            const Text(
+            Text(
               'FRECUENCIA',
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.2,
-                color: Color(0xFF94A3B8),
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFF94A3B8)
+                    : Colors.grey[500],
               ),
             ),
           ],
@@ -881,13 +985,15 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'PRIORIDAD',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
               letterSpacing: 1.2,
-              color: Color(0xFF94A3B8),
+              color: Theme.of(context).brightness == Brightness.light
+                  ? const Color(0xFF94A3B8)
+                  : Colors.grey[500],
             ),
           ),
           const SizedBox(height: 8),

@@ -11,6 +11,7 @@ import '../services/trash_service.dart';
 import '../services/session_manager.dart';
 import '../models/trash_item.dart';
 import '../widgets/custom_text_button.dart';
+import '../theme/app_theme.dart';
 import 'recordatorios_screen.dart';
 import 'pendientes_screen.dart';
 import '../repository/remote_user_repository.dart';
@@ -878,7 +879,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Container(
                 height: 120,
-                color: Colors.blue[500],
+                color: Theme.of(context).brightness == Brightness.light
+                    ? Colors.blue[500]
+                    : AppTheme.cardDark,
                 child: null,
               ),
               Transform.translate(
@@ -894,7 +897,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         )),
                     Text(_userEmail,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: Colors.grey,
+                          color: AppTheme.getTextSecondary(context),
                           fontSize: fontSizeProvider.fontSize,
                         )),
                     const SizedBox(height: 16),
@@ -920,8 +923,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: _buildCard(
                         margin: EdgeInsets.zero,
                         child: ListTile(
-                          leading: const Icon(Icons.delete_outline,
-                              color: Colors.orange),
+                          leading: Icon(Icons.delete_outline,
+                              color: Theme.of(context).brightness == Brightness.light
+                                  ? Colors.orange
+                                  : AppTheme.warningDark),
                           title: const Text('Papelera'),
                           subtitle: Text(
                               '${_trashService.getTrashItems().length} elementos eliminados'),
@@ -937,9 +942,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.red,
-                          side: const BorderSide(color: Colors.redAccent),
+                          backgroundColor: Theme.of(context).brightness == Brightness.light
+                              ? Colors.white
+                              : AppTheme.cardDark,
+                          foregroundColor: Theme.of(context).brightness == Brightness.light
+                              ? Colors.red
+                              : AppTheme.errorDark,
+                          side: BorderSide(
+                              color: Theme.of(context).brightness == Brightness.light
+                                  ? Colors.redAccent
+                                  : AppTheme.errorDark),
                           minimumSize: const Size.fromHeight(48),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),

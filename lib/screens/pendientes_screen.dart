@@ -45,7 +45,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
     InventoryScreen.addFromAlertGlobal = addFromAlert;
     _trashService = TrashService.getInstance();
     _confettiController = ConfettiController(
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 500),
     );
     _initialize();
   }
@@ -294,12 +294,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
   void _playConfetti() {
     _confettiController.play();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('¡Lugar completado! 🎉'),
-        duration: Duration(seconds: 2),
-      ),
-    );
   }
 
   // ================================================================
@@ -319,24 +313,28 @@ class _InventoryScreenState extends State<InventoryScreen> {
               ? const Center(child: CircularProgressIndicator())
               : _buildNormalView(),
           Align(
-            alignment: Alignment.topCenter,
+            alignment: Alignment.bottomCenter,
             child: IgnorePointer(
               child: ConfettiWidget(
                 confettiController: _confettiController,
-                blastDirection: -1.57,
-                emissionFrequency: 0.8,
-                numberOfParticles: 200,
-                maxBlastForce: 500,
-                minBlastForce: 300,
-                gravity: 1.0,
+                blastDirection: 1.57,
+                emissionFrequency: 0.95,
+                numberOfParticles: 60,
+                maxBlastForce: 250,
+                minBlastForce: 120,
+                gravity: 0.95,
                 shouldLoop: false,
                 colors: const [
-                  Colors.blue,
-                  Colors.red,
-                  Colors.green,
-                  Colors.yellow,
-                  Colors.purple,
-                  Colors.orange,
+                  Color(0xFF2196F3),
+                  Color(0xFFFF5722),
+                  Color(0xFF4CAF50),
+                  Color(0xFFFFC107),
+                  Color(0xFF9C27B0),
+                  Color(0xFFFF9800),
+                  Color(0xFFE91E63),
+                  Color(0xFF00BCD4),
+                  Color(0xFF8BC34A),
+                  Color(0xFFF44336),
                 ],
               ),
             ),

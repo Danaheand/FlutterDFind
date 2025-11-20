@@ -15,6 +15,7 @@ import '../providers/recordatorio_provider.dart';
 import '../models/recordatorio.dart';
 import '../models/recordatorio_exception.dart';
 import '../models/trash_item.dart';
+import '../theme/app_theme.dart';
 
 class AlertsScreen extends StatefulWidget {
   const AlertsScreen({super.key});
@@ -501,13 +502,19 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline,
-                          size: 64, color: Colors.red),
+                      Icon(Icons.error_outline,
+                          size: 64,
+                          color: Theme.of(context).brightness == Brightness.light
+                              ? Colors.red
+                              : AppTheme.errorDark),
                       const SizedBox(height: 16),
                       Text(
                         provider.error!,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.red),
+                        style: TextStyle(
+                            color: Theme.of(context).brightness == Brightness.light
+                                ? Colors.red
+                                : AppTheme.errorDark),
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
@@ -522,17 +529,21 @@ class _AlertsScreenState extends State<AlertsScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.notifications_none,
-                              size: 64, color: Colors.grey),
+                          Icon(Icons.notifications_none,
+                              size: 64,
+                              color: AppTheme.getTextSecondary(context)),
                           const SizedBox(height: 16),
-                          const Text(
+                          Text(
                             'No tienes recordatorios',
-                            style: TextStyle(fontSize: 18, color: Colors.grey),
+                            style: TextStyle(
+                                fontSize: 18,
+                                color: AppTheme.getTextSecondary(context)),
                           ),
                           const SizedBox(height: 8),
-                          const Text(
+                          Text(
                             'Presiona + para crear uno',
-                            style: TextStyle(color: Colors.grey),
+                            style: TextStyle(
+                                color: AppTheme.getTextSecondary(context)),
                           ),
                         ],
                       ),

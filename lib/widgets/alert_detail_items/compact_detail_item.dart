@@ -16,30 +16,43 @@ class CompactDetailItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: Theme.of(context).brightness == Brightness.light
+            ? Colors.grey.shade50
+            : Colors.grey.shade800,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(
+            color: Theme.of(context).brightness == Brightness.light
+                ? Colors.grey.shade200
+                : Colors.grey.shade700),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(icon, size: 20, color: Colors.grey.shade600),
+          Icon(icon,
+              size: 20,
+              color: Theme.of(context).brightness == Brightness.light
+                  ? Colors.grey.shade600
+                  : Colors.grey.shade400),
           const SizedBox(height: 8),
           Text(
             label,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: Colors.grey.shade600,
+              color: Theme.of(context).brightness == Brightness.light
+                  ? Colors.grey.shade600
+                  : Colors.grey.shade400,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: Colors.black87,
+              color: Theme.of(context).brightness == Brightness.light
+                  ? Colors.black87
+                  : Colors.white,
               fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,

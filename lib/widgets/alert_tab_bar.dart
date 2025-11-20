@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class AlertTabBar extends StatelessWidget {
   final int tabIndex;
@@ -12,6 +13,7 @@ class AlertTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -22,8 +24,11 @@ class AlertTabBar extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color:
-                      tabIndex == 0 ? Colors.blue.shade50 : Colors.transparent,
+                  color: tabIndex == 0
+                      ? isLight
+                          ? Colors.blue.shade50
+                          : AppTheme.primaryDark.withOpacity(0.2)
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Center(
@@ -32,8 +37,13 @@ class AlertTabBar extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color:
-                          tabIndex == 0 ? Colors.blue.shade800 : Colors.black54,
+                      color: tabIndex == 0
+                          ? isLight
+                              ? Colors.blue.shade800
+                              : AppTheme.primaryDark
+                          : isLight
+                              ? Colors.black54
+                              : Colors.grey[400],
                     ),
                   ),
                 ),
@@ -47,8 +57,11 @@ class AlertTabBar extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color:
-                      tabIndex == 1 ? Colors.blue.shade50 : Colors.transparent,
+                  color: tabIndex == 1
+                      ? isLight
+                          ? Colors.blue.shade50
+                          : AppTheme.primaryDark.withOpacity(0.2)
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Center(
@@ -57,8 +70,13 @@ class AlertTabBar extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color:
-                          tabIndex == 1 ? Colors.blue.shade800 : Colors.black54,
+                      color: tabIndex == 1
+                          ? isLight
+                              ? Colors.blue.shade800
+                              : AppTheme.primaryDark
+                          : isLight
+                              ? Colors.black54
+                              : Colors.grey[400],
                     ),
                   ),
                 ),

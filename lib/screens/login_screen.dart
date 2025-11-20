@@ -89,14 +89,18 @@ class _LoginScreenState extends State<AppLoginScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: Colors.blue[50],
+      backgroundColor: theme.brightness == Brightness.light
+          ? Colors.blue[50]
+          : theme.scaffoldBackgroundColor,
       body: Center(
         child: SingleChildScrollView(
           child: Container(
             padding: const EdgeInsets.all(24),
             margin: const EdgeInsets.symmetric(horizontal: 24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.brightness == Brightness.light
+                  ? Colors.white
+                  : theme.cardColor,
               borderRadius: BorderRadius.circular(20),
               boxShadow: const [
                 BoxShadow(color: Colors.black12, blurRadius: 12)
@@ -110,7 +114,9 @@ class _LoginScreenState extends State<AppLoginScreen> {
                   const SizedBox(height: 8),
                   Text('DFind',
                       style: theme.textTheme.headlineMedium?.copyWith(
-                          color: Colors.blue[700],
+                          color: theme.brightness == Brightness.light
+                              ? Colors.blue[700]
+                              : theme.colorScheme.primary,
                           fontWeight: FontWeight.bold)),
                   const SizedBox(height: 24),
                   TextFormField(
@@ -147,7 +153,10 @@ class _LoginScreenState extends State<AppLoginScreen> {
                     Padding(
                       padding: const EdgeInsets.only(top: 12),
                       child: Text('Usuario o contraseña incorrectos',
-                          style: TextStyle(color: Colors.red[700])),
+                          style: TextStyle(
+                              color: theme.brightness == Brightness.light
+                                  ? Colors.red[700]
+                                  : Colors.red[400])),
                     ),
                   const SizedBox(height: 24),
                   SizedBox(
