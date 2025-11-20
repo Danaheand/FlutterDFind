@@ -33,19 +33,6 @@ class _TipsSectionState extends State<TipsSection> {
         description: 'Los artículos se agrupan automáticamente por tienda',
         color: isLight ? AppTheme.successLight : AppTheme.successDark,
       ),
-      TipItem(
-        icon: Icons.notifications_active,
-        title: 'Activa alertas',
-        description:
-            'Recibe notificaciones cuando un producto esté por agotarse',
-        color: isLight ? AppTheme.warningLight : AppTheme.warningDark,
-      ),
-      TipItem(
-        icon: Icons.inventory_2,
-        title: 'Gestiona tu inventario',
-        description: 'Mantén un registro de todos tus productos en casa',
-        color: isLight ? AppTheme.secondaryLight : AppTheme.secondaryDark,
-      ),
     ];
 
     return Container(
