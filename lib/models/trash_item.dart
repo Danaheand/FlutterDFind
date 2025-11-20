@@ -6,6 +6,7 @@ class TrashItem {
   final int? quantity;
   final DateTime deletedAt;
   final String originalType; // 'shopping_item', 'alert', etc.
+  final Map<String, dynamic>? originalData; // Datos completos para restauración
 
   TrashItem({
     required this.id,
@@ -15,6 +16,7 @@ class TrashItem {
     this.quantity,
     required this.deletedAt,
     required this.originalType,
+    this.originalData,
   });
 
   Map<String, dynamic> toJson() {
@@ -26,6 +28,7 @@ class TrashItem {
       'quantity': quantity,
       'deletedAt': deletedAt.toIso8601String(),
       'originalType': originalType,
+      'originalData': originalData,
     };
   }
 
@@ -38,6 +41,7 @@ class TrashItem {
       quantity: json['quantity'],
       deletedAt: DateTime.parse(json['deletedAt']),
       originalType: json['originalType'],
+      originalData: json['originalData'] as Map<String, dynamic>?,
     );
   }
 

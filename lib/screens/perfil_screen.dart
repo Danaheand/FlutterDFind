@@ -5,14 +5,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/user.dart';
+import '../models/recordatorio.dart';
 import '../providers/font_size_provider.dart';
 import '../providers/theme_provider.dart';
+import '../providers/recordatorio_provider.dart';
 import '../services/trash_service.dart';
 import '../services/session_manager.dart';
-import '../models/trash_item.dart';
 import '../widgets/custom_text_button.dart';
 import '../theme/app_theme.dart';
-import 'recordatorios_screen.dart';
 import 'pendientes_screen.dart';
 import '../repository/remote_user_repository.dart';
 
@@ -52,140 +52,246 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Papelera de Reciclaje'),
-        content: SizedBox(
-          width: double.maxFinite,
-          height: 400,
-          child: trashItems.isEmpty
-              ? const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.delete_outline, size: 64, color: Colors.grey),
-                    SizedBox(height: 12),
-                    Text('No hay elementos eliminados'),
-                  ],
-                )
-              : SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      builder: (context) => Consumer<FontSizeProvider>(
+        builder: (context, fontSizeProvider, _) => AlertDialog(
+          title: Text('Papelera de Reciclaje',
+              style: TextStyle(
+                  fontSize: fontSizeProvider.getScaledSize(20),
+                  fontWeight: FontWeight.bold)),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 400,
+            child: trashItems.isEmpty
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Mostrar todos los items de la papelera
-                      ...trashItems.map((item) {
-                        // Determinar ícono según tipo
-                        final icon = item.originalType == 'alert'
-                            ? Icons.notifications
-                            : Icons.shopping_cart;
-                        final color = item.originalType == 'alert'
-                            ? Colors.orange
-                            : Colors.blue;
+                      Icon(Icons.delete_outline,
+                          size: 64,
+                          color: AppTheme.getTextSecondary(context)),
+                      const SizedBox(height: 12),
+                      Text('No hay elementos eliminados',
+                          style: TextStyle(
+                              fontSize:
+                                  fontSizeProvider.getScaledSize(14),
+                              color:
+                                  AppTheme.getTextSecondary(context))),
+                    ],
+                  )
+                : SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Mostrar todos los items de la papelera
+                        ...trashItems.map((item) {
+                          // Determinar ícono según tipo
+                          final icon = item.originalType == 'alert'
+                              ? Icons.notifications
+                              : Icons.shopping_cart;
+                          final color = item.originalType == 'alert'
+                              ? Colors.orange
+                              : Colors.blue;
 
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          child: ListTile(
-                            leading: Icon(icon, color: color),
-                            title: Text(item.name),
-                            subtitle: Text(
-                              '${item.placeName} • ${item.deletedAt.day}/${item.deletedAt.month}/${item.deletedAt.year}',
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.restore,
-                                      color: Colors.green),
-                                  onPressed: () async {
-                                    try {
-                                      await _trashService.restoreItem(item.id);
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            color: Theme.of(context).brightness ==
+                                    Brightness.light
+                                ? Colors.white
+                                : AppTheme.cardDark,
+                            child: ListTile(
+                              leading: Icon(icon, color: color),
+                              title: Text(item.name,
+                                  style: TextStyle(
+                                      fontSize: fontSizeProvider
+                                          .getScaledSize(16),
+                                      color: Theme.of(context).brightness ==
+                                              Brightness.light
+                                          ? Colors.black87
+                                          : Colors.white)),
+                              subtitle: Text(
+                                '${item.placeName} • ${item.deletedAt.day}/${item.deletedAt.month}/${item.deletedAt.year}',
+                                style: TextStyle(
+                                    fontSize: fontSizeProvider
+                                        .getScaledSize(12),
+                                    color:
+                                        AppTheme.getTextSecondary(
+                                            context)),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.restore,
+                                        color: Colors.green),
+                                    onPressed: () async {
+                                      try {
+                                        await _trashService
+                                            .restoreItem(item.id);
 
-                                      // Si es un item de compra, restaurar al InventoryScreen
-                                      if (item.originalType ==
-                                          'shopping_item') {
-                                        if (InventoryScreen
-                                                .addFromAlertGlobal !=
-                                            null) {
-                                          InventoryScreen
-                                              .addFromAlertGlobal!(item.name);
+                                        // Si es un recordatorio, restaurarlo al proveedor
+                                        if (item.originalType == 'alert') {
+                                          try {
+                                            final alertData =
+                                                _trashService
+                                                    .trashItemToAlertData(
+                                                        item);
+                                            final provider = context
+                                                .read<RecordatorioProvider>();
+                                            
+                                            // Obtener el idUsuario actual
+                                            final userId = SessionManager
+                                                .instance.userId;
+                                            if (userId != null) {
+                                              // Crear un Recordatorio a partir de AlertData
+                                              final recordatorio = Recordatorio(
+                                                idUsuario: userId,
+                                                titulo: alertData.title,
+                                                descripcion:
+                                                    alertData.description,
+                                                fechaHora: alertData.date,
+                                                prioridad:
+                                                    alertData.priority.name,
+                                                ubicacion:
+                                                    alertData.location,
+                                                objeto: alertData.object,
+                                                esRepetitivo:
+                                                    alertData.repetitive,
+                                                frecuenciaRepeticion:
+                                                    alertData.repeatFrequency,
+                                                activo: alertData.active,
+                                                rutaImagen:
+                                                    alertData.imagePath,
+                                              );
+                                              
+                                              // Crear el recordatorio en el servidor
+                                              await provider
+                                                  .crearRecordatorio(
+                                                recordatorio,
+                                                autoReload: true,
+                                              );
+                                            }
+                                          } catch (e) {
+                                            print(
+                                                'Error restaurando recordatorio: $e');
+                                          }
                                         }
-                                      }
 
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                            content: Text(
-                                                '${item.name} restaurado')),
-                                      );
+                                        // Si es un item de compra, restaurar al InventoryScreen
+                                        if (item.originalType ==
+                                            'shopping_item') {
+                                          if (InventoryScreen
+                                                  .addFromAlertGlobal !=
+                                              null) {
+                                            InventoryScreen
+                                                .addFromAlertGlobal!(
+                                                    item.name);
+                                          }
+                                        }
+
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                              content: Text(
+                                                  '✨ ${item.name} restaurado')),
+                                        );
+                                        Navigator.pop(context);
+                                        _showTrashDialog();
+                                      } catch (e) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                              content: Text(
+                                                  'Error al restaurar: $e')),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_forever,
+                                        color: Colors.red),
+                                    onPressed: () async {
+                                      await _trashService
+                                          .deleteItemPermanently(item.id);
                                       Navigator.pop(context);
                                       _showTrashDialog();
-                                    } catch (e) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                            content:
-                                                Text('Error al restaurar: $e')),
-                                      );
-                                    }
-                                  },
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_forever,
-                                      color: Colors.red),
-                                  onPressed: () async {
-                                    await _trashService
-                                        .deleteItemPermanently(item.id);
-                                    Navigator.pop(context);
-                                    _showTrashDialog();
-                                  },
-                                ),
-                              ],
+                                    },
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      }),
-                    ],
+                          );
+                        }),
+                      ],
+                    ),
                   ),
-                ),
-        ),
-        actions: [
-          if (trashItems.isNotEmpty)
-            CustomTextButton(
-              onPressed: () async {
-                final confirmed = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Vaciar Papelera'),
-                    content: const Text(
-                        '¿Estás seguro de que quieres eliminar permanentemente todos los elementos?'),
-                    actions: [
-                      CustomTextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Cancelar'),
-                      ),
-                      CustomTextButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Eliminar Todo',
-                            style: TextStyle(color: Colors.red)),
-                      ),
-                    ],
-                  ),
-                );
-
-                if (confirmed == true) {
-                  await _trashService.emptyTrash();
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Papelera vaciada')),
-                  );
-                }
-              },
-              child: const Text('Vaciar Papelera',
-                  style: TextStyle(color: Colors.red)),
-            ),
-          CustomTextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar'),
           ),
-        ],
+          actions: [
+            if (trashItems.isNotEmpty)
+              CustomTextButton(
+                onPressed: () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => Consumer<FontSizeProvider>(
+                      builder: (context, fontSizeProvider, _) =>
+                          AlertDialog(
+                        title: Text('Vaciar Papelera',
+                            style: TextStyle(
+                                fontSize:
+                                    fontSizeProvider.getScaledSize(18),
+                                fontWeight: FontWeight.bold)),
+                        content: Text(
+                            '¿Estás seguro de que quieres eliminar permanentemente todos los elementos?',
+                            style: TextStyle(
+                                fontSize:
+                                    fontSizeProvider.getScaledSize(14))),
+                        actions: [
+                          CustomTextButton(
+                            onPressed: () =>
+                                Navigator.pop(context, false),
+                            child: const Text('Cancelar'),
+                          ),
+                          CustomTextButton(
+                            onPressed: () =>
+                                Navigator.pop(context, true),
+                            child: const Text('Eliminar Todo',
+                                style: TextStyle(color: Colors.red)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+
+                  if (confirmed != true) return;
+
+                  try {
+                    await _trashService.emptyTrash();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Papelera vaciada')),
+                      );
+                      Navigator.pop(context);
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content:
+                                Text('Error al vaciar: $e')),
+                      );
+                    }
+                  }
+                },
+                child: Text('Vaciar Papelera',
+                    style: TextStyle(
+                        fontSize:
+                            fontSizeProvider.getScaledSize(14))),
+              ),
+            CustomTextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cerrar'),
+            ),
+          ],
+        ),
       ),
     );
   }

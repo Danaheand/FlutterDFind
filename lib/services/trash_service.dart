@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/trash_item.dart';
 import '../models/shopping_item.dart';
+import '../models/alert_data.dart';
 
 class TrashService {
   static const String _trashKey = 'trash_items';
@@ -112,6 +114,45 @@ class TrashService {
       placeName: trashItem.placeName,
       category: trashItem.category,
       quantity: trashItem.quantity,
+    );
+  }
+
+  // Convertir TrashItem de vuelta a AlertData para restaurar recordatorios
+  AlertData trashItemToAlertData(TrashItem trashItem) {
+    if (trashItem.originalData == null) {
+      throw Exception('No se pueden restaurar datos completos del recordatorio');
+    }
+
+    final data = trashItem.originalData!;
+
+    // Parsear priority desde string
+    AlertPriority priority = AlertPriority.media;
+    try {
+      priority = AlertPriority.values
+          .firstWhere((p) => p.name == data['priority']);
+    } catch (_) {}
+
+    return AlertData(
+      id: data['id'] ?? trashItem.id,
+      title: data['title'] ?? trashItem.name,
+      description: data['description'] ?? '',
+      date: data['date'] != null ? DateTime.parse(data['date']) : DateTime.now(),
+      priority: priority,
+      location: data['location'],
+      object: data['object'],
+      repetitive: data['repetitive'] ?? false,
+      repeatFrequency: data['repeatFrequency'],
+      active: data['active'] ?? true,
+      color: data['color'] != null ? Color(data['color']) : null,
+      imagePath: data['imagePath'],
+      selectedWeekdays: (data['selectedWeekdays'] as List<dynamic>?)
+          ?.cast<int>(),
+      createdAt: data['createdAt'] != null
+          ? DateTime.parse(data['createdAt'])
+          : null,
+      updatedAt: data['updatedAt'] != null
+          ? DateTime.parse(data['updatedAt'])
+          : null,
     );
   }
 }

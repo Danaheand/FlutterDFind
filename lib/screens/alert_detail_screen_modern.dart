@@ -195,7 +195,25 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
       final provider = context.read<RecordatorioProvider>();
       await provider.eliminarRecordatorio(data.title);
 
-      // Guardar en papelera
+      // Guardar datos completos en papelera
+      final alertDataMap = {
+        'id': data.id,
+        'title': data.title,
+        'description': data.description,
+        'date': data.date.toIso8601String(),
+        'priority': data.priority.name,
+        'location': data.location,
+        'object': data.object,
+        'repetitive': data.repetitive,
+        'repeatFrequency': data.repeatFrequency,
+        'active': data.active,
+        'color': data.color?.value,
+        'imagePath': data.imagePath,
+        'selectedWeekdays': data.selectedWeekdays,
+        'createdAt': data.createdAt?.toIso8601String(),
+        'updatedAt': data.updatedAt?.toIso8601String(),
+      };
+
       final trashItem = TrashItem(
         id: data.id,
         name: data.title,
@@ -203,6 +221,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
         category: 'Alerta',
         deletedAt: DateTime.now(),
         originalType: 'alert',
+        originalData: alertDataMap,
       );
       final trashService = TrashService.getInstance();
       await trashService.addToTrash(trashItem);

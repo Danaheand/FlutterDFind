@@ -312,7 +312,26 @@ class _AlertsScreenState extends State<AlertsScreen> {
       final trashService = TrashService.getInstance();
 
       for (var alert in alertsToDelete) {
-        // Enviar el recordatorio a la papelera
+        // Guardar datos completos del AlertData para poder restaurarlo
+        final alertDataMap = {
+          'id': alert.id,
+          'title': alert.title,
+          'description': alert.description,
+          'date': alert.date.toIso8601String(),
+          'priority': alert.priority.name,
+          'location': alert.location,
+          'object': alert.object,
+          'repetitive': alert.repetitive,
+          'repeatFrequency': alert.repeatFrequency,
+          'active': alert.active,
+          'color': alert.color?.value,
+          'imagePath': alert.imagePath,
+          'selectedWeekdays': alert.selectedWeekdays,
+          'createdAt': alert.createdAt?.toIso8601String(),
+          'updatedAt': alert.updatedAt?.toIso8601String(),
+        };
+
+        // Enviar el recordatorio a la papelera con datos completos
         final trashItem = TrashItem(
           id: alert.id,
           name: alert.title,
@@ -321,6 +340,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
           quantity: null,
           deletedAt: DateTime.now(),
           originalType: 'alert',
+          originalData: alertDataMap,
         );
 
         // Agregar a la papelera
@@ -420,15 +440,30 @@ class _AlertsScreenState extends State<AlertsScreen> {
                       try {
                         // Obtener el provider antes de hacer operaciones async
                         final provider = context.read<RecordatorioProvider>();
+                        final trashService = TrashService.getInstance();
 
-                        // await trashService.addToTrash(trashItem);
+                        // Crear item de papelera
+                        final trashItem = TrashItem(
+                          id: a.id,
+                          name: a.title,
+                          placeName: a.location ?? 'Sin ubicación',
+                          category: 'Recordatorio - ${a.priority.name}',
+                          quantity: null,
+                          deletedAt: DateTime.now(),
+                          originalType: 'alert',
+                        );
+
+                        // Agregar a la papelera
+                        await trashService.addToTrash(trashItem);
+
+                        // Eliminar de la API
                         await provider.eliminarRecordatorio(a.title);
 
                         // El provider ya actualizó su lista
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('♻️ Recordatorio eliminado'),
+                              content: Text('♻️ Recordatorio enviado a la papelera'),
                               backgroundColor: Colors.green,
                               duration: Duration(seconds: 2),
                             ),
