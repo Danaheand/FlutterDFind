@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
-import 'package:confetti/confetti.dart';
 
 import '../providers/font_size_provider.dart';
 import '../models/shopping_item.dart';
@@ -36,24 +35,17 @@ class _InventoryScreenState extends State<InventoryScreen> {
   /// ✔ URL BASE DE LA API
   final String baseUrl = 'https://dfindapi-yfcq.onrender.com';
 
-  /// 🎉 Controlador de confeti
-  late ConfettiController _confettiController;
-
   @override
   void initState() {
     super.initState();
     InventoryScreen.addFromAlertGlobal = addFromAlert;
     _trashService = TrashService.getInstance();
-    _confettiController = ConfettiController(
-      duration: const Duration(milliseconds: 500),
-    );
     _initialize();
   }
 
   @override
   void dispose() {
     InventoryScreen.addFromAlertGlobal = null;
-    _confettiController.dispose();
     super.dispose();
   }
 
@@ -203,9 +195,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
         setState(() {
           item.isPurchased = data["estaComprado"];
         });
-
-        // Verificar si el lugar está completo
-        _checkPlaceCompletion(item.placeName);
         return;
       }
 
@@ -214,9 +203,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
         setState(() {
           item.isPurchased = !item.isPurchased;
         });
-
-        // Verificar si el lugar está completo
-        _checkPlaceCompletion(item.placeName);
         return;
       }
 
@@ -279,23 +265,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
     await _deleteAPI(item);
   }
 
-  /// Verifica si todos los items de un lugar están completos
-  void _checkPlaceCompletion(String place) {
-    final itemsInPlace = _items.where((i) => i.placeName == place).toList();
-    
-    if (itemsInPlace.isEmpty) return;
-    
-    final allCompleted = itemsInPlace.every((i) => i.isPurchased);
-    
-    if (allCompleted) {
-      _playConfetti();
-    }
-  }
-
-  void _playConfetti() {
-    _confettiController.play();
-  }
-
   // ================================================================
   //                            UI
   // ================================================================
@@ -307,40 +276,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
         title: const Text('Pendientes'),
         automaticallyImplyLeading: false,
       ),
-      body: Stack(
-        children: [
-          _loading
-              ? const Center(child: CircularProgressIndicator())
-              : _buildNormalView(),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: IgnorePointer(
-              child: ConfettiWidget(
-                confettiController: _confettiController,
-                blastDirection: 1.57,
-                emissionFrequency: 0.95,
-                numberOfParticles: 60,
-                maxBlastForce: 250,
-                minBlastForce: 120,
-                gravity: 0.95,
-                shouldLoop: false,
-                colors: const [
-                  Color(0xFF2196F3),
-                  Color(0xFFFF5722),
-                  Color(0xFF4CAF50),
-                  Color(0xFFFFC107),
-                  Color(0xFF9C27B0),
-                  Color(0xFFFF9800),
-                  Color(0xFFE91E63),
-                  Color(0xFF00BCD4),
-                  Color(0xFF8BC34A),
-                  Color(0xFFF44336),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _buildNormalView(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showDialog(
@@ -364,8 +302,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
           const TipsSection(),
           const SizedBox(height: 16),
           _buildPendingSection(),
-          const SizedBox(height: 24),
-          _buildPurchasedSection(),
         ],
       ),
     );
@@ -374,9 +310,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
   // --------------------- POR COMPRAR ---------------------
 
   Widget _buildPendingSection() {
-    final pending = _items.where((i) => !i.isPurchased).toList();
-
-    if (pending.isEmpty) {
+    if (_items.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
@@ -408,7 +342,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       );
     }
 
-    final grouped = _groupItemsByPlace(pending);
+    final grouped = _groupItemsByPlace(_items);
     final places = grouped.keys.toList()..sort();
 
     return Column(
@@ -416,7 +350,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       children: [
         Consumer<FontSizeProvider>(
           builder: (context, fontSizeProvider, _) => Text(
-            'Por Comprar',
+            'Pendientes',
             style: TextStyle(
               fontSize: fontSizeProvider.fontSize + 4,
               fontWeight: FontWeight.bold,
@@ -512,6 +446,12 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     item.name,
                     style: TextStyle(
                       fontSize: fontSizeProvider.fontSize + 2,
+                      decoration: item.isPurchased 
+                          ? TextDecoration.lineThrough 
+                          : TextDecoration.none,
+                      color: item.isPurchased 
+                          ? AppTheme.getPurchasedColor(context)
+                          : null,
                     ),
                   ),
                 ),
@@ -538,130 +478,4 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
   }
 
-  // ---------------------- COMPRADOS ----------------------
-
-  Widget _buildPurchasedSection() {
-    final purchased = _items.where((i) => i.isPurchased).toList();
-
-    if (purchased.isEmpty) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 80),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Consumer<FontSizeProvider>(
-                builder: (context, fontSizeProvider, _) => Text(
-                  'Comprados',
-                  style: TextStyle(
-                    fontSize: fontSizeProvider.fontSize + 4,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              IconButton(
-                icon: Icon(
-                  Icons.delete_sweep,
-                  color: Theme.of(context).brightness == Brightness.light
-                      ? AppTheme.errorLight
-                      : AppTheme.errorDark,
-                ),
-                tooltip: 'Borrar todos los comprados',
-                onPressed: () {
-                  // Confirmar antes de borrar
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('¿Borrar todos los comprados?'),
-                      content: const Text(
-                          'Esta acción eliminará todos los elementos comprados. No se puede deshacer.'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancelar'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            _deleteAllPurchased(purchased);
-                          },
-                          child: const Text('Borrar todo',
-                              style: TextStyle(color: Colors.red)),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Card(
-            child: Column(
-              children: purchased
-                  .map(
-                    (item) => ListTile(
-                      leading: Checkbox(
-                        value: item.isPurchased,
-                        onChanged: (_) => _toggleItem(item),
-                      ),
-                      title: Consumer<FontSizeProvider>(
-                        builder: (context, fontSizeProvider, _) => Text(
-                          item.name,
-                          style: TextStyle(
-                            decoration: TextDecoration.lineThrough,
-                            color: AppTheme.getPurchasedColor(context),
-                            fontSize: fontSizeProvider.fontSize + 2,
-                          ),
-                        ),
-                      ),
-                      subtitle: Consumer<FontSizeProvider>(
-                        builder: (context, fontSizeProvider, _) => Text(
-                          item.quantity != null && item.quantity! > 1
-                              ? '${item.placeName} • Cantidad: ${item.quantity}'
-                              : item.placeName,
-                          style: TextStyle(
-                            fontSize: fontSizeProvider.fontSize - 2,
-                            color: AppTheme.getTextSecondary(context),
-                          ),
-                        ),
-                      ),
-                      trailing: IconButton(
-                        icon: Icon(
-                          Icons.delete,
-                          color:
-                              Theme.of(context).brightness == Brightness.light
-                                  ? AppTheme.errorLight
-                                  : AppTheme.errorDark,
-                        ),
-                        onPressed: () => _removeItem(item),
-                      ),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Elimina todos los items comprados
-  Future<void> _deleteAllPurchased(List<ShoppingItem> purchased) async {
-    debugPrint("DELETE todos los comprados: ${purchased.length} items");
-
-    for (var item in purchased) {
-      await _deleteAPI(item);
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Todos los comprados han sido eliminados'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
 }
