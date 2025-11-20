@@ -296,62 +296,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const Divider(),
-                // TAMAÑO DE LETRA
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.format_size),
-                  title: const Text('Ajustar tamaño de letra'),
-                  trailing: Switch(
-                    value: fontSizeProvider.enabled,
-                    onChanged: (v) {
-                      fontSizeProvider.setEnabled(v);
-                      setState(() {});
-                    },
-                  ),
-                ),
-                if (fontSizeProvider.enabled)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Column(
-                      children: [
-                        const Divider(),
-                        Row(
-                          children: [
-                            const Text('A-',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 12)),
-                            Expanded(
-                              child: Slider(
-                                min: 12.0,
-                                max: 28.0,
-                                divisions: 8,
-                                value: fontSizeProvider.fontSize,
-                                label: '${fontSizeProvider.fontSize.toInt()}',
-                                onChanged: (v) {
-                                  fontSizeProvider.setFontSize(v);
-                                  setState(() {});
-                                },
-                              ),
-                            ),
-                            const Text('A+',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 12)),
-                          ],
-                        ),
-                        Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            'Tamaño actual: ${fontSizeProvider.fontSize.toInt()}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                const Divider(),
                 // VIBRACIÓN
                 ListTile(
                   contentPadding: EdgeInsets.zero,
@@ -377,6 +321,61 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     },
                   ),
                 ),
+                const Divider(),
+                // TAMAÑO DE LETRA
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.format_size),
+                  title: const Text('Ajustar tamaño de letra'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Column(
+                    children: [
+                      const Divider(),
+                      Row(
+                        children: [
+                          const Text('A-',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 12)),
+                          Expanded(
+                            child: Slider(
+                              min: 12.0,
+                              max: 28.0,
+                              divisions: 8,
+                              value: fontSizeProvider.fontSize,
+                              label: '${fontSizeProvider.fontSize.toInt()}',
+                              onChanged: (v) {
+                                fontSizeProvider.setEnabled(true);
+                                fontSizeProvider.setFontSize(v);
+                                setState(() {});
+                              },
+                            ),
+                          ),
+                          const Text('A+',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 12)),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          'Tamaño: ${fontSizeProvider.fontSize.toInt()} ${fontSizeProvider.fontSize == 16.0 ? '(Recomendado)' : ''}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: fontSizeProvider.fontSize == 16.0
+                                ? Colors.green[600]
+                                : Colors.grey[600],
+                            fontWeight: fontSizeProvider.fontSize == 16.0
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
               ],
             ),
           ),
