@@ -547,104 +547,107 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
     if (purchased.isEmpty) return const SizedBox.shrink();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Consumer<FontSizeProvider>(
-              builder: (context, fontSizeProvider, _) => Text(
-                'Comprados',
-                style: TextStyle(
-                  fontSize: fontSizeProvider.fontSize + 4,
-                  fontWeight: FontWeight.bold,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 80),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Consumer<FontSizeProvider>(
+                builder: (context, fontSizeProvider, _) => Text(
+                  'Comprados',
+                  style: TextStyle(
+                    fontSize: fontSizeProvider.fontSize + 4,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            IconButton(
-              icon: Icon(
-                Icons.delete_sweep,
-                color: Theme.of(context).brightness == Brightness.light
-                    ? AppTheme.errorLight
-                    : AppTheme.errorDark,
+              IconButton(
+                icon: Icon(
+                  Icons.delete_sweep,
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? AppTheme.errorLight
+                      : AppTheme.errorDark,
+                ),
+                tooltip: 'Borrar todos los comprados',
+                onPressed: () {
+                  // Confirmar antes de borrar
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('¿Borrar todos los comprados?'),
+                      content: const Text(
+                          'Esta acción eliminará todos los elementos comprados. No se puede deshacer.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cancelar'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _deleteAllPurchased(purchased);
+                          },
+                          child: const Text('Borrar todo',
+                              style: TextStyle(color: Colors.red)),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
-              tooltip: 'Borrar todos los comprados',
-              onPressed: () {
-                // Confirmar antes de borrar
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('¿Borrar todos los comprados?'),
-                    content: const Text(
-                        'Esta acción eliminará todos los elementos comprados. No se puede deshacer.'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancelar'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _deleteAllPurchased(purchased);
-                        },
-                        child: const Text('Borrar todo',
-                            style: TextStyle(color: Colors.red)),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Card(
-          child: Column(
-            children: purchased
-                .map(
-                  (item) => ListTile(
-                    leading: Checkbox(
-                      value: item.isPurchased,
-                      onChanged: (_) => _toggleItem(item),
-                    ),
-                    title: Consumer<FontSizeProvider>(
-                      builder: (context, fontSizeProvider, _) => Text(
-                        item.name,
-                        style: TextStyle(
-                          decoration: TextDecoration.lineThrough,
-                          color: AppTheme.getPurchasedColor(context),
-                          fontSize: fontSizeProvider.fontSize + 2,
-                        ),
-                      ),
-                    ),
-                    subtitle: Consumer<FontSizeProvider>(
-                      builder: (context, fontSizeProvider, _) => Text(
-                        item.quantity != null && item.quantity! > 1
-                            ? '${item.placeName} • Cantidad: ${item.quantity}'
-                            : item.placeName,
-                        style: TextStyle(
-                          fontSize: fontSizeProvider.fontSize - 2,
-                          color: AppTheme.getTextSecondary(context),
-                        ),
-                      ),
-                    ),
-                    trailing: IconButton(
-                      icon: Icon(
-                        Icons.delete,
-                        color:
-                            Theme.of(context).brightness == Brightness.light
-                                ? AppTheme.errorLight
-                                : AppTheme.errorDark,
-                      ),
-                      onPressed: () => _removeItem(item),
-                    ),
-                  ),
-                )
-                .toList(),
+            ],
           ),
-        ),
-      ],
+          const SizedBox(height: 12),
+          Card(
+            child: Column(
+              children: purchased
+                  .map(
+                    (item) => ListTile(
+                      leading: Checkbox(
+                        value: item.isPurchased,
+                        onChanged: (_) => _toggleItem(item),
+                      ),
+                      title: Consumer<FontSizeProvider>(
+                        builder: (context, fontSizeProvider, _) => Text(
+                          item.name,
+                          style: TextStyle(
+                            decoration: TextDecoration.lineThrough,
+                            color: AppTheme.getPurchasedColor(context),
+                            fontSize: fontSizeProvider.fontSize + 2,
+                          ),
+                        ),
+                      ),
+                      subtitle: Consumer<FontSizeProvider>(
+                        builder: (context, fontSizeProvider, _) => Text(
+                          item.quantity != null && item.quantity! > 1
+                              ? '${item.placeName} • Cantidad: ${item.quantity}'
+                              : item.placeName,
+                          style: TextStyle(
+                            fontSize: fontSizeProvider.fontSize - 2,
+                            color: AppTheme.getTextSecondary(context),
+                          ),
+                        ),
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(
+                          Icons.delete,
+                          color:
+                              Theme.of(context).brightness == Brightness.light
+                                  ? AppTheme.errorLight
+                                  : AppTheme.errorDark,
+                        ),
+                        onPressed: () => _removeItem(item),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
