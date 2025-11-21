@@ -1310,11 +1310,11 @@ Widget _buildInitialCircle(
                             )),
                     const SizedBox(height: 16),
                     GridView.count(
-                      crossAxisCount: 4,
+                      crossAxisCount: 8,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
                       children: colorOptions.map((c) {
                         final selected = _initialColor.value == c.value;
                         return GestureDetector(
@@ -1331,31 +1331,37 @@ Widget _buildInitialCircle(
                             alignment: Alignment.center,
                             children: [
                               Container(
+                                width: 50,
+                                height: 50,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: c,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: c.withOpacity(0.4),
-                                      blurRadius: 8,
-                                      spreadRadius: 2,
-                                    ),
-                                  ],
+                                  boxShadow: selected
+                                      ? [
+                                          BoxShadow(
+                                            color: c.withOpacity(0.6),
+                                            blurRadius: 6,
+                                            spreadRadius: 1,
+                                          ),
+                                        ]
+                                      : [],
                                 ),
                               ),
                               if (selected)
                                 Container(
+                                  width: 50,
+                                  height: 50,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     border: Border.all(
                                       color: Colors.white,
-                                      width: 3,
+                                      width: 2.5,
                                     ),
                                   ),
                                   child: const Icon(
                                     Icons.check,
                                     color: Colors.white,
-                                    size: 28,
+                                    size: 20,
                                   ),
                                 ),
                             ],
