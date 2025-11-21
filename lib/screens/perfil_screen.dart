@@ -1208,7 +1208,7 @@ Widget _buildInitialCircle(
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Elige tu estilo de avatar',
+                    'Personaliza tu Perfil',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 12),
@@ -1216,7 +1216,7 @@ Widget _buildInitialCircle(
                     children: [
                       Expanded(
                         child: ChoiceChip(
-                          label: const Text('Avatares divertidos'),
+                          label: const Text('Elige tu Avatar'),
                           selected: _avatarMode == AvatarMode.preset,
                           onSelected: (_) {
                             setStateModal(() {
@@ -1231,7 +1231,7 @@ Widget _buildInitialCircle(
                       const SizedBox(width: 8),
                       Expanded(
                         child: ChoiceChip(
-                          label: const Text('Inicial + color'),
+                          label: const Text('Elige el color de tu Inicial'),
                           selected: _avatarMode == AvatarMode.initial,
                           onSelected: (_) {
                             setStateModal(() {
@@ -1247,7 +1247,7 @@ Widget _buildInitialCircle(
                   ),
                   const SizedBox(height: 16),
                   if (_avatarMode == AvatarMode.preset) ...[
-                    Text('Avatares divertidos disponibles:',
+                    Text('Avatars Disponibles:',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                             )),
@@ -1310,11 +1310,11 @@ Widget _buildInitialCircle(
                             )),
                     const SizedBox(height: 16),
                     GridView.count(
-                      crossAxisCount: 4,
+                      crossAxisCount: 8,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
                       children: colorOptions.map((c) {
                         final selected = _initialColor.value == c.value;
                         return GestureDetector(
@@ -1331,31 +1331,37 @@ Widget _buildInitialCircle(
                             alignment: Alignment.center,
                             children: [
                               Container(
+                                width: 50,
+                                height: 50,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: c,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: c.withOpacity(0.4),
-                                      blurRadius: 8,
-                                      spreadRadius: 2,
-                                    ),
-                                  ],
+                                  boxShadow: selected
+                                      ? [
+                                          BoxShadow(
+                                            color: c.withOpacity(0.6),
+                                            blurRadius: 6,
+                                            spreadRadius: 1,
+                                          ),
+                                        ]
+                                      : [],
                                 ),
                               ),
                               if (selected)
                                 Container(
+                                  width: 50,
+                                  height: 50,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     border: Border.all(
                                       color: Colors.white,
-                                      width: 3,
+                                      width: 2.5,
                                     ),
                                   ),
                                   child: const Icon(
                                     Icons.check,
                                     color: Colors.white,
-                                    size: 28,
+                                    size: 20,
                                   ),
                                 ),
                             ],
@@ -1377,11 +1383,11 @@ Widget _buildInitialCircle(
 
 String _getAvatarName(String key) {
   final names = {
-    'avatar1': '😎 Cool Boy',
-    'avatar2': '🤩 Star Eyes',
-    'avatar3': '😸 Happy Cat',
-    'avatar4': '🐶 Puppy',
-    'avatar5': '🦄 Unicorn',
+    'avatar1': 'Luli Panda',
+    'avatar2': 'Rulo Oru',
+    'avatar3': 'Papir Tapi',
+    'avatar4': 'Morsa Chorsa',
+    'avatar5': 'Zebra Debra',
   };
   return names[key] ?? key;
 }
