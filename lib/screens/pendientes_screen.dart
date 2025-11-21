@@ -24,7 +24,7 @@ class InventoryScreen extends StatefulWidget {
   State<InventoryScreen> createState() => _InventoryScreenState();
 }
 
-// 👇 CAMBIO AQUÍ: de SingleTickerProviderStateMixin a TickerProviderStateMixin
+// 👇 TickerProviderStateMixin para animaciones múltiples
 class _InventoryScreenState extends State<InventoryScreen>
     with TickerProviderStateMixin {
   final List<ShoppingItem> _items = [];
@@ -293,6 +293,17 @@ class _InventoryScreenState extends State<InventoryScreen>
 
   void _removeItem(ShoppingItem item) async {
     await _deleteAPI(item);
+  }
+
+  /// 🔹 NUEVO: abrir el mismo modal, pero con lugar predefinido
+  void _openAddItemForPlace(String place) {
+    showDialog(
+      context: context,
+      builder: (context) => ModalPendientes(
+        onAdd: _addItemManually,
+        predefinedPlace: place,
+      ),
+    );
   }
 
   /// Verifica si todos los items de una categoría (lugar) están completos
@@ -650,6 +661,13 @@ class _InventoryScreenState extends State<InventoryScreen>
                                 : AppTheme.textPrimaryDark,
                       ),
                     ),
+                  ),
+                  const SizedBox(width: 4),
+                  // 🔹 Botón + que abre el MISMO modal, con lugar predefinido
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    tooltip: 'Agregar pendiente aquí',
+                    onPressed: () => _openAddItemForPlace(place),
                   ),
                 ],
               ),
