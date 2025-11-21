@@ -37,6 +37,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
   late List<int> selectedWeekdays;
   late DateTime selectedDate;
   late AlertPriority selectedPriority;
+  late Color? selectedColor;
 
   // ScrollController para manejo de scroll
   final ScrollController _scrollController = ScrollController();
@@ -51,6 +52,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
     selectedWeekdays = List<int>.from(data.selectedWeekdays ?? []);
     selectedDate = data.date;
     selectedPriority = data.priority;
+    selectedColor = data.color;
 
     // Debug: Imprimir datos de la alerta
     print('=== DEBUG ALERTA ===');
@@ -72,7 +74,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
   }
 
   Color get _priorityColor {
-    if (isCompleted) return AppTheme.successLight; // green-500
+    if (isCompleted) return AppTheme.successLight;
     if (!data.active) return Colors.grey.shade400;
     return data.color ?? defaultColorFor(selectedPriority);
   }
@@ -106,6 +108,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
         frecuenciaRepeticion: data.repeatFrequency,
         diasSeleccionados:
             selectedWeekdays.isNotEmpty ? selectedWeekdays.join(',') : null,
+        color: selectedColor?.value.toString(),
       );
 
       await provider.actualizarRecordatorio(
@@ -138,7 +141,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
             repetitive: data.repetitive,
             repeatFrequency: data.repeatFrequency,
             active: data.active,
-            color: data.color,
+            color: selectedColor,
             imagePath: data.imagePath,
             selectedWeekdays: selectedWeekdays,
             createdAt: data.createdAt,
@@ -299,7 +302,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
         children: [
           // ===== CAPA 1: HERO BACKGROUND =====
           Container(
-            height: screenHeight * 0.35,
+            height: screenHeight * 0.25,
             color: _priorityColor,
           ),
 
@@ -308,11 +311,11 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
             controller: _scrollController,
             child: Column(
               children: [
-                SizedBox(height: screenHeight * 0.18),
+                SizedBox(height: screenHeight * 0.17),
 
                 // ===== FLOATING COUNTDOWN CARD (ahora dentro del scroll) =====
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: GestureDetector(
                     onTap: isEditing ? _showDateTimePicker : null,
                     child: Card(
@@ -321,7 +324,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                         borderRadius: BorderRadius.circular(20),
                         side: isEditing
                             ? const BorderSide(
-                                color: Color(0xFF3B82F6), width: 2)
+                                color: Color(0xFF3B82F6), width: 3)
                             : BorderSide.none,
                       ),
                       child: Container(
@@ -329,7 +332,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
                           color: isEditing
-                              ? const Color(0xFF3B82F6).withOpacity(0.05)
+                              ? const Color(0xFF3B82F6).withOpacity(0.1)
                               : Theme.of(context).brightness == Brightness.light
                                   ? Colors.white
                                   : AppTheme.cardDark,
@@ -339,31 +342,31 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(
-                                  isEditing
-                                      ? Icons.edit_calendar
-                                      : Icons.calendar_today,
-                                  size: 14,
-                                  color: isEditing
-                                      ? const Color(0xFF3B82F6)
-                                      : Theme.of(context).brightness ==
-                                              Brightness.light
-                                          ? const Color(0xFF64748B)
-                                          : Colors.grey[400],
-                                ),
+                                // Icon(
+                                //   isEditing
+                                //       ? Icons.edit_calendar_rounded
+                                //       : Icons.calendar_today,
+                                //   size: 16,
+                                //   color: isEditing
+                                //       ? const Color(0xFF3B82F6)
+                                //       : Theme.of(context).brightness ==
+                                //               Brightness.light
+                                //           ? const Color(0xFF64748B)
+                                //           : Colors.grey[400],
+                                // ),
                                 const SizedBox(width: 6),
                                 Text(
                                   isCompleted
                                       ? 'LISTO'
                                       : (isEditing
-                                          ? 'TOCA PARA CAMBIAR FECHA'
+                                          ? 'TOCA PARA EDITAR'
                                           : timeInfo['label']),
                                   style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: isEditing ? 13 : 12,
+                                    fontWeight: FontWeight.w700,
                                     letterSpacing: 1.2,
                                     color: isCompleted
-                                        ? const Color(0xFF10B981)
+                                        ? AppTheme.successLight
                                         : (isEditing
                                             ? const Color(0xFF3B82F6)
                                             : Theme.of(context).brightness ==
@@ -382,7 +385,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                                   fontSize: fontSizeProvider.getScaledSize(48),
                                   fontWeight: FontWeight.w900,
                                   color: isCompleted
-                                      ? const Color(0xFF10B981)
+                                      ? AppTheme.successLight
                                       : (isEditing
                                           ? const Color(0xFF3B82F6)
                                           : const Color(0xFFEF4444)),
@@ -427,7 +430,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
 
                 Container(
                   width: double.infinity,
@@ -446,6 +449,10 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                       // PRIORIDAD (arriba del título)
                       _buildPriority(),
                       const SizedBox(height: 12),
+
+                      // SELECTOR DE COLOR (solo en modo edición)
+                      if (isEditing) _buildColorSelector(),
+                      if (isEditing) const SizedBox(height: 12),
 
                       // TÍTULO
                       _buildTitle(),
@@ -550,13 +557,14 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                       height: 56,
                       decoration: BoxDecoration(
                         color: isCompleted
-                            ? const Color(0xFF10B981)
-                            : isEditing
-                                ? AppTheme.successDark
-                                : Theme.of(context).brightness ==
-                                        Brightness.light
-                                    ? const Color(0xFF1E293B)
-                                    : AppTheme.cardDark,
+                            ? AppTheme.successLight
+                            : AppTheme.successDark,
+                        // isEditing
+                        //     ? AppTheme.successDark
+                        //     : Theme.of(context).brightness ==
+                        //             Brightness.light
+                        //         ? const Color(0xFF1E293B)
+                        //         : AppTheme.cardDark,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
@@ -604,6 +612,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                             List<int>.from(data.selectedWeekdays ?? []);
                         selectedDate = data.date;
                         selectedPriority = data.priority;
+                        selectedColor = data.color;
                       }
                       isEditing = !isEditing;
                       deleteConfirm = false;
@@ -816,82 +825,77 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
   }
 
   Widget _buildLocation() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(Icons.location_on,
-                size: 16,
-                color: Theme.of(context).brightness == Brightness.light
-                    ? const Color(0xFF94A3B8)
-                    : Colors.grey[500]),
-            const SizedBox(width: 6),
-            Text(
-              'UBICACIÓN',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 1.2,
-                color: Theme.of(context).brightness == Brightness.light
-                    ? const Color(0xFF94A3B8)
-                    : Colors.grey[500],
-              ),
-            ),
-          ],
+    if (isEditing) {
+      return TextField(
+        controller: locationController,
+        onTap: _scrollToShowField,
+        style: TextStyle(
+          fontSize: 15,
+          color: Theme.of(context).brightness == Brightness.light
+              ? const Color(0xFF475569)
+              : Colors.grey[300],
         ),
-        const SizedBox(height: 8),
-        if (isEditing)
-          TextField(
-            controller: locationController,
-            onTap: _scrollToShowField,
-            style: TextStyle(
-              fontSize: 15,
-              color: Theme.of(context).brightness == Brightness.light
-                  ? const Color(0xFF475569)
-                  : Colors.grey[300],
-            ),
-            decoration: InputDecoration(
-              hintText: 'Ej: Casa, Oficina, Gimnasio...',
-              filled: true,
-              fillColor: Theme.of(context).brightness == Brightness.light
-                  ? Colors.grey[50]
-                  : AppTheme.cardDark,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                    color: Theme.of(context).brightness == Brightness.light
-                        ? const Color(0xFFE2E8F0)
-                        : Colors.grey[700]!),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                    color: Theme.of(context).brightness == Brightness.light
-                        ? const Color(0xFFE2E8F0)
-                        : Colors.grey[700]!),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                    color: Theme.of(context).brightness == Brightness.light
-                        ? const Color(0xFF3B82F6)
-                        : AppTheme.primaryDark,
-                    width: 2),
-              ),
-              contentPadding: const EdgeInsets.all(16),
-            ),
-          )
-        else
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.light
-                  ? Colors.grey[50]
-                  : AppTheme.cardDark,
-              borderRadius: BorderRadius.circular(12),
-            ),
+        decoration: InputDecoration(
+          hintText: 'Ej: Casa, Oficina, Gimnasio...',
+          prefixIcon: Icon(
+            Icons.location_on,
+            color: Theme.of(context).brightness == Brightness.light
+                ? const Color(0xFF94A3B8)
+                : Colors.grey[500],
+            size: 20,
+          ),
+          filled: true,
+          fillColor: Theme.of(context).brightness == Brightness.light
+              ? Colors.grey[50]
+              : AppTheme.cardDark,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFFE2E8F0)
+                    : Colors.grey[700]!),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFFE2E8F0)
+                    : Colors.grey[700]!),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFF3B82F6)
+                    : AppTheme.primaryDark,
+                width: 2),
+          ),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.light
+            ? Colors.grey[50]
+            : AppTheme.cardDark,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.location_on,
+            size: 20,
+            color: Theme.of(context).brightness == Brightness.light
+                ? const Color(0xFF94A3B8)
+                : Colors.grey[500],
+          ),
+          const SizedBox(width: 12),
+          Expanded(
             child: Text(
               data.location ?? '',
               style: TextStyle(
@@ -902,7 +906,8 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
               ),
             ),
           ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -935,8 +940,8 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
   }
 
   Widget _buildWeekdays() {
-    // Si está en modo edición y no es repetitiva, mostrar toggle para hacer repetitiva
-    if (isEditing && !data.repetitive) {
+    // En modo edición, siempre mostrar el switch para activar/desactivar repetición
+    if (isEditing) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -983,7 +988,11 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                     );
                   });
                 },
-                activeColor: const Color(0xFF10B981),
+                activeColor: AppTheme.successLight,
+                focusColor: AppTheme.successLight.withOpacity(0.5),
+                trackColor: MaterialStateProperty.all(
+                  AppTheme.primaryLight.withOpacity(0.1),
+                ),
               ),
             ],
           ),
@@ -999,39 +1008,44 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
       );
     }
 
-    // Modo normal o ya es repetitiva
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(Icons.repeat,
-                size: 16,
-                color: Theme.of(context).brightness == Brightness.light
-                    ? const Color(0xFF94A3B8)
-                    : Colors.grey[500]),
-            const SizedBox(width: 6),
-            Text(
-              'FRECUENCIA',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 1.2,
-                color: Theme.of(context).brightness == Brightness.light
-                    ? const Color(0xFF94A3B8)
-                    : Colors.grey[500],
+    // Modo normal - solo mostrar si es repetitiva
+    if (data.repetitive) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.repeat,
+                  size: 16,
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? const Color(0xFF94A3B8)
+                      : Colors.grey[500]),
+              const SizedBox(width: 6),
+              Text(
+                'FRECUENCIA',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.2,
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? const Color(0xFF94A3B8)
+                      : Colors.grey[500],
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        WeekdayIndicator(
-          selectedWeekdays: selectedWeekdays,
-          isEditing: isEditing,
-          onDayToggle: _onWeekdayToggle,
-        ),
-      ],
-    );
+            ],
+          ),
+          const SizedBox(height: 12),
+          WeekdayIndicator(
+            selectedWeekdays: selectedWeekdays,
+            isEditing: isEditing,
+            onDayToggle: _onWeekdayToggle,
+          ),
+        ],
+      );
+    }
+
+    // Si no es repetitiva y no está en edición, no mostrar nada
+    return const SizedBox.shrink();
   }
 
   String _getPriorityText() {
@@ -1050,16 +1064,28 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'PRIORIDAD',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.2,
-              color: Theme.of(context).brightness == Brightness.light
-                  ? const Color(0xFF94A3B8)
-                  : Colors.grey[500],
-            ),
+          Row(
+            children: [
+              Icon(
+                Icons.flag_rounded,
+                size: 14,
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFF94A3B8)
+                    : Colors.grey[500],
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'PRIORIDAD',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.2,
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? const Color(0xFF94A3B8)
+                      : Colors.grey[500],
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           Row(
@@ -1096,13 +1122,24 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
         color: _priorityColor.withOpacity(0.15),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Text(
-        '${_getPriorityText()}',
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: _priorityColor,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.flag_rounded,
+            size: 14,
+            color: _priorityColor,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '${_getPriorityText()}',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: _priorityColor,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1141,6 +1178,124 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildColorSelector() {
+    // Colores disponibles para las alertas usando AppTheme
+    final availableColors = [
+      AppTheme.errorLight, // Rojo
+      AppTheme.warningLight, // Naranja
+      AppTheme.successLight, // Verde
+      AppTheme.primaryLight, // Azul
+      const Color(0xFF8B5CF6), // Púrpura
+      const Color(0xFFEC4899), // Rosa
+      const Color(0xFF06B6D4), // Cyan
+      const Color(0xFF84CC16), // Lima
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'COLOR',
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1.2,
+            color: Theme.of(context).brightness == Brightness.light
+                ? const Color(0xFF94A3B8)
+                : Colors.grey[500],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            // Botón para color predeterminado (basado en prioridad)
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedColor = null;
+                });
+              },
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: selectedColor == null
+                      ? defaultColorFor(selectedPriority)
+                      : Colors.grey[300],
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: selectedColor == null
+                        ? Colors.white
+                        : Colors.grey[400]!,
+                    width: selectedColor == null ? 3 : 1,
+                  ),
+                  boxShadow: selectedColor == null
+                      ? [
+                          BoxShadow(
+                            color: defaultColorFor(selectedPriority)
+                                .withOpacity(0.4),
+                            blurRadius: 8,
+                            spreadRadius: 2,
+                          )
+                        ]
+                      : null,
+                ),
+                child: selectedColor == null
+                    ? const Icon(
+                        Icons.auto_awesome,
+                        color: Colors.white,
+                        size: 20,
+                      )
+                    : null,
+              ),
+            ),
+            // Colores personalizados
+            ...availableColors.map((color) {
+              final isSelected = selectedColor == color;
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    selectedColor = color;
+                  });
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isSelected ? Colors.white : Colors.transparent,
+                      width: 3,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: color.withOpacity(0.4),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            )
+                          ]
+                        : null,
+                  ),
+                  child: isSelected
+                      ? const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: 20,
+                        )
+                      : null,
+                ),
+              );
+            }).toList(),
+          ],
+        ),
+      ],
     );
   }
 }

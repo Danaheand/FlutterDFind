@@ -105,4 +105,60 @@ class TimeUtils {
     }
     return '';
   }
+
+  /// Calcula el texto de tiempo relativo para mostrar en un badge
+  static String getRelativeTimeText(DateTime targetDate) {
+    final now = DateTime.now();
+    final difference = targetDate.difference(now);
+
+    if (difference.isNegative) {
+      // Es vencida
+      final absDiff = difference.abs();
+      if (absDiff.inMinutes < 60) {
+        return 'Hace ${absDiff.inMinutes}min';
+      } else if (absDiff.inHours < 24) {
+        return 'Hace ${absDiff.inHours}h';
+      } else if (absDiff.inDays == 1) {
+        return 'Ayer';
+      } else {
+        return 'Hace ${absDiff.inDays}d';
+      }
+    }
+
+    // Es futura
+    if (difference.inMinutes < 60) {
+      return 'En ${difference.inMinutes}min';
+    } else if (difference.inHours < 24) {
+      return 'En ${difference.inHours}h';
+    } else if (difference.inDays == 0) {
+      return 'Hoy';
+    } else if (difference.inDays == 1) {
+      return 'Mañana';
+    } else if (difference.inDays < 7) {
+      return 'En ${difference.inDays}d';
+    } else if (difference.inDays < 30) {
+      final weeks = (difference.inDays / 7).floor();
+      return 'En ${weeks}sem';
+    } else {
+      final months = (difference.inDays / 30).floor();
+      return 'En ${months}mes';
+    }
+  }
+
+  /// Formatea la hora y el día de la semana para mostrar en la tarjeta
+  /// Ejemplo: "11:19 AM sáb 22"
+  static String formatTimeWithDay(DateTime date) {
+    const weekdaysShort = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
+
+    final weekday = weekdaysShort[date.weekday - 1];
+    final day = date.day;
+    final hour = date.hour;
+    final minute = date.minute.toString().padLeft(2, '0');
+
+    // Convertir a formato 12 horas con AM/PM
+    final period = hour >= 12 ? 'PM' : 'AM';
+    final hour12 = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+
+    return '$hour12:$minute $period $weekday $day';
+  }
 }
