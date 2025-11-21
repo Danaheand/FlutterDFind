@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:math';
+import 'dart:math'; // Para pi en el confeti
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
@@ -24,34 +24,46 @@ class InventoryScreen extends StatefulWidget {
   State<InventoryScreen> createState() => _InventoryScreenState();
 }
 
-class _InventoryScreenState extends State<InventoryScreen> {
+// 👇 CAMBIO AQUÍ: de SingleTickerProviderStateMixin a TickerProviderStateMixin
+class _InventoryScreenState extends State<InventoryScreen>
+    with TickerProviderStateMixin {
   final List<ShoppingItem> _items = [];
   final Map<String, bool> _expandedPlaces = {};
-  final Map<String, ConfettiController> _confettiControllers = {};
   late final TrashService _trashService;
 
   bool _loading = false;
 
-  /// ✔ CORREO DEL USUARIO LOGUEADO
+  /// Correo del usuario logueado
   late String _correoUsuario;
 
-  /// ✔ URL BASE DE LA API
+  /// URL base de la API
   final String baseUrl = 'https://dfindapi-yfcq.onrender.com';
+
+  // 🎉 Controladores globales de confeti
+  late final ConfettiController _taskConfettiController;
+  late final ConfettiController _placeConfettiController;
 
   @override
   void initState() {
     super.initState();
     InventoryScreen.addFromAlertGlobal = addFromAlert;
     _trashService = TrashService.getInstance();
+
+    _taskConfettiController = ConfettiController(
+      duration: const Duration(milliseconds: 900),
+    );
+    _placeConfettiController = ConfettiController(
+      duration: const Duration(milliseconds: 1200),
+    );
+
     _initialize();
   }
 
   @override
   void dispose() {
     InventoryScreen.addFromAlertGlobal = null;
-    for (var controller in _confettiControllers.values) {
-      controller.dispose();
-    }
+    _taskConfettiController.dispose();
+    _placeConfettiController.dispose();
     super.dispose();
   }
 
@@ -80,10 +92,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
   //                            API CALLS
   // ================================================================
 
-  /// GET — Cargar pendientes desde API (TRAER TODOS, sin soloComprados)
+  /// GET — Cargar pendientes desde API
   Future<void> _loadItemsFromAPI() async {
     setState(() => _loading = true);
-    debugPrint(" GET pendientes desde API...");
+    debugPrint("GET pendientes desde API...");
 
     final url = Uri.parse(
       "$baseUrl/api/Pendientes/by-email/$_correoUsuario",
@@ -139,7 +151,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       "cantidad": quantity,
     };
 
-    debugPrint(" URL POST Pendiente: $url");
+    debugPrint("URL POST Pendiente: $url");
     debugPrint("Body POST: $body");
 
     try {
@@ -177,9 +189,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
     }
   }
 
-  /// PUT — Marcar comprado/no comprado (maneja 200/204)
-  Future<void> _toggleAPI(ShoppingItem item) async {
-    debugPrint("TOGGLE pendiente: ${item.name}");
+  /// PUT — Marcar comprado/no comprado (solo sincroniza con API)
+  Future<void> _toggleAPI(ShoppingItem item, bool expectedValue) async {
+    debugPrint("TOGGLE pendiente API: ${item.name}");
 
     final url = Uri.parse(
       "$baseUrl/api/Pendientes/by-email/$_correoUsuario/toggle-comprado-por-nombre"
@@ -196,29 +208,20 @@ class _InventoryScreenState extends State<InventoryScreen> {
       debugPrint("TOGGLE body: ${res.body}");
 
       if (res.statusCode == 200 && res.body.isNotEmpty) {
-        final data = jsonDecode(res.body);
-
-        setState(() {
-          item.isPurchased = data["estaComprado"];
-        });
-        _checkPlaceCompletion(item.placeName);
+        // Podrías usar la respuesta si quisieras forzar el valor del servidor.
         return;
       }
 
       if (res.statusCode == 204) {
-        debugPrint("TOGGLE 204 sin body, cambio local de estado.");
-        setState(() {
-          item.isPurchased = !item.isPurchased;
-        });
-        _checkPlaceCompletion(item.placeName);
+        // Servidor hizo toggle sin body.
         return;
       }
 
       debugPrint(
-        "Error TOGGLE: Código ${res.statusCode} | Body: ${res.body}",
+        "Error TOGGLE API: Código ${res.statusCode} | Body: ${res.body}",
       );
     } catch (e, st) {
-      debugPrint("Excepción TOGGLE: $e");
+      debugPrint("Excepción TOGGLE API: $e");
       debugPrint("$st");
     }
   }
@@ -265,34 +268,156 @@ class _InventoryScreenState extends State<InventoryScreen> {
     await _createItem(name, placeName, quantity);
   }
 
+  /// Maneja: estado local + confeti + mensaje SIEMPRE
   void _toggleItem(ShoppingItem item) async {
-    await _toggleAPI(item);
+    final wasPurchased = item.isPurchased;
+    final newValue = !wasPurchased;
+
+    // 1) Actualizar UI de inmediato
+    setState(() {
+      item.isPurchased = newValue;
+    });
+
+    // 2) Si acaba de pasar a realizado → SIEMPRE confeti + mensaje
+    if (!wasPurchased && newValue) {
+      _showItemCompletedMessage();
+      _playTaskConfetti();
+    }
+
+    // 3) Revisar si el lugar quedó completado
+    _checkPlaceCompletion(item.placeName);
+
+    // 4) Sincronizar con API (aunque falle, ya mostramos UX)
+    await _toggleAPI(item, newValue);
   }
 
   void _removeItem(ShoppingItem item) async {
     await _deleteAPI(item);
   }
 
-  /// Verifica si todos los items de una categoría están completos
+  /// Verifica si todos los items de una categoría (lugar) están completos
   void _checkPlaceCompletion(String place) {
     final itemsInPlace = _items.where((i) => i.placeName == place).toList();
-
     if (itemsInPlace.isEmpty) return;
 
     final allCompleted = itemsInPlace.every((i) => i.isPurchased);
 
     if (allCompleted) {
-      _playConfettiForPlace(place);
+      // ✅ Cuando TODO el lugar está realizado: mensaje + MÁS confeti
+      _showPlaceCompletedMessage(place);
+      _playPlaceConfetti();
     }
   }
 
-  void _playConfettiForPlace(String place) {
-    if (!_confettiControllers.containsKey(place)) {
-      _confettiControllers[place] = ConfettiController(
-        duration: const Duration(milliseconds: 1200),
-      );
-    }
-    _confettiControllers[place]!.play();
+  /// Confeti para cada tarea completada
+  void _playTaskConfetti() {
+    _taskConfettiController.stop();
+    _taskConfettiController.play();
+  }
+
+  /// Confeti grande (doble explosión) para lugar completado
+  void _playPlaceConfetti() {
+    _placeConfettiController.stop();
+    _placeConfettiController.play();
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
+      _placeConfettiController.play();
+    });
+  }
+
+  // ================================================================
+  //           MENSAJES SUPER CUTE (CUADRO VERDE, OVERLAY)
+  // ================================================================
+
+  void _showCuteMessage(String text, IconData icon) {
+    final overlay = Overlay.of(context);
+    if (overlay == null) return;
+
+    late OverlayEntry entry;
+    final controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 320),
+    );
+    final animation = CurvedAnimation(
+      parent: controller,
+      curve: Curves.easeOutBack,
+      reverseCurve: Curves.easeIn,
+    );
+
+    entry = OverlayEntry(
+      builder: (ctx) {
+        return Positioned(
+          left: 16,
+          right: 16,
+          bottom: 80, // un poco más arriba de abajo
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(-1.0, 0.0), // entra desde la izquierda
+              end: Offset.zero,
+            ).animate(animation),
+            child: FadeTransition(
+              opacity: animation,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    color: Colors.green.shade600, // cuadro verde bonito
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        icon,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          text,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    overlay.insert(entry);
+    controller.forward();
+
+    Future.delayed(const Duration(seconds: 2), () async {
+      try {
+        await controller.reverse();
+      } catch (_) {}
+      entry.remove();
+      controller.dispose();
+    });
+  }
+
+  void _showItemCompletedMessage() {
+    _showCuteMessage('Pendiente completado', Icons.check_circle_rounded);
+  }
+
+  void _showPlaceCompletedMessage(String place) {
+    _showCuteMessage('Compras en $place terminadas', Icons.shopping_bag_rounded);
   }
 
   // ================================================================
@@ -306,9 +431,75 @@ class _InventoryScreenState extends State<InventoryScreen> {
         title: const Text('Pendientes'),
         automaticallyImplyLeading: false,
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _buildNormalView(),
+      body: Stack(
+        children: [
+          _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _buildNormalView(),
+
+          // 🎉 Confeti pequeño (tarea completada)
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: IgnorePointer(
+              child: ConfettiWidget(
+                confettiController: _taskConfettiController,
+                blastDirectionality: BlastDirectionality.explosive,
+                blastDirection: -pi / 2, // hacia arriba
+                emissionFrequency: 0.08,
+                numberOfParticles: 30,
+                maxBlastForce: 55, // sube alto, pasa media pantalla
+                minBlastForce: 20,
+                gravity: 0.25, // cae suave
+                particleDrag: 0.02,
+                shouldLoop: false,
+                minimumSize: const Size(6, 6),
+                maximumSize: const Size(12, 12),
+                colors: const [
+                  Color(0xFF2196F3),
+                  Color(0xFFFF5722),
+                  Color(0xFF4CAF50),
+                  Color(0xFFFFC107),
+                  Color(0xFF9C27B0),
+                  Color(0xFFFF9800),
+                  Color(0xFFE91E63),
+                  Color(0xFF00BCD4),
+                ],
+              ),
+            ),
+          ),
+
+          // 🎉🎉 Confeti grande (lugar completado)
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: IgnorePointer(
+              child: ConfettiWidget(
+                confettiController: _placeConfettiController,
+                blastDirectionality: BlastDirectionality.explosive,
+                blastDirection: -pi / 2,
+                emissionFrequency: 0.09,
+                numberOfParticles: 50,
+                maxBlastForce: 65,
+                minBlastForce: 25,
+                gravity: 0.23,
+                particleDrag: 0.015,
+                shouldLoop: false,
+                minimumSize: const Size(7, 7),
+                maximumSize: const Size(14, 14),
+                colors: const [
+                  Color(0xFF2196F3),
+                  Color(0xFFFF5722),
+                  Color(0xFF4CAF50),
+                  Color(0xFFFFC107),
+                  Color(0xFF9C27B0),
+                  Color(0xFFFF9800),
+                  Color(0xFFE91E63),
+                  Color(0xFF00BCD4),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showDialog(
@@ -405,144 +596,107 @@ class _InventoryScreenState extends State<InventoryScreen> {
   Widget _buildPlaceGroup(String place, List<ShoppingItem> items) {
     final isExpanded = _expandedPlaces[place] ?? true;
     final totalItems = items.length;
-    
-    // Crear controlador si no existe
-    if (!_confettiControllers.containsKey(place)) {
-      _confettiControllers[place] = ConfettiController(
-        duration: const Duration(milliseconds: 1200),
-      );
-    }
 
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: Column(
-            children: [
-              InkWell(
-                onTap: () {
-                  setState(() {
-                    _expandedPlaces[place] = !isExpanded;
-                  });
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
-                    children: [
-                      Icon(
-                        isExpanded
-                            ? Icons.keyboard_arrow_down
-                            : Icons.keyboard_arrow_right,
-                        size: 28,
-                      ),
-                      const SizedBox(width: 8),
-                      Icon(Icons.store, color: AppTheme.getPlaceIcon(context)),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Consumer<FontSizeProvider>(
-                          builder: (context, fontSizeProvider, _) => Text(
-                            place,
-                            style: TextStyle(
-                              fontSize: fontSizeProvider.fontSize + 2,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.getPlaceBadgeBackground(context),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '$totalItems',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).brightness == Brightness.light
-                                ? AppTheme.placeIconLight
-                                : AppTheme.textPrimaryDark,
-                          ),
-                        ),
-                      ),
-                    ],
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        children: [
+          InkWell(
+            onTap: () {
+              setState(() {
+                _expandedPlaces[place] = !isExpanded;
+              });
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Icon(
+                    isExpanded
+                        ? Icons.keyboard_arrow_down
+                        : Icons.keyboard_arrow_right,
+                    size: 28,
                   ),
-                ),
-              ),
-              if (isExpanded) ...[
-                const Divider(height: 1),
-                ...items.map(
-                  (item) => ListTile(
-                    leading: Checkbox(
-                      value: item.isPurchased,
-                      onChanged: (_) => _toggleItem(item),
-                    ),
-                    title: Consumer<FontSizeProvider>(
+                  const SizedBox(width: 8),
+                  Icon(Icons.store, color: AppTheme.getPlaceIcon(context)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Consumer<FontSizeProvider>(
                       builder: (context, fontSizeProvider, _) => Text(
-                        item.name,
+                        place,
                         style: TextStyle(
                           fontSize: fontSizeProvider.fontSize + 2,
-                          decoration: item.isPurchased 
-                              ? TextDecoration.lineThrough 
-                              : TextDecoration.none,
-                          color: item.isPurchased 
-                              ? AppTheme.getPurchasedColor(context)
-                              : null,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    subtitle: item.quantity != null && item.quantity! > 1
-                        ? Consumer<FontSizeProvider>(
-                            builder: (context, fontSizeProvider, _) => Text(
-                              'Cantidad: ${item.quantity}',
-                              style: TextStyle(
-                                fontSize: fontSizeProvider.fontSize - 2,
-                                color: AppTheme.getTextSecondary(context),
-                              ),
-                            ),
-                          )
-                        : null,
-                    trailing: IconButton(
-                      icon: const Icon(Icons.close, size: 20),
-                      onPressed: () => _removeItem(item),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.getPlaceBadgeBackground(context),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '$totalItems',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color:
+                            Theme.of(context).brightness == Brightness.light
+                                ? AppTheme.placeIconLight
+                                : AppTheme.textPrimaryDark,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (isExpanded) ...[
+            const Divider(height: 1),
+            ...items.map(
+              (item) => ListTile(
+                leading: Checkbox(
+                  value: item.isPurchased,
+                  onChanged: (_) => _toggleItem(item),
+                ),
+                title: Consumer<FontSizeProvider>(
+                  builder: (context, fontSizeProvider, _) => Text(
+                    item.name,
+                    style: TextStyle(
+                      fontSize: fontSizeProvider.fontSize + 2,
+                      decoration: item.isPurchased
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
+                      color: item.isPurchased
+                          ? AppTheme.getPurchasedColor(context)
+                          : null,
                     ),
                   ),
                 ),
-              ],
-            ],
-          ),
-        ),
-        // Confetti widget - positioned absolutely to fill the entire space
-        Positioned.fill(
-          child: IgnorePointer(
-            child: ConfettiWidget(
-              confettiController: _confettiControllers[place]!,
-              blastDirection: pi / 2,
-              emissionFrequency: 0.85,
-              numberOfParticles: 150,
-              maxBlastForce: 400,
-              minBlastForce: 200,
-              gravity: 0.2,
-              shouldLoop: false,
-              colors: const [
-                Color(0xFF2196F3),
-                Color(0xFFFF5722),
-                Color(0xFF4CAF50),
-                Color(0xFFFFC107),
-                Color(0xFF9C27B0),
-                Color(0xFFFF9800),
-                Color(0xFFE91E63),
-                Color(0xFF00BCD4),
-              ],
+                subtitle: item.quantity != null && item.quantity! > 1
+                    ? Consumer<FontSizeProvider>(
+                        builder: (context, fontSizeProvider, _) => Text(
+                          'Cantidad: ${item.quantity}',
+                          style: TextStyle(
+                            fontSize: fontSizeProvider.fontSize - 2,
+                            color: AppTheme.getTextSecondary(context),
+                          ),
+                        ),
+                      )
+                    : null,
+                trailing: IconButton(
+                  icon: const Icon(Icons.close, size: 20),
+                  onPressed: () => _removeItem(item),
+                ),
+              ),
             ),
-          ),
-        ),
-      ],
+          ],
+        ],
+      ),
     );
   }
-
 }
