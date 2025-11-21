@@ -37,19 +37,6 @@ class _TipsRecordatoriosState extends State<TipsRecordatorios> {
             'Asigna prioridades (Alta, Media, Baja) a tus recordatorios',
         color: isLight ? AppTheme.warningLight : AppTheme.warningDark,
       ),
-      TipItem(
-        icon: Icons.location_on_outlined,
-        title: 'Añade ubicaciones',
-        description: 'Indica dónde y qué objeto necesitas recordar',
-        color: isLight ? AppTheme.secondaryLight : AppTheme.secondaryDark,
-      ),
-      TipItem(
-        icon: Icons.gesture,
-        title: 'Gestos en alertas',
-        description:
-            'Mantén presionado para seleccionar múltiples. Desliza derecha para activar (verde). Desliza izquierda para eliminar (rojo).',
-        color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
-      ),
     ];
 
     return Container(
