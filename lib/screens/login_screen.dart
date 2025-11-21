@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../services/session_manager.dart';
 import '../providers/font_size_provider.dart';
+import 'verify_email_screen.dart';
 
 class AppLoginScreen extends StatefulWidget {
   const AppLoginScreen({super.key});
@@ -30,8 +31,7 @@ class _LoginScreenState extends State<AppLoginScreen> {
     }
 
     try {
-      // Primero probar conectividad
-      print('🔍 Probando conectividad...');
+      print('Probando conectividad...');
       final hasConnection = await ApiService.testConnection();
       if (!hasConnection) {
         throw Exception(
@@ -41,14 +41,13 @@ class _LoginScreenState extends State<AppLoginScreen> {
       final email = _userCtrl.text.trim();
       final password = _passCtrl.text.trim();
 
-      print('🔐 Iniciando login...');
+      print('Iniciando login...');
       final result = await ApiService.loginUser(
         correo: email,
-        password: password, // Enviamos password sin hash
+        password: password,
       );
 
-      if (result['success']) {
-        // Guardar sesión usando SessionManager
+      if (result['success'] == true) {
         await SessionManager.instance.setUserSession(result['data']);
 
         if (!mounted) return;
@@ -59,14 +58,70 @@ class _LoginScreenState extends State<AppLoginScreen> {
           _error = true;
           _isLoading = false;
         });
+
         if (!mounted) return;
+
+        final errorText = (result['error'] ?? '').toString();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('❌ ${result['error']}'),
+            content: Text('$errorText'),
             duration: const Duration(seconds: 4),
             backgroundColor: Colors.red,
           ),
         );
+
+        final lower = errorText.toLowerCase();
+        if (lower.contains('verificar') || lower.contains('no verificado')) {
+          final email = _userCtrl.text.trim();
+
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Correo no verificado'),
+              content: Text(
+                'Tu correo aún no está verificado.\n\n'
+                '¿Quieres que te enviemos un nuevo código a $email?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    Navigator.of(ctx).pop();
+                    final sendResult =
+                        await ApiService.enviarCodigoVerificacion(
+                      correo: email,
+                    );
+
+                    if (!mounted) return;
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(sendResult['success'] == true
+                            ? 'Enviamos un nuevo código a $email'
+                            : '${sendResult['error']}'),
+                        backgroundColor: sendResult['success'] == true
+                            ? Colors.green
+                            : Colors.red,
+                      ),
+                    );
+
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => VerifyEmailScreen(
+                            correo: email,
+                            alreadySent: sendResult['success'] == true),
+                      ),
+                    );
+                  },
+                  child: const Text('Verificar ahora'),
+                ),
+              ],
+            ),
+          );
+        }
       }
     } catch (e, st) {
       print('❌ Error login: $e');
