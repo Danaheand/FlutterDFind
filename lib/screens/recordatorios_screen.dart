@@ -4,15 +4,16 @@ import 'package:Dfind/utils/alert_utils.dart';
 import 'package:Dfind/widgets/alert_card.dart';
 import 'package:Dfind/widgets/alert_edit_dialog.dart';
 import 'package:Dfind/widgets/alert_tab_bar.dart';
+import 'package:Dfind/widgets/collapsible_section.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import "alert_detail_screen_modern.dart";
 // import 'recordatorios_detalle_screen.dart' as detail;
 import '../services/session_manager.dart';
 import '../services/trash_service.dart';
 import '../widgets/custom_text_button.dart';
 import '../providers/recordatorio_provider.dart';
-import '../providers/font_size_provider.dart';
 import '../models/recordatorio.dart';
 import '../models/recordatorio_exception.dart';
 import '../models/trash_item.dart';
@@ -27,18 +28,24 @@ class AlertsScreen extends StatefulWidget {
   State<AlertsScreen> createState() => _AlertsScreenState();
 }
 
-class _AlertsScreenState extends State<AlertsScreen> {
+class _AlertsScreenState extends State<AlertsScreen>
+    with TickerProviderStateMixin {
   Set<String> selectedAlerts = {};
   int tabIndex = 0;
   bool selectionMode = false;
+  bool groupByPriority = false; // Toggle para agrupar por prioridad o por fecha
   String? _userEmail;
   int? _userId;
+  bool _showTutorial = false;
+  AnimationController? _tutorialController;
+  Animation<double>? _slideAnimation;
 
   @override
   void initState() {
     super.initState();
     AlertsScreen.onAlertDeleted = _onAlertDeleted;
     _loadUserAndRecordatorios();
+    _checkAndShowTutorial();
   }
 
   Future<void> _loadUserAndRecordatorios() async {
@@ -71,7 +78,89 @@ class _AlertsScreenState extends State<AlertsScreen> {
   @override
   void dispose() {
     AlertsScreen.onAlertDeleted = null;
+    _tutorialController?.dispose();
     super.dispose();
+  }
+
+  Future<void> _checkAndShowTutorial() async {
+    print('🔵🔵🔵Verificando si se debe mostrar tutorial de deslizamiento...');
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenTutorial = prefs.getBool('has_seen_swipe_tutorial') ?? false;
+    print('🔵🔵🔵Usuario ha visto tutorial antes: $hasSeenTutorial');
+
+    // if (!hasSeenTutorial) {
+    // Esperar un momento para que se carguen las alertas
+    await Future.delayed(const Duration(milliseconds: 1500));
+
+    if (mounted) {
+      _startTutorialAnimation();
+      // Marcar como visto
+      prefs.setBool('has_seen_swipe_tutorial', true);
+    }
+    // }
+  }
+
+  void _startTutorialAnimation() {
+    // Detener animación anterior si existe
+    _tutorialController?.stop();
+    _tutorialController?.dispose();
+
+    setState(() {
+      _showTutorial = true;
+    });
+
+    // Iniciar la animación
+    _tutorialController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    );
+
+    _slideAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.0, end: 100.0)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 25.0,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 100.0, end: 0.0)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 25.0,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.0, end: -100.0)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 25.0,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: -100.0, end: 0.0)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 25.0,
+      ),
+    ]).animate(_tutorialController!);
+
+    // Repetir la animación 2 veces
+    _tutorialController!.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _tutorialController!.reset();
+        if (_showTutorial) {
+          _tutorialController!.forward();
+        }
+      }
+    });
+
+    _tutorialController!.forward();
+
+    // Detener después de 6 segundos (3 ciclos completos)
+    Future.delayed(const Duration(milliseconds: 6000), () {
+      if (mounted) {
+        setState(() {
+          _showTutorial = false;
+        });
+        _tutorialController?.stop();
+        _tutorialController?.dispose();
+        _tutorialController = null;
+      }
+    });
   }
 
   // Convertir Recordatorio a AlertData para compatibilidad
@@ -128,6 +217,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
       repetitive: rec.esRepetitivo,
       repeatFrequency: rec.frecuenciaRepeticion,
       active: rec.activo,
+      completed: !rec.activo, // Si no está activo, se considera completado
       color: color ?? defaultColorFor(priority),
       selectedWeekdays: weekdays,
       imagePath: rec.rutaImagen,
@@ -144,25 +234,100 @@ class _AlertsScreenState extends State<AlertsScreen> {
     return recordatorios;
   }
 
-  List<AlertData> _getPasadas(List<AlertData> alerts) =>
-      alerts.where((a) => a.active && a.date.isBefore(DateTime.now())).toList();
+  List<AlertData> _getHoy(List<AlertData> alerts) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
 
-  List<AlertData> _getImportantes(List<AlertData> alerts) => alerts
-      .where((a) =>
-          a.priority == AlertPriority.alta &&
-          a.active &&
-          a.date.isAfter(DateTime.now()))
-      .toList();
+    return alerts
+        .where(
+            (a) => a.active && a.date.isAfter(now) && a.date.isBefore(tomorrow))
+        .toList()
+      ..sort((a, b) {
+        // Ordenar por prioridad (alta, media, baja)
+        final priorityOrder = {'alta': 0, 'media': 1, 'baja': 2};
+        final priorityCompare = priorityOrder[a.priority.name]!
+            .compareTo(priorityOrder[b.priority.name]!);
+        if (priorityCompare != 0) return priorityCompare;
+        // Si tienen la misma prioridad, ordenar por fecha
+        return a.date.compareTo(b.date);
+      });
+  }
 
-  List<AlertData> _getProximas(List<AlertData> alerts) => alerts
-      .where((a) =>
-          a.active &&
-          a.date.isAfter(DateTime.now()) &&
-          a.priority != AlertPriority.alta)
-      .toList();
+  List<AlertData> _getManana(List<AlertData> alerts) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+    final dayAfterTomorrow = tomorrow.add(const Duration(days: 1));
 
-  List<AlertData> _getDesactivadas(List<AlertData> alerts) =>
-      alerts.where((a) => !a.active).toList();
+    return alerts
+        .where((a) =>
+            a.active &&
+            a.date.isAfter(tomorrow) &&
+            a.date.isBefore(dayAfterTomorrow))
+        .toList()
+      ..sort((a, b) {
+        // Ordenar por prioridad (alta, media, baja)
+        final priorityOrder = {'alta': 0, 'media': 1, 'baja': 2};
+        final priorityCompare = priorityOrder[a.priority.name]!
+            .compareTo(priorityOrder[b.priority.name]!);
+        if (priorityCompare != 0) return priorityCompare;
+        // Si tienen la misma prioridad, ordenar por fecha
+        return a.date.compareTo(b.date);
+      });
+  }
+
+  List<AlertData> _getProximas(List<AlertData> alerts) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final dayAfterTomorrow = today.add(const Duration(days: 2));
+
+    return alerts
+        .where((a) => a.active && a.date.isAfter(dayAfterTomorrow))
+        .toList()
+      ..sort((a, b) {
+        // Ordenar por prioridad (alta, media, baja)
+        final priorityOrder = {'alta': 0, 'media': 1, 'baja': 2};
+        final priorityCompare = priorityOrder[a.priority.name]!
+            .compareTo(priorityOrder[b.priority.name]!);
+        if (priorityCompare != 0) return priorityCompare;
+        // Si tienen la misma prioridad, ordenar por fecha
+        return a.date.compareTo(b.date);
+      });
+  }
+
+  List<AlertData> _getVencidas(List<AlertData> alerts) {
+    final now = DateTime.now();
+    return alerts.where((a) => a.active && a.date.isBefore(now)).toList()
+      ..sort((a, b) => b.date.compareTo(a.date)); // Más recientes primero
+  }
+
+  List<AlertData> _getPasadas(List<AlertData> alerts) {
+    return alerts.where((a) => !a.active).toList()
+      ..sort((a, b) => b.date.compareTo(a.date)); // Más recientes primero
+  }
+
+  // Funciones para agrupar por prioridad
+  List<AlertData> _getAlta(List<AlertData> alerts) {
+    return alerts
+        .where((a) => a.active && a.priority == AlertPriority.alta)
+        .toList()
+      ..sort((a, b) => a.date.compareTo(b.date)); // Ordenar por fecha
+  }
+
+  List<AlertData> _getMedia(List<AlertData> alerts) {
+    return alerts
+        .where((a) => a.active && a.priority == AlertPriority.media)
+        .toList()
+      ..sort((a, b) => a.date.compareTo(b.date)); // Ordenar por fecha
+  }
+
+  List<AlertData> _getBaja(List<AlertData> alerts) {
+    return alerts
+        .where((a) => a.active && a.priority == AlertPriority.baja)
+        .toList()
+      ..sort((a, b) => a.date.compareTo(b.date)); // Ordenar por fecha
+  }
 
   /// Verifica si se pueden completar las alertas seleccionadas
   /// No se pueden completar alertas desactivadas o pasadas
@@ -311,18 +476,218 @@ class _AlertsScreenState extends State<AlertsScreen> {
     }
   }
 
-  Widget _sectionHeader(String text) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-      child: Consumer<FontSizeProvider>(
-        builder: (context, fontSizeProvider, _) => Text(
-          text,
-          style: TextStyle(
-              fontSize: fontSizeProvider.getScaledSize(18),
-              fontWeight: FontWeight.w700),
-        ),
-      ),
+  Widget _buildAlertCard(AlertData a, bool showSelection,
+      {bool isFirst = false}) {
+    // Detectar si es la primera tarjeta del tutorial
+    final isFirstCard = isFirst && _showTutorial && _slideAnimation != null;
+
+    final alertCard = AlertCard(
+      alert: a,
+      onLongPress: () {
+        print('🟢 onLongPress activado - Alerta: ${a.title}');
+        print('🟢 Estado actual - selectionMode: $selectionMode');
+        setState(() {
+          selectionMode = true;
+          selectedAlerts.add(a.id);
+          print(
+              '🟢 Nuevo estado - selectionMode: $selectionMode, selectedAlerts: $selectedAlerts');
+        });
+      },
+      onTap: () {
+        print(
+            '🔵 onTap - selectionMode: $selectionMode, showSelection: $showSelection');
+        print('🔵 Alert: ${a.title}');
+        if (showSelection && selectionMode) {
+          setState(() {
+            if (selectedAlerts.contains(a.id)) {
+              selectedAlerts.remove(a.id);
+            } else {
+              selectedAlerts.add(a.id);
+            }
+          });
+        } else {
+          // Navegar al detalle de la alerta
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AlertDetailScreenModern(
+                alert: AlertData(
+                  id: a.id,
+                  title: a.title,
+                  description: a.description,
+                  date: a.date,
+                  priority: AlertPriority.values[a.priority.index],
+                  location: a.location,
+                  object: a.object,
+                  repetitive: a.repetitive,
+                  repeatFrequency: a.repeatFrequency,
+                  active: a.active,
+                  completed: a.completed,
+                  color: a.color,
+                  imagePath: a.imagePath,
+                  selectedWeekdays: a.selectedWeekdays,
+                ),
+              ),
+            ),
+          );
+        }
+      },
+      onToggleActive: () => _toggleAlertActive(a),
+      onDelete: () async {
+        try {
+          // Obtener el provider antes de hacer operaciones async
+          final provider = context.read<RecordatorioProvider>();
+          final trashService = TrashService.getInstance();
+
+          // Crear item de papelera
+          final trashItem = TrashItem(
+            id: a.id,
+            name: a.title,
+            placeName: a.location ?? 'Sin ubicación',
+            category: 'Recordatorio - ${a.priority.name}',
+            quantity: null,
+            deletedAt: DateTime.now(),
+            originalType: 'alert',
+          );
+
+          // Agregar a la papelera
+          await trashService.addToTrash(trashItem);
+
+          // Eliminar de la API
+          await provider.eliminarRecordatorio(a.title);
+
+          // El provider ya actualizó su lista
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('♻️ Recordatorio enviado a la papelera'),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error: $e'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      },
+      showCheckbox: showSelection && selectionMode,
+      checked: selectedAlerts.contains(a.id),
     );
+
+    // Aplicar animación solo si está el tutorial activo
+    if (isFirstCard) {
+      return AbsorbPointer(
+        absorbing: _showTutorial,
+        child: Stack(
+          children: [
+            // Mostrar el fondo de completar cuando desliza a la derecha
+            AnimatedBuilder(
+              animation: _slideAnimation!,
+              builder: (context, child) {
+                if (_slideAnimation!.value <= 0) {
+                  return const SizedBox.shrink();
+                }
+                return Positioned.fill(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade400,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.only(left: 30),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          a.active
+                              ? Icons.pause_circle_filled
+                              : Icons.check_circle,
+                          color: Colors.white,
+                          size: 36,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          a.active ? 'Completar' : 'Activar',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+            // Mostrar el fondo de eliminar cuando desliza a la izquierda
+            AnimatedBuilder(
+              animation: _slideAnimation!,
+              builder: (context, child) {
+                if (_slideAnimation!.value >= 0) {
+                  return const SizedBox.shrink();
+                }
+                return Positioned.fill(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade400,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 30),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.delete_forever,
+                          color: Colors.white,
+                          size: 36,
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Eliminar',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+            // La tarjeta encima con la animación de deslizamiento
+            AnimatedBuilder(
+              animation: _slideAnimation!,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(_slideAnimation!.value, 0),
+                  child: child,
+                );
+              },
+              child: alertCard,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return alertCard;
   }
 
   Future<AlertData?> _openEditor(
@@ -495,134 +860,23 @@ class _AlertsScreenState extends State<AlertsScreen> {
     }
   }
 
-  Widget _buildSection(String title, List<AlertData> alerts,
-      {bool showSelection = false}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (alerts.isNotEmpty) ...[
-          _sectionHeader(title),
-          ...alerts
-              .map((a) => AlertCard(
-                    alert: a,
-                    onLongPress: () {
-                      print('🟢 onLongPress activado - Alerta: ${a.title}');
-                      print('🟢 Estado actual - selectionMode: $selectionMode');
-                      setState(() {
-                        selectionMode = true;
-                        selectedAlerts.add(a.id);
-                        print(
-                            '🟢 Nuevo estado - selectionMode: $selectionMode, selectedAlerts: $selectedAlerts');
-                      });
-                    },
-                    onTap: () {
-                      print(
-                          '🔵 onTap - selectionMode: $selectionMode, showSelection: $showSelection');
-                      print('🔵 Alert: ${a.title}');
-                      if (showSelection && selectionMode) {
-                        setState(() {
-                          if (selectedAlerts.contains(a.id)) {
-                            selectedAlerts.remove(a.id);
-                          } else {
-                            selectedAlerts.add(a.id);
-                          }
-                        });
-                      } else {
-                        // Navegar al detalle de la alerta
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AlertDetailScreenModern(
-                              alert: AlertData(
-                                  id: a.id,
-                                  title: a.title,
-                                  description: a.description,
-                                  date: a.date,
-                                  priority:
-                                      AlertPriority.values[a.priority.index],
-                                  location: a.location,
-                                  object: a.object,
-                                  repetitive: a.repetitive,
-                                  repeatFrequency: a.repeatFrequency,
-                                  active: a.active,
-                                  color: a.color,
-                                  imagePath: a.imagePath,
-                                  selectedWeekdays: a.selectedWeekdays),
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                    onToggleActive: () => _toggleAlertActive(a),
-                    onDelete: () async {
-                      try {
-                        // Obtener el provider antes de hacer operaciones async
-                        final provider = context.read<RecordatorioProvider>();
-                        final trashService = TrashService.getInstance();
-
-                        // Crear item de papelera
-                        final trashItem = TrashItem(
-                          id: a.id,
-                          name: a.title,
-                          placeName: a.location ?? 'Sin ubicación',
-                          category: 'Recordatorio - ${a.priority.name}',
-                          quantity: null,
-                          deletedAt: DateTime.now(),
-                          originalType: 'alert',
-                        );
-
-                        // Agregar a la papelera
-                        await trashService.addToTrash(trashItem);
-
-                        // Eliminar de la API
-                        await provider.eliminarRecordatorio(a.title);
-
-                        // El provider ya actualizó su lista
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content:
-                                  Text('♻️ Recordatorio enviado a la papelera'),
-                              backgroundColor: Colors.green,
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Error: $e'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
-                      }
-                    },
-                    showCheckbox: showSelection && selectionMode,
-                    checked: selectedAlerts.contains(a.id),
-                  ))
-              .toList()
-              .map((card) {
-            print(
-                '🟡 _buildSection: showSelection=$showSelection, selectionMode=$selectionMode');
-            return card;
-          }),
-          const SizedBox(height: 16),
-        ],
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<RecordatorioProvider>();
 
     // Calcular las listas de alertas una sola vez al inicio del build
     final alerts = _getAlerts(provider);
-    final importantes = _getImportantes(alerts);
-    final proximas = _getProximas(alerts);
-    final desactivadas = _getDesactivadas(alerts);
+    final vencidas = _getVencidas(alerts);
+
+    // Agrupar por fecha o por prioridad según el toggle
+    final hoy = groupByPriority ? null : _getHoy(alerts);
+    final manana = groupByPriority ? null : _getManana(alerts);
+    final proximas = groupByPriority ? null : _getProximas(alerts);
+
+    final alta = groupByPriority ? _getAlta(alerts) : null;
+    final media = groupByPriority ? _getMedia(alerts) : null;
+    final baja = groupByPriority ? _getBaja(alerts) : null;
+
     final pasadas = _getPasadas(alerts);
 
     return Scaffold(
@@ -630,6 +884,17 @@ class _AlertsScreenState extends State<AlertsScreen> {
         automaticallyImplyLeading: false,
         title: const Text('Recordatorios'),
         actions: [
+          // Botón para mostrar tutorial de deslizamiento
+          // if (alerts.isNotEmpty && hoy.isNotEmpty)
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            tooltip: 'Ver tutorial de deslizamiento',
+            onPressed: () {
+              if (!_showTutorial) {
+                _startTutorialAnimation();
+              }
+            },
+          ),
           if (alerts.isNotEmpty)
             IconButton(
               icon: Icon(
@@ -697,6 +962,12 @@ class _AlertsScreenState extends State<AlertsScreen> {
                                   tabIndex: tabIndex,
                                   onTabChanged: (index) =>
                                       setState(() => tabIndex = index),
+                                  groupByPriority: groupByPriority,
+                                  onGroupByPriorityChanged: (value) {
+                                    setState(() {
+                                      groupByPriority = value;
+                                    });
+                                  },
                                 ),
                                 const TipsRecordatorios(),
                                 if (alerts.isEmpty)
@@ -730,12 +1001,89 @@ class _AlertsScreenState extends State<AlertsScreen> {
                                     ),
                                   )
                                 else ...[
-                                  _buildSection('Importantes', importantes,
-                                      showSelection: true),
-                                  _buildSection('Actuales', proximas,
-                                      showSelection: true),
-                                  _buildSection('Desactivadas', desactivadas,
-                                      showSelection: true),
+                                  // Banner de vencidas (si hay)
+                                  if (vencidas.isNotEmpty)
+                                    ExpiredAlertsBanner(
+                                      expiredAlerts: vencidas,
+                                      children:
+                                          vencidas.asMap().entries.map((entry) {
+                                        return _buildAlertCard(
+                                            entry.value, true,
+                                            isFirst: entry.key == 0);
+                                      }).toList(),
+                                    ),
+                                  // Secciones colapsables - Agrupación por fecha o por prioridad
+                                  if (!groupByPriority) ...[
+                                    // Agrupación por fecha
+                                    if (hoy != null)
+                                      CollapsibleSection(
+                                        title: 'Hoy',
+                                        count: hoy.length,
+                                        icon: Icons.today,
+                                        children:
+                                            hoy.asMap().entries.map((entry) {
+                                          return _buildAlertCard(
+                                              entry.value, true,
+                                              isFirst: entry.key == 0 &&
+                                                  vencidas.isEmpty);
+                                        }).toList(),
+                                      ),
+                                    if (manana != null)
+                                      CollapsibleSection(
+                                        title: 'Mañana',
+                                        count: manana.length,
+                                        icon: Icons.wb_sunny_outlined,
+                                        headerColor: Colors.amber.shade50,
+                                        children: manana.map((a) {
+                                          return _buildAlertCard(a, true);
+                                        }).toList(),
+                                      ),
+                                    if (proximas != null)
+                                      CollapsibleSection(
+                                        title: 'Próximos',
+                                        count: proximas.length,
+                                        icon: Icons.calendar_month,
+                                        children: proximas.map((a) {
+                                          return _buildAlertCard(a, true);
+                                        }).toList(),
+                                      ),
+                                  ] else ...[
+                                    // Agrupación por prioridad
+                                    if (alta != null && alta.isNotEmpty)
+                                      CollapsibleSection(
+                                        title: 'Prioridad Alta',
+                                        count: alta.length,
+                                        icon: Icons.priority_high,
+                                        headerColor: Colors.red.shade50,
+                                        children:
+                                            alta.asMap().entries.map((entry) {
+                                          return _buildAlertCard(
+                                              entry.value, true,
+                                              isFirst: entry.key == 0 &&
+                                                  vencidas.isEmpty);
+                                        }).toList(),
+                                      ),
+                                    if (media != null && media.isNotEmpty)
+                                      CollapsibleSection(
+                                        title: 'Prioridad Media',
+                                        count: media.length,
+                                        icon: Icons.remove,
+                                        headerColor: Colors.orange.shade50,
+                                        children: media.map((a) {
+                                          return _buildAlertCard(a, true);
+                                        }).toList(),
+                                      ),
+                                    if (baja != null && baja.isNotEmpty)
+                                      CollapsibleSection(
+                                        title: 'Prioridad Baja',
+                                        count: baja.length,
+                                        icon: Icons.low_priority,
+                                        headerColor: Colors.green.shade50,
+                                        children: baja.map((a) {
+                                          return _buildAlertCard(a, true);
+                                        }).toList(),
+                                      ),
+                                  ],
                                 ],
                                 if (selectionMode && selectedAlerts.isNotEmpty)
                                   const SizedBox(height: 80),
@@ -748,11 +1096,24 @@ class _AlertsScreenState extends State<AlertsScreen> {
                                   tabIndex: tabIndex,
                                   onTabChanged: (index) =>
                                       setState(() => tabIndex = index),
+                                  groupByPriority: groupByPriority,
+                                  onGroupByPriorityChanged: (value) {
+                                    setState(() {
+                                      groupByPriority = value;
+                                    });
+                                  },
                                 ),
                                 const TipsRecordatorios(),
                                 if (pasadas.isNotEmpty)
-                                  _buildSection('Pasadas', pasadas,
-                                      showSelection: true)
+                                  CollapsibleSection(
+                                    title: 'Historial',
+                                    count: pasadas.length,
+                                    icon: Icons.history,
+                                    headerColor: Colors.grey.shade200,
+                                    children: pasadas.map((a) {
+                                      return _buildAlertCard(a, true);
+                                    }).toList(),
+                                  )
                                 else
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
@@ -767,7 +1128,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                                                 context)),
                                         const SizedBox(height: 16),
                                         Text(
-                                          'No hay alertas pasadas',
+                                          'No hay alertas en el historial',
                                           style: TextStyle(
                                               fontSize: 18,
                                               color: AppTheme.getTextSecondary(

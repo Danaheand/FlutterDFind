@@ -1,5 +1,6 @@
 import 'package:Dfind/models/alert_data.dart';
 import 'package:Dfind/utils/alert_utils.dart';
+import 'package:Dfind/utils/time_utils.dart';
 import 'package:Dfind/providers/font_size_provider.dart';
 
 import 'package:flutter/material.dart';
@@ -31,16 +32,11 @@ class AlertCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateText = dateLabel(alert.date);
-    // Detect if this alert is in 'pasadas' tab
-    final isPasada = alert.date.isBefore(DateTime.now());
-
     final cardWidget = Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      elevation: 0,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: _color.withOpacity(0.3), width: 1.5),
+        borderRadius: BorderRadius.circular(16),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -56,213 +52,146 @@ class AlertCard extends StatelessWidget {
             : null,
         child: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                _color.withOpacity(0.05),
-                _color.withOpacity(0.02),
-              ],
-            ),
+            color: Colors.white,
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                if (showCheckbox)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: Checkbox(
-                      value: checked,
-                      onChanged: (_) => onTap(),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                      ),
+          child: Row(
+            children: [
+              // Barra de prioridad vertical a la izquierda
+              Container(
+                width: 5,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: _color,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
+                  ),
+                ),
+              ),
+              // Checkbox (si está en modo selección)
+              if (showCheckbox)
+                Padding(
+                  padding: const EdgeInsets.only(left: 12, right: 8),
+                  child: Checkbox(
+                    value: checked,
+                    onChanged: (_) => onTap(),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
                     ),
                   ),
-                Expanded(
+                ),
+              // Contenido principal
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Título grande y prominente
-                      Consumer<FontSizeProvider>(
-                        builder: (context, fontSizeProvider, _) => Text(
-                          alert.title,
-                          style: TextStyle(
-                            fontSize: fontSizeProvider.getScaledSize(22),
-                            fontWeight: FontWeight.w700,
-                            color: alert.active
-                                ? Theme.of(context).brightness == Brightness.light
-                                    ? Colors.black87
-                                    : Colors.white
-                                : Colors.black38,
-                            letterSpacing: -0.5,
-                            height: 1.2,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Fecha y hora con icono
+                      // Título en negrita con icono de repetición
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: _color.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(
-                              Icons.calendar_today_rounded,
-                              color: _color,
-                              size: 18,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Consumer<FontSizeProvider>(
-                                  builder: (context, fontSizeProvider, _) =>
-                                      Text(
-                                    dateText,
-                                    style: TextStyle(
-                                      fontSize: fontSizeProvider.getScaledSize(16),
-                                      color: Theme.of(context).brightness == Brightness.light
-                                          ? Colors.grey.shade700
-                                          : Colors.grey.shade300,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                                Consumer<FontSizeProvider>(
-                                  builder: (context, fontSizeProvider, _) =>
-                                      Text(
-                                    '${alert.date.hour.toString().padLeft(2, '0')}:${alert.date.minute.toString().padLeft(2, '0')}',
-                                    style: TextStyle(
-                                      fontSize: fontSizeProvider.getScaledSize(14),
-                                      color: Theme.of(context).brightness == Brightness.light
-                                          ? Colors.grey.shade500
-                                          : Colors.grey.shade400,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      // Objeto (si existe)
-                      if (alert.object?.isNotEmpty ?? false) ...[
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: _color.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                Icons.inventory_2_outlined,
-                                color: _color,
-                                size: 18,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                            child: Text(
-                                alert.object!,
+                            child: Consumer<FontSizeProvider>(
+                              builder: (context, fontSizeProvider, _) => Text(
+                                alert.title,
                                 style: TextStyle(
-                                  fontSize: 16,
-                                  color: Theme.of(context).brightness == Brightness.light
-                                      ? Colors.grey.shade700
-                                      : Colors.grey.shade300,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: fontSizeProvider.getScaledSize(18),
+                                  fontWeight: FontWeight.bold,
+                                  color: alert.active
+                                      ? Colors.black87
+                                      : Colors.grey,
                                 ),
-                                maxLines: 1,
+                                maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
+                          ),
+                          // Icono de repetición junto al título
+                          if (alert.repetitive) ...[
+                            const SizedBox(width: 8),
+                            Icon(
+                              Icons.repeat,
+                              size: 18,
+                              color: _color,
+                            ),
                           ],
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // Menú de opciones
-                PopupMenuButton<String>(
-                  icon: Icon(
-                    Icons.more_vert_rounded,
-                    color: Theme.of(context).brightness == Brightness.light
-                        ? Colors.grey.shade600
-                        : Colors.grey.shade400,
-                    size: 24,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  onSelected: (v) {
-                    if (isPasada) {
-                      if (v == 'delete') onDelete();
-                    } else {
-                      switch (v) {
-                        case 'toggle':
-                          onToggleActive();
-                          break;
-                        case 'delete':
-                          onDelete();
-                          break;
-                      }
-                    }
-                  },
-                  itemBuilder: (ctx) => isPasada
-                      ? [
-                          const PopupMenuItem(
-                            value: 'delete',
-                            child: Row(
-                              children: [
-                                Icon(Icons.delete_outline, size: 20),
-                                SizedBox(width: 12),
-                                Text('Eliminar'),
-                              ],
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      // Fila horizontal: Ubicación + Hora
+                      Row(
+                        children: [
+                          // Ubicación (si existe)
+                          if (alert.location?.isNotEmpty ?? false) ...[
+                            Icon(
+                              Icons.location_on,
+                              size: 16,
+                              color: Colors.grey.shade600,
                             ),
-                          ),
-                        ]
-                      : [
-                          PopupMenuItem(
-                            value: 'toggle',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  alert.active
-                                      ? Icons.pause_circle_outline
-                                      : Icons.play_circle_outline,
-                                  size: 20,
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Consumer<FontSizeProvider>(
+                                builder: (context, fontSizeProvider, _) => Text(
+                                  alert.location!,
+                                  style: TextStyle(
+                                    fontSize:
+                                        fontSizeProvider.getScaledSize(14),
+                                    color: Colors.grey.shade700,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(width: 12),
-                                Text(alert.active ? 'Desactivar' : 'Activar'),
-                              ],
+                              ),
                             ),
+                            const SizedBox(width: 12),
+                          ],
+                          // Hora con icono de reloj
+                          Icon(
+                            Icons.access_time,
+                            size: 16,
+                            color: Colors.grey.shade600,
                           ),
-                          const PopupMenuItem(
-                            value: 'delete',
-                            child: Row(
-                              children: [
-                                Icon(Icons.delete_outline, size: 20),
-                                SizedBox(width: 12),
-                                Text('Eliminar'),
-                              ],
+                          const SizedBox(width: 4),
+                          Consumer<FontSizeProvider>(
+                            builder: (context, fontSizeProvider, _) => Text(
+                              TimeUtils.formatTimeWithDay(alert.date),
+                              style: TextStyle(
+                                fontSize: fontSizeProvider.getScaledSize(14),
+                                color: Colors.grey.shade700,
+                              ),
                             ),
                           ),
                         ],
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
+              ),
+              // Badge de tiempo relativo a la derecha
+              Padding(
+                padding: const EdgeInsets.only(right: 12.0),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _getTimeBadgeColor(alert.date),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Consumer<FontSizeProvider>(
+                    builder: (context, fontSizeProvider, _) => Text(
+                      TimeUtils.getRelativeTimeText(alert.date),
+                      style: TextStyle(
+                        fontSize: fontSizeProvider.getScaledSize(12),
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -294,10 +223,10 @@ class AlertCard extends StatelessWidget {
           }
         },
         background: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: Colors.green.shade400,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
           ),
           alignment: Alignment.centerLeft,
           padding: const EdgeInsets.only(left: 30),
@@ -322,10 +251,10 @@ class AlertCard extends StatelessWidget {
           ),
         ),
         secondaryBackground: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: Colors.red.shade400,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
           ),
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.only(right: 30),
@@ -354,5 +283,23 @@ class AlertCard extends StatelessWidget {
     }
 
     return cardWidget;
+  }
+
+  /// Obtiene el color del badge de tiempo relativo según la urgencia
+  Color _getTimeBadgeColor(DateTime targetDate) {
+    final now = DateTime.now();
+    final difference = targetDate.difference(now);
+
+    if (difference.isNegative) {
+      return Colors.red.shade400; // Vencida
+    } else if (difference.inHours < 1) {
+      return Colors.orange.shade400; // Muy urgente
+    } else if (difference.inHours < 24) {
+      return Colors.amber.shade400; // Urgente
+    } else if (difference.inDays <= 1) {
+      return Colors.blue.shade400; // Mañana
+    } else {
+      return Colors.grey.shade400; // Futuro
+    }
   }
 }

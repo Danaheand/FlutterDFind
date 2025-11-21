@@ -13,6 +13,7 @@ class AlertData {
   bool repetitive;
   String? repeatFrequency;
   bool active;
+  bool completed;
   Color? color;
   String? imagePath;
   List<int>? selectedWeekdays;
@@ -30,6 +31,7 @@ class AlertData {
     this.repetitive = false,
     this.repeatFrequency,
     this.active = true,
+    this.completed = false,
     this.color,
     this.imagePath,
     this.selectedWeekdays,

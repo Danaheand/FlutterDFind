@@ -36,11 +36,11 @@ class WeekdayIndicator extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isSelected
-                    ? const Color(0xFF1E293B) // slate-900
+                    ? Theme.of(context).colorScheme.primary // slate-900
                     : Colors.transparent,
                 border: Border.all(
                   color: isSelected
-                      ? const Color(0xFF1E293B)
+                      ? Theme.of(context).colorScheme.primary
                       : const Color(0xFF94A3B8), // slate-400
                   width: 2,
                 ),
@@ -52,7 +52,7 @@ class WeekdayIndicator extends StatelessWidget {
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: isSelected
-                        ? Colors.white
+                        ? Theme.of(context).colorScheme.onPrimary
                         : const Color(0xFF64748B), // slate-500
                   ),
                 ),

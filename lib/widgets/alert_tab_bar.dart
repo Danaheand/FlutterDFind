@@ -4,11 +4,15 @@ import '../theme/app_theme.dart';
 class AlertTabBar extends StatelessWidget {
   final int tabIndex;
   final Function(int) onTabChanged;
+  final bool groupByPriority;
+  final Function(bool) onGroupByPriorityChanged;
 
   const AlertTabBar({
     super.key,
     required this.tabIndex,
     required this.onTabChanged,
+    required this.groupByPriority,
+    required this.onGroupByPriorityChanged,
   });
 
   @override
@@ -18,6 +22,7 @@ class AlertTabBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
+          // Tabs: Programado y Historial
           Expanded(
             child: InkWell(
               onTap: () => onTabChanged(0),
@@ -33,7 +38,7 @@ class AlertTabBar extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    'Actuales',
+                    'Programado',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -66,7 +71,7 @@ class AlertTabBar extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    'Pasadas',
+                    'Historial',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -80,6 +85,37 @@ class AlertTabBar extends StatelessWidget {
                     ),
                   ),
                 ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Botón de toggle de agrupación por prioridad
+          InkWell(
+            onTap: () => onGroupByPriorityChanged(!groupByPriority),
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: groupByPriority
+                    ? Colors.blue.shade400
+                    : isLight
+                        ? Colors.grey.shade200
+                        : Colors.grey.shade800,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: groupByPriority
+                      ? Colors.blue.shade600
+                      : Colors.transparent,
+                  width: 2,
+                ),
+              ),
+              child: Icon(
+                Icons.sort,
+                size: 20,
+                color: groupByPriority
+                    ? Colors.white
+                    : isLight
+                        ? Colors.grey.shade600
+                        : Colors.grey.shade400,
               ),
             ),
           ),
