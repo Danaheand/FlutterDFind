@@ -8,8 +8,6 @@ import '../providers/recordatorio_provider.dart';
 import '../services/trash_service.dart';
 import '../services/session_manager.dart';
 import '../widgets/custom_text_button.dart';
-import '../widgets/palette.dart';
-import '../widgets/paletteActual.dart';
 import '../theme/app_theme.dart';
 import 'pendientes_screen.dart';
 import '../repository/remote_user_repository.dart';
@@ -1022,61 +1020,6 @@ Widget _buildInitialCircle(
                           trailing:
                               const Icon(Icons.arrow_forward_ios, size: 16),
                           onTap: _showTrashDialog,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // PALETA DE COLORES
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: _buildCard(
-                        margin: EdgeInsets.zero,
-                        child: ListTile(
-                          leading: Icon(Icons.palette_outlined,
-                              color: Theme.of(context).brightness ==
-                                      Brightness.light
-                                  ? Colors.purple
-                                  : Colors.purpleAccent),
-                          title: const Text('Paleta de Colores'),
-                          subtitle: const Text('Ver colores del tema actual'),
-                          trailing:
-                              const Icon(Icons.arrow_forward_ios, size: 16),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const PaletteViewer(),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // PALETA PERSONALIZADA
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: _buildCard(
-                        margin: EdgeInsets.zero,
-                        child: ListTile(
-                          leading: Icon(Icons.color_lens_outlined,
-                              color: Theme.of(context).brightness ==
-                                      Brightness.light
-                                  ? Colors.deepPurple
-                                  : Colors.deepPurpleAccent),
-                          title: const Text('Paleta Personalizada'),
-                          subtitle: const Text('Ver colores personalizados'),
-                          trailing:
-                              const Icon(Icons.arrow_forward_ios, size: 16),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const CustomPaletteViewer(),
-                              ),
-                            );
-                          },
                         ),
                       ),
                     ),
