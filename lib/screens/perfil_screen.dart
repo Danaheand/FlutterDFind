@@ -1377,11 +1377,11 @@ Widget _buildInitialCircle(
 
 String _getAvatarName(String key) {
   final names = {
-    'avatar1': '😎 Cool Boy',
-    'avatar2': '🤩 Star Eyes',
-    'avatar3': '😸 Happy Cat',
-    'avatar4': '🐶 Puppy',
-    'avatar5': '🦄 Unicorn',
+    'avatar1': 'Luli Panda',
+    'avatar2': 'Rulo Oru',
+    'avatar3': 'Papir Tapi',
+    'avatar4': 'Morsa Chorsa',
+    'avatar5': 'Zebra Debra',
   };
   return names[key] ?? key;
 }

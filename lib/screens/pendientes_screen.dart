@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
@@ -288,7 +289,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
   void _playConfettiForPlace(String place) {
     if (!_confettiControllers.containsKey(place)) {
       _confettiControllers[place] = ConfettiController(
-        duration: const Duration(milliseconds: 600),
+        duration: const Duration(milliseconds: 1200),
       );
     }
     _confettiControllers[place]!.play();
@@ -408,11 +409,12 @@ class _InventoryScreenState extends State<InventoryScreen> {
     // Crear controlador si no existe
     if (!_confettiControllers.containsKey(place)) {
       _confettiControllers[place] = ConfettiController(
-        duration: const Duration(milliseconds: 600),
+        duration: const Duration(milliseconds: 1200),
       );
     }
 
     return Stack(
+      clipBehavior: Clip.none,
       children: [
         Card(
           margin: const EdgeInsets.only(bottom: 12),
@@ -514,18 +516,17 @@ class _InventoryScreenState extends State<InventoryScreen> {
             ],
           ),
         ),
-        // Confetti widget
-        Align(
-          alignment: Alignment.center,
+        // Confetti widget - positioned absolutely to fill the entire space
+        Positioned.fill(
           child: IgnorePointer(
             child: ConfettiWidget(
               confettiController: _confettiControllers[place]!,
-              blastDirection: 0, // Explosión en todas direcciones
+              blastDirection: pi / 2,
               emissionFrequency: 0.85,
-              numberOfParticles: 50,
-              maxBlastForce: 200,
-              minBlastForce: 100,
-              gravity: 0.5,
+              numberOfParticles: 150,
+              maxBlastForce: 400,
+              minBlastForce: 200,
+              gravity: 0.2,
               shouldLoop: false,
               colors: const [
                 Color(0xFF2196F3),
