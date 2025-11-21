@@ -1,13 +1,10 @@
-// lib/register_screen.dart
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import '../widgets/custom_text_button.dart';
+import '../services/api_service.dart';
 import 'terminos_screen.dart';
 import 'politicas_privacidad_screen.dart';
-import '../services/api_service.dart';
 import 'verify_email_screen.dart';
 
-/// Pantalla principal de registro (mejorada UI/UX).
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -73,15 +70,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _submit() async {
-    if (!mounted) return; // Agregar al inicio del método
+    if (!mounted) return;
 
     final valid = _formKey.currentState?.validate() ?? false;
     if (!valid) return;
     if (!_agreeTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content:
-                Text('Debes aceptar los Términos y la Política de Privacidad')),
+          content:
+              Text('Debes aceptar los Términos y la Política de Privacidad'),
+        ),
       );
       return;
     }
@@ -89,14 +87,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
 
     try {
-      print('🔍 Probando conectividad...');
       final hasConnection = await ApiService.testConnection();
       if (!hasConnection) {
         throw Exception(
-            'No se puede conectar al servidor. Verifica tu conexión a internet.');
+          'No se puede conectar al servidor. Verifica tu conexión a internet.',
+        );
       }
 
-      print('Iniciando registro...');
       final result = await ApiService.registerUser(
         nombreUsuario: _nameCtrl.text.trim(),
         correo: _emailCtrl.text.trim(),
@@ -109,10 +106,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final email = _emailCtrl.text.trim();
 
       if (result['success'] == true) {
-        // Evitar enviar el código dos veces: algunos endpoints de registro
-        // ya envían el correo automáticamente en el backend. Si la
-        // respuesta del registro contiene un mensaje indicando que se
-        // envió el código, NO llamamos a enviarCodigoVerificacion otra vez.
         final data = result['data'];
         bool backendAlreadySent = false;
         try {
@@ -165,7 +158,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (_) => VerifyEmailScreen(
-                correo: email, alreadySent: navigatedWithAlreadySent),
+              correo: email,
+              alreadySent: navigatedWithAlreadySent,
+            ),
           ),
         );
       } else {
@@ -179,10 +174,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
       }
     } catch (e) {
-      print('Error registro: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('❌ $e'),
+          content: Text('$e'),
           backgroundColor: Colors.red,
           duration: const Duration(seconds: 6),
         ),
@@ -227,50 +221,97 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Crear cuenta')),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
-                elevation: 3,
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: theme.colorScheme.onBackground,
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: theme.brightness == Brightness.light
+                ? [
+                    Colors.white,
+                    Colors.orange.withOpacity(0.10),
+                    Colors.orangeAccent.withOpacity(0.06),
+                  ]
+                : [
+                    theme.colorScheme.surface,
+                    theme.colorScheme.background,
+                  ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: theme.cardColor.withOpacity(
+                      theme.brightness == Brightness.light ? 0.98 : 0.92,
+                    ),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 18,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
                   child: Form(
                     key: _formKey,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color:
-                                    theme.colorScheme.primary.withOpacity(0.12),
+                                color: Colors.blueAccent.withOpacity(0.15),
                               ),
-                              child: Icon(Icons.person_add_alt_1,
-                                  color: theme.colorScheme.primary),
+                              child: const Icon(
+                                Icons.person_add_alt_1_rounded,
+                                color: Colors.blueAccent,
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: Text(
-                                'Regístrate',
-                                style: theme.textTheme.titleLarge
-                                    ?.copyWith(fontWeight: FontWeight.w700),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Crear cuenta',
+                                    style: theme.textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Configura tu cuenta para empezar a organizar todo con DFind.',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.textTheme.bodySmall?.color
+                                          ?.withOpacity(0.75),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 18),
-
-                        // Nombre
+                        const SizedBox(height: 20),
                         TextFormField(
                           controller: _nameCtrl,
                           decoration: const InputDecoration(
@@ -281,15 +322,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           validator: _validateName,
                         ),
                         const SizedBox(height: 12),
-
-                        // Email
                         TextFormField(
                           controller: _emailCtrl,
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
                             labelText: 'Email',
                             hintText: 'tucorreo@dominio.com',
-                            prefixIcon: const Icon(Icons.alternate_email),
+                            prefixIcon:
+                                const Icon(Icons.alternate_email_rounded),
                             suffixIcon: _emailCtrl.text.isEmpty
                                 ? null
                                 : IconButton(
@@ -297,144 +337,150 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       _emailCtrl.clear();
                                       setState(() {});
                                     },
-                                    icon: const Icon(Icons.clear),
+                                    icon: const Icon(Icons.clear_rounded),
                                   ),
                           ),
                           onChanged: (_) => setState(() {}),
                           validator: _validateEmail,
                         ),
                         const SizedBox(height: 12),
-
-                        // Contraseña con fuerza
-                        Builder(builder: (context) {
-                          final val = _passCtrl.text;
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              TextFormField(
-                                controller: _passCtrl,
-                                obscureText: _obscure,
-                                decoration: InputDecoration(
-                                  labelText: 'Contraseña',
-                                  prefixIcon: const Icon(Icons.lock_outline),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(_obscure
-                                        ? Icons.visibility_off
-                                        : Icons.visibility),
-                                    onPressed: () =>
-                                        setState(() => _obscure = !_obscure),
+                        Builder(
+                          builder: (context) {
+                            final val = _passCtrl.text;
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                TextFormField(
+                                  controller: _passCtrl,
+                                  obscureText: _obscure,
+                                  decoration: InputDecoration(
+                                    labelText: 'Contraseña',
+                                    prefixIcon:
+                                        const Icon(Icons.lock_outline_rounded),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _obscure
+                                            ? Icons.visibility_off_rounded
+                                            : Icons.visibility_rounded,
+                                      ),
+                                      onPressed: () =>
+                                          setState(() => _obscure = !_obscure),
+                                    ),
                                   ),
+                                  validator: _validatePassword,
+                                  onChanged: (_) => setState(() {}),
                                 ),
-                                validator: _validatePassword,
-                                onChanged: (_) => setState(() {}),
-                              ),
-                              const SizedBox(height: 12),
-                              _buildPasswordRequirements(val),
-                            ],
-                          );
-                        }),
+                                const SizedBox(height: 12),
+                                _buildPasswordRequirements(val),
+                              ],
+                            );
+                          },
+                        ),
                         const SizedBox(height: 12),
-
-                        // Confirm
                         TextFormField(
                           controller: _confirmCtrl,
                           obscureText: _obscureConfirm,
                           decoration: InputDecoration(
                             labelText: 'Confirmar contraseña',
-                            prefixIcon: const Icon(Icons.lock_person),
+                            prefixIcon: const Icon(
+                              Icons.lock_person_outlined,
+                            ),
                             suffixIcon: IconButton(
-                              icon: Icon(_obscureConfirm
-                                  ? Icons.visibility_off
-                                  : Icons.visibility),
+                              icon: Icon(
+                                _obscureConfirm
+                                    ? Icons.visibility_off_rounded
+                                    : Icons.visibility_rounded,
+                              ),
                               onPressed: () => setState(
-                                  () => _obscureConfirm = !_obscureConfirm),
+                                () => _obscureConfirm = !_obscureConfirm,
+                              ),
                             ),
                           ),
                           validator: _validateConfirm,
                         ),
                         const SizedBox(height: 12),
-
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Checkbox(
-                                value: _agreeTerms,
-                                onChanged: (v) =>
-                                    setState(() => _agreeTerms = v ?? false)),
+                              value: _agreeTerms,
+                              onChanged: (v) =>
+                                  setState(() => _agreeTerms = v ?? false),
+                            ),
                             Expanded(
-                              child: GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) => const TermsScreen()),
-                                  );
-                                },
-                                child: RichText(
-                                  text: TextSpan(
-                                    text: 'Acepto los ',
-                                    style:
-                                        Theme.of(context).textTheme.bodyMedium,
-                                    children: [
-                                      TextSpan(
-                                        text: 'Términos',
-                                        style: TextStyle(
-                                          color: theme.colorScheme.primary,
-                                          decoration: TextDecoration.underline,
-                                        ),
-                                        recognizer: TapGestureRecognizer()
-                                          ..onTap = () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (_) =>
-                                                    const TermsScreen(),
-                                              ),
-                                            );
-                                          },
+                              child: RichText(
+                                text: TextSpan(
+                                  text: 'Acepto los ',
+                                  style: theme.textTheme.bodyMedium,
+                                  children: [
+                                    TextSpan(
+                                      text: 'Términos',
+                                      style: const TextStyle(
+                                        color: Colors.blueAccent,
+                                        decoration: TextDecoration.underline,
                                       ),
-                                      const TextSpan(text: ' y la '),
-                                      TextSpan(
-                                        text: 'Política de privacidad',
-                                        style: TextStyle(
-                                          color: theme.colorScheme.primary,
-                                          decoration: TextDecoration.underline,
-                                        ),
-                                        recognizer: TapGestureRecognizer()
-                                          ..onTap = () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (_) =>
-                                                    const PrivacyPolicyScreen(),
-                                              ),
-                                            );
-                                          },
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  const TermsScreen(),
+                                            ),
+                                          );
+                                        },
+                                    ),
+                                    const TextSpan(text: ' y la '),
+                                    TextSpan(
+                                      text: 'Política de privacidad',
+                                      style: const TextStyle(
+                                        color: Colors.blueAccent,
+                                        decoration: TextDecoration.underline,
                                       ),
-                                    ],
-                                  ),
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  const PrivacyPolicyScreen(),
+                                            ),
+                                          );
+                                        },
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
                           ],
                         ),
-
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 16),
                         SizedBox(
                           height: 48,
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _submit,
                             style: ElevatedButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12))),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                            ),
                             child: _isLoading
                                 ? const SizedBox(
                                     width: 18,
                                     height: 18,
                                     child: CircularProgressIndicator(
-                                        strokeWidth: 2, color: Colors.white))
-                                : const Text('Crear cuenta',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.w700)),
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Crear cuenta',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.3,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                           ),
                         ),
                       ],
@@ -461,18 +507,18 @@ class _RequirementItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           Icon(
-            isValid ? Icons.check_circle : Icons.circle_outlined,
+            isValid ? Icons.check_circle_rounded : Icons.circle_outlined,
             size: 16,
             color: isValid
                 ? Colors.green
-                : Theme.of(context).brightness == Brightness.light
-                    ? Colors.grey
-                    : Colors.grey[400],
+                : (isLight ? Colors.grey : Colors.grey[400]),
           ),
           const SizedBox(width: 8),
           Text(
@@ -480,9 +526,7 @@ class _RequirementItem extends StatelessWidget {
             style: TextStyle(
               color: isValid
                   ? Colors.green
-                  : Theme.of(context).brightness == Brightness.light
-                      ? Colors.grey
-                      : Colors.grey[400],
+                  : (isLight ? Colors.grey : Colors.grey[400]),
               fontSize: 13,
             ),
           ),
@@ -491,113 +535,3 @@ class _RequirementItem extends StatelessWidget {
     );
   }
 }
-
-/// Pantalla para listar usuarios guardados (solo demo).
-/// COMENTADO: Ahora usamos API remota en lugar de repositorio local
-/*
-class UsersListScreen extends StatefulWidget {
-  const UsersListScreen({super.key});
-
-  @override
-  State<UsersListScreen> createState() => _UsersListScreenState();
-}
-
-class _UsersListScreenState extends State<UsersListScreen> {
-  late Future<List<dynamic>> _future;
-
-  @override
-  void initState() {
-    super.initState();
-    _future = LocalUserRepository.instance.getAll();
-  }
-
-  Future<void> _refresh() async {
-    setState(() => _future = LocalUserRepository.instance.getAll());
-    await _future;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Usuarios Registrados')),
-      body: FutureBuilder<List<User>>(
-        future: _future,
-        builder: (context, snap) {
-          if (snap.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final list = snap.data ?? [];
-          if (list.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.group_off_outlined,
-                      size: 80, color: Colors.grey),
-                  const SizedBox(height: 12),
-                  const Text('No hay usuarios guardados (demo)'),
-                  const SizedBox(height: 12),
-                  ElevatedButton(
-                      onPressed: () => Navigator.of(context).maybePop(),
-                      child: const Text('Volver')),
-                ],
-              ),
-            );
-          }
-          return RefreshIndicator(
-            onRefresh: _refresh,
-            child: ListView.separated(
-              padding: const EdgeInsets.all(12),
-              itemCount: list.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
-              itemBuilder: (_, i) {
-                final u = list[i];
-                return Card(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                        child: Text(u.nombreUsuario.isNotEmpty
-                            ? u.nombreUsuario[0].toUpperCase()
-                            : 'U')),
-                    title: Text(u.nombreUsuario),
-                    subtitle: Text(u.email),
-                    trailing: Text(u.fechaCreacionIso.split('T').first),
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (_) => AlertDialog(
-                          title: Text(u.nombreUsuario),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('ID: ${u.idUsuario}'),
-                              const SizedBox(height: 6),
-                              Text('Email: ${u.email}'),
-                              const SizedBox(height: 6),
-                              Text(
-                                  'Hash (SHA256): ${u.contrasenaHash.substring(0, 12)}...'),
-                              const SizedBox(height: 6),
-                              Text('Creado: ${u.fechaCreacionIso}'),
-                            ],
-                          ),
-                          actions: [
-                            CustomTextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('Cerrar')),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-*/
