@@ -5,9 +5,14 @@ import '../../widgets/custom_text_button.dart';
 class ModalPendientes extends StatefulWidget {
   final Function(String name, String placeName, int quantity) onAdd;
 
+  /// 🔹 Lugar predefinido (opcional).
+  /// Si viene distinto de null, el lugar se muestra fijo y no se puede cambiar.
+  final String? predefinedPlace;
+
   const ModalPendientes({
     super.key,
     required this.onAdd,
+    this.predefinedPlace,
   });
 
   @override
@@ -18,7 +23,7 @@ class _ModalPendientesState extends State<ModalPendientes> {
   final _nameController = TextEditingController();
   final _quantityController = TextEditingController(text: '1');
   final _customPlaceController = TextEditingController();
-  String _selectedPlace = 'Supermercado';
+  late String _selectedPlace;
 
   final List<String> _places = [
     'Supermercado',
@@ -29,6 +34,13 @@ class _ModalPendientesState extends State<ModalPendientes> {
     'Tienda de Electrónicos',
     'Otro',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Si hay lugar predefinido, usamos ese; si no, el default "Supermercado"
+    _selectedPlace = widget.predefinedPlace ?? 'Supermercado';
+  }
 
   @override
   void dispose() {
@@ -57,18 +69,27 @@ class _ModalPendientesState extends State<ModalPendientes> {
       return;
     }
 
-    // Validar lugar personalizado si se selecciona "Otro"
-    String finalPlace = _selectedPlace;
-    if (_selectedPlace == 'Otro') {
-      final customPlace = _customPlaceController.text.trim();
-      if (customPlace.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Por favor ingresa un nombre para el lugar')),
-        );
-        return;
+    String finalPlace;
+
+    // ✅ Si viene lugar predefinido, usamos ese SIEMPRE
+    if (widget.predefinedPlace != null &&
+        widget.predefinedPlace!.trim().isNotEmpty) {
+      finalPlace = widget.predefinedPlace!.trim();
+    } else {
+      // 🔹 Misma lógica anterior (dropdown + "Otro")
+      finalPlace = _selectedPlace;
+      if (_selectedPlace == 'Otro') {
+        final customPlace = _customPlaceController.text.trim();
+        if (customPlace.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Por favor ingresa un nombre para el lugar'),
+            ),
+          );
+          return;
+        }
+        finalPlace = customPlace;
       }
-      finalPlace = customPlace;
     }
 
     widget.onAdd(name, finalPlace, quantity);
@@ -77,6 +98,9 @@ class _ModalPendientesState extends State<ModalPendientes> {
 
   @override
   Widget build(BuildContext context) {
+    final hasPredefinedPlace = widget.predefinedPlace != null &&
+        widget.predefinedPlace!.trim().isNotEmpty;
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
@@ -113,39 +137,58 @@ class _ModalPendientesState extends State<ModalPendientes> {
               textCapitalization: TextCapitalization.words,
             ),
             const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              // initialValue: _selectedPlace,
-              decoration: const InputDecoration(
-                labelText: 'Lugar de compra',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.store),
-              ),
-              items: _places.map((place) {
-                return DropdownMenuItem(
-                  value: place,
-                  child: Text(place),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _selectedPlace = value);
-                }
-              },
-            ),
-            // Campo para lugar personalizado
-            if (_selectedPlace == 'Otro') ...[
-              const SizedBox(height: 16),
+
+            // 🔹 Si HAY lugar predefinido → campo fijo con mismo formato visual
+            if (hasPredefinedPlace) ...[
               TextField(
-                controller: _customPlaceController,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre del lugar',
-                  hintText: 'Ej: Costco, Carrefour, Mercadona...',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.edit_location),
+                enabled: false,
+                controller: TextEditingController(
+                  text: widget.predefinedPlace,
                 ),
-                textCapitalization: TextCapitalization.words,
+                decoration: const InputDecoration(
+                  labelText: 'Lugar de compra',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.store),
+                ),
               ),
+            ] else ...[
+              // 🔹 Si NO hay lugar predefinido → mismo dropdown de antes
+              DropdownButtonFormField<String>(
+                decoration: const InputDecoration(
+                  labelText: 'Lugar de compra',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.store),
+                ),
+                value: _places.contains(_selectedPlace)
+                    ? _selectedPlace
+                    : 'Supermercado',
+                items: _places.map((place) {
+                  return DropdownMenuItem(
+                    value: place,
+                    child: Text(place),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => _selectedPlace = value);
+                  }
+                },
+              ),
+              if (_selectedPlace == 'Otro') ...[
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _customPlaceController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nombre del lugar',
+                    hintText: 'Ej: Costco, Carrefour, Mercadona...',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.edit_location),
+                  ),
+                  textCapitalization: TextCapitalization.words,
+                ),
+              ],
             ],
+
             const SizedBox(height: 16),
             TextField(
               controller: _quantityController,

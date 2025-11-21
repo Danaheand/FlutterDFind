@@ -5,6 +5,7 @@ import '../widgets/custom_text_button.dart';
 import 'terminos_screen.dart';
 import 'politicas_privacidad_screen.dart';
 import '../services/api_service.dart';
+import 'verify_email_screen.dart';
 
 /// Pantalla principal de registro (mejorada UI/UX).
 class RegisterScreen extends StatefulWidget {
@@ -88,44 +89,97 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Primero probar conectividad
       print('🔍 Probando conectividad...');
       final hasConnection = await ApiService.testConnection();
       if (!hasConnection) {
-        throw Exception('No se puede conectar al servidor. Verifica tu conexión a internet.');
+        throw Exception(
+            'No se puede conectar al servidor. Verifica tu conexión a internet.');
       }
 
-      print('📝 Iniciando registro...');
+      print('Iniciando registro...');
       final result = await ApiService.registerUser(
         nombreUsuario: _nameCtrl.text.trim(),
         correo: _emailCtrl.text.trim(),
-        password: _passCtrl.text, // Enviamos password sin hash
+        password: _passCtrl.text,
         aceptoTerminos: true,
         versionTerminos: "1.0",
         ipAceptacion: "192.168.1.1",
       );
 
-      if (result['success']) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Registro exitoso. Inicia sesión con tu cuenta.'),
-            backgroundColor: Colors.green,
+      final email = _emailCtrl.text.trim();
+
+      if (result['success'] == true) {
+        // Evitar enviar el código dos veces: algunos endpoints de registro
+        // ya envían el correo automáticamente en el backend. Si la
+        // respuesta del registro contiene un mensaje indicando que se
+        // envió el código, NO llamamos a enviarCodigoVerificacion otra vez.
+        final data = result['data'];
+        bool backendAlreadySent = false;
+        try {
+          if (data is Map) {
+            final msg = ((data['mensaje'] ?? data['message'] ?? '') as String)
+                .toLowerCase();
+            if (msg.contains('envi') ||
+                msg.contains('codigo') ||
+                msg.contains('correo')) {
+              backendAlreadySent = true;
+            }
+          }
+        } catch (_) {
+          backendAlreadySent = false;
+        }
+
+        bool navigatedWithAlreadySent = false;
+
+        if (!backendAlreadySent) {
+          final sendResult =
+              await ApiService.enviarCodigoVerificacion(correo: email);
+
+          if (!mounted) return;
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(sendResult['success'] == true
+                  ? 'Registro exitoso. Te enviamos un código a $email'
+                  : 'Hubo un problema al enviar el código de verificación a su correo: ${sendResult['error']}'),
+              backgroundColor:
+                  sendResult['success'] == true ? Colors.green : Colors.orange,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+
+          navigatedWithAlreadySent = sendResult['success'] == true;
+        } else {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Registro exitoso. Te enviamos un código a $email'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+
+          navigatedWithAlreadySent = true;
+        }
+
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => VerifyEmailScreen(
+                correo: email, alreadySent: navigatedWithAlreadySent),
           ),
         );
-
-        if (!mounted) return;
-        Navigator.of(context).pushReplacementNamed('/login');
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('❌ ${result['error']}'),
+            content: Text('${result['error']}'),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 6),
           ),
         );
       }
     } catch (e) {
-      print('❌ Error registro: $e');
+      print('Error registro: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('❌ $e'),
@@ -332,7 +386,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (_) => const TermsScreen(),
+                                                builder: (_) =>
+                                                    const TermsScreen(),
                                               ),
                                             );
                                           },
@@ -349,7 +404,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (_) => const PrivacyPolicyScreen(),
+                                                builder: (_) =>
+                                                    const PrivacyPolicyScreen(),
                                               ),
                                             );
                                           },
@@ -381,7 +437,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         TextStyle(fontWeight: FontWeight.w700)),
                           ),
                         ),
-
                       ],
                     ),
                   ),
