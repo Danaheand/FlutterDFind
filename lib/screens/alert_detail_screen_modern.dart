@@ -998,6 +998,136 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
           ),
           if (data.repetitive) ...[
             const SizedBox(height: 12),
+            Row(
+              children: [
+                // Botón Seleccionar Todos
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      selectedWeekdays = [0, 1, 2, 3, 4, 5, 6];
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: selectedWeekdays.length == 7
+                          ? (Theme.of(context).brightness == Brightness.light
+                              ? const Color(0xFF3B82F6)
+                              : AppTheme.primaryDark)
+                          : (Theme.of(context).brightness == Brightness.light
+                              ? const Color(0xFF3B82F6).withOpacity(0.1)
+                              : AppTheme.primaryDark.withOpacity(0.2)),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Theme.of(context).brightness == Brightness.light
+                            ? const Color(0xFF3B82F6).withOpacity(0.3)
+                            : AppTheme.primaryDark.withOpacity(0.4),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          selectedWeekdays.length == 7
+                              ? Icons.check_circle
+                              : Icons.check_circle_outline,
+                          size: 16,
+                          color: selectedWeekdays.length == 7
+                              ? Colors.white
+                              : (Theme.of(context).brightness ==
+                                      Brightness.light
+                                  ? const Color(0xFF3B82F6)
+                                  : AppTheme.primaryDark),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Todos',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: selectedWeekdays.length == 7
+                                ? Colors.white
+                                : (Theme.of(context).brightness ==
+                                        Brightness.light
+                                    ? const Color(0xFF3B82F6)
+                                    : AppTheme.primaryDark),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Botón Desmarcar Todos
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      selectedWeekdays = [];
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: selectedWeekdays.isEmpty
+                          ? (Theme.of(context).brightness == Brightness.light
+                              ? const Color(0xFF64748B)
+                              : Colors.grey[600])
+                          : (Theme.of(context).brightness == Brightness.light
+                              ? Colors.grey[100]
+                              : Colors.grey[800]),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Theme.of(context).brightness == Brightness.light
+                            ? Colors.grey[300]!
+                            : Colors.grey[700]!,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          selectedWeekdays.isEmpty
+                              ? Icons.check_circle
+                              : Icons.remove_circle_outline,
+                          size: 16,
+                          color: selectedWeekdays.isEmpty
+                              ? Colors.white
+                              : (Theme.of(context).brightness ==
+                                      Brightness.light
+                                  ? const Color(0xFF64748B)
+                                  : Colors.grey[400]),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Ninguno',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: selectedWeekdays.isEmpty
+                                ? Colors.white
+                                : (Theme.of(context).brightness ==
+                                        Brightness.light
+                                    ? const Color(0xFF64748B)
+                                    : Colors.grey[400]),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             WeekdayIndicator(
               selectedWeekdays: selectedWeekdays,
               isEditing: isEditing,

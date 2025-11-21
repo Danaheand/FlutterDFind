@@ -34,6 +34,11 @@ class _AlertsScreenState extends State<AlertsScreen>
   int tabIndex = 0;
   bool selectionMode = false;
   bool groupByPriority = false; // Toggle para agrupar por prioridad o por fecha
+  Set<AlertPriority> selectedPriorities = {
+    AlertPriority.alta,
+    AlertPriority.media,
+    AlertPriority.baja
+  }; // Filtros de prioridad
   String? _userEmail;
   int? _userId;
   bool _showTutorial = false;
@@ -80,6 +85,92 @@ class _AlertsScreenState extends State<AlertsScreen>
     AlertsScreen.onAlertDeleted = null;
     _tutorialController?.dispose();
     super.dispose();
+  }
+
+  // ================================================================
+  //           MENSAJES SUPER CUTE (CUADRO VERDE, OVERLAY)
+  // ================================================================
+
+  void _showCuteMessage(String text, IconData icon, {Color? backgroundColor}) {
+    final overlay = Overlay.of(context);
+
+    late OverlayEntry entry;
+    final controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 320),
+    );
+    final animation = CurvedAnimation(
+      parent: controller,
+      curve: Curves.easeOutBack,
+      reverseCurve: Curves.easeIn,
+    );
+
+    entry = OverlayEntry(
+      builder: (ctx) {
+        return Positioned(
+          left: 16,
+          right: 16,
+          bottom: 80, // un poco más arriba de abajo
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(-1.0, 0.0), // entra desde la izquierda
+              end: Offset.zero,
+            ).animate(animation),
+            child: FadeTransition(
+              opacity: animation,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    color: backgroundColor ?? Colors.green.shade600,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        icon,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          text,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    overlay.insert(entry);
+    controller.forward();
+
+    Future.delayed(const Duration(seconds: 2), () async {
+      try {
+        await controller.reverse();
+      } catch (_) {}
+      entry.remove();
+      controller.dispose();
+    });
   }
 
   Future<void> _checkAndShowTutorial() async {
@@ -240,8 +331,11 @@ class _AlertsScreenState extends State<AlertsScreen>
     final tomorrow = today.add(const Duration(days: 1));
 
     return alerts
-        .where(
-            (a) => a.active && a.date.isAfter(now) && a.date.isBefore(tomorrow))
+        .where((a) =>
+            a.active &&
+            a.date.isAfter(now) &&
+            a.date.isBefore(tomorrow) &&
+            selectedPriorities.contains(a.priority))
         .toList()
       ..sort((a, b) {
         // Ordenar por prioridad (alta, media, baja)
@@ -264,7 +358,8 @@ class _AlertsScreenState extends State<AlertsScreen>
         .where((a) =>
             a.active &&
             a.date.isAfter(tomorrow) &&
-            a.date.isBefore(dayAfterTomorrow))
+            a.date.isBefore(dayAfterTomorrow) &&
+            selectedPriorities.contains(a.priority))
         .toList()
       ..sort((a, b) {
         // Ordenar por prioridad (alta, media, baja)
@@ -283,7 +378,10 @@ class _AlertsScreenState extends State<AlertsScreen>
     final dayAfterTomorrow = today.add(const Duration(days: 2));
 
     return alerts
-        .where((a) => a.active && a.date.isAfter(dayAfterTomorrow))
+        .where((a) =>
+            a.active &&
+            a.date.isAfter(dayAfterTomorrow) &&
+            selectedPriorities.contains(a.priority))
         .toList()
       ..sort((a, b) {
         // Ordenar por prioridad (alta, media, baja)
@@ -298,7 +396,12 @@ class _AlertsScreenState extends State<AlertsScreen>
 
   List<AlertData> _getVencidas(List<AlertData> alerts) {
     final now = DateTime.now();
-    return alerts.where((a) => a.active && a.date.isBefore(now)).toList()
+    return alerts
+        .where((a) =>
+            a.active &&
+            a.date.isBefore(now) &&
+            selectedPriorities.contains(a.priority))
+        .toList()
       ..sort((a, b) => b.date.compareTo(a.date)); // Más recientes primero
   }
 
@@ -329,6 +432,124 @@ class _AlertsScreenState extends State<AlertsScreen>
       ..sort((a, b) => a.date.compareTo(b.date)); // Ordenar por fecha
   }
 
+  Widget _buildPriorityFilters() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Text(
+            'Prioridad:',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade700,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Wrap(
+              spacing: 8,
+              children: [
+                _buildPriorityChip(
+                  label: 'Todas',
+                  isSelected: selectedPriorities.length == 3,
+                  color: Colors.blue.shade400,
+                  onTap: () {
+                    setState(() {
+                      selectedPriorities = {
+                        AlertPriority.alta,
+                        AlertPriority.media,
+                        AlertPriority.baja
+                      };
+                    });
+                  },
+                ),
+                _buildPriorityChip(
+                  label: 'Alta',
+                  isSelected: selectedPriorities.contains(AlertPriority.alta) &&
+                      selectedPriorities.length == 1,
+                  color: Colors.red.shade400,
+                  onTap: () {
+                    setState(() {
+                      selectedPriorities = {AlertPriority.alta};
+                    });
+                  },
+                ),
+                _buildPriorityChip(
+                  label: 'Media',
+                  isSelected:
+                      selectedPriorities.contains(AlertPriority.media) &&
+                          selectedPriorities.length == 2,
+                  color: Colors.orange.shade400,
+                  onTap: () {
+                    setState(() {
+                      // Al seleccionar media, también incluimos alta
+                      selectedPriorities = {
+                        AlertPriority.alta,
+                        AlertPriority.media
+                      };
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPriorityChip({
+    required String label,
+    required bool isSelected,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? color : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? color : Colors.grey.shade300,
+            width: 2,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isSelected ? Icons.check_circle : Icons.circle_outlined,
+              size: 18,
+              color: isSelected ? Colors.white : Colors.grey.shade600,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? Colors.white : Colors.grey.shade700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// Verifica si se pueden completar las alertas seleccionadas
   /// No se pueden completar alertas desactivadas o pasadas
   bool _canCompleteSelection() {
@@ -352,22 +573,19 @@ class _AlertsScreenState extends State<AlertsScreen>
       await provider.toggleActivoRecordatorio(alert.title);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(alert.active
-                ? 'Recordatorio pausado'
-                : 'Recordatorio activado'),
-            duration: const Duration(seconds: 2),
-          ),
+        _showCuteMessage(
+          alert.active ? 'Recordatorio pausado' : 'Recordatorio activado',
+          alert.active ? Icons.pause_circle_rounded : Icons.play_circle_rounded,
+          backgroundColor:
+              alert.active ? Colors.orange.shade600 : Colors.green.shade600,
         );
       }
     } on RecordatorioException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.message}'),
-            backgroundColor: Colors.red,
-          ),
+        _showCuteMessage(
+          'Error: ${e.message}',
+          Icons.error_rounded,
+          backgroundColor: Colors.red.shade600,
         );
       }
     }
@@ -388,13 +606,10 @@ class _AlertsScreenState extends State<AlertsScreen>
 
     if (alertasInvalidas.isNotEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'No se pueden completar alertas desactivadas o pasadas (${alertasInvalidas.length})'),
-            backgroundColor: Colors.orange,
-            duration: const Duration(seconds: 3),
-          ),
+        _showCuteMessage(
+          'No se pueden completar alertas desactivadas o pasadas (${alertasInvalidas.length})',
+          Icons.warning_rounded,
+          backgroundColor: Colors.orange.shade600,
         );
       }
       return;
@@ -456,21 +671,17 @@ class _AlertsScreenState extends State<AlertsScreen>
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                '✅ ${alertsToComplete.length} recordatorio(s) completado(s)'),
-            backgroundColor: Colors.green,
-          ),
+        _showCuteMessage(
+          '${alertsToComplete.length} recordatorio(s) completado(s)',
+          Icons.check_circle_rounded,
         );
       }
     } on RecordatorioException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.message}'),
-            backgroundColor: Colors.red,
-          ),
+        _showCuteMessage(
+          'Error: ${e.message}',
+          Icons.error_rounded,
+          backgroundColor: Colors.red.shade600,
         );
       }
     }
@@ -558,21 +769,17 @@ class _AlertsScreenState extends State<AlertsScreen>
 
           // El provider ya actualizó su lista
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('♻️ Recordatorio enviado a la papelera'),
-                backgroundColor: Colors.green,
-                duration: Duration(seconds: 2),
-              ),
+            _showCuteMessage(
+              'Recordatorio enviado a la papelera',
+              Icons.delete_rounded,
             );
           }
         } catch (e) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Error: $e'),
-                backgroundColor: Colors.red,
-              ),
+            _showCuteMessage(
+              'Error: $e',
+              Icons.error_rounded,
+              backgroundColor: Colors.red.shade600,
             );
           }
         }
@@ -704,11 +911,10 @@ class _AlertsScreenState extends State<AlertsScreen>
 
   void _openAlertDialog() async {
     if (_userEmail == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No hay usuario autenticado'),
-          backgroundColor: Colors.orange,
-        ),
+      _showCuteMessage(
+        'No hay usuario autenticado',
+        Icons.warning_rounded,
+        backgroundColor: Colors.orange.shade600,
       );
       return;
     }
@@ -742,20 +948,17 @@ class _AlertsScreenState extends State<AlertsScreen>
         await provider.crearRecordatorio(nuevoRecordatorio);
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Recordatorio creado exitosamente'),
-              backgroundColor: Colors.green,
-            ),
+          _showCuteMessage(
+            'Recordatorio creado exitosamente',
+            Icons.add_alert_rounded,
           );
         }
       } on RecordatorioException catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error: ${e.message}'),
-              backgroundColor: Colors.red,
-            ),
+          _showCuteMessage(
+            'Error: ${e.message}',
+            Icons.error_rounded,
+            backgroundColor: Colors.red.shade600,
           );
         }
       }
@@ -840,21 +1043,17 @@ class _AlertsScreenState extends State<AlertsScreen>
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                '♻️ ${alertsToDelete.length} recordatorio(s) enviado(s) a la papelera'),
-            backgroundColor: Colors.green,
-          ),
+        _showCuteMessage(
+          '${alertsToDelete.length} recordatorio(s) enviado(s) a la papelera',
+          Icons.delete_rounded,
         );
       }
     } on RecordatorioException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.message}'),
-            backgroundColor: Colors.red,
-          ),
+        _showCuteMessage(
+          'Error: ${e.message}',
+          Icons.error_rounded,
+          backgroundColor: Colors.red.shade600,
         );
       }
     }
@@ -970,6 +1169,8 @@ class _AlertsScreenState extends State<AlertsScreen>
                                   },
                                 ),
                                 const TipsRecordatorios(),
+                                // Filtros de prioridad (solo en modo fecha)
+                                if (!groupByPriority) _buildPriorityFilters(),
                                 if (alerts.isEmpty)
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
