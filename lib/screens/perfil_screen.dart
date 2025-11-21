@@ -1208,7 +1208,7 @@ Widget _buildInitialCircle(
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Elige tu estilo de avatar',
+                    'Personaliza tu Perfil',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 12),
@@ -1216,7 +1216,7 @@ Widget _buildInitialCircle(
                     children: [
                       Expanded(
                         child: ChoiceChip(
-                          label: const Text('Avatares divertidos'),
+                          label: const Text('Elige tu Avatar'),
                           selected: _avatarMode == AvatarMode.preset,
                           onSelected: (_) {
                             setStateModal(() {
@@ -1231,7 +1231,7 @@ Widget _buildInitialCircle(
                       const SizedBox(width: 8),
                       Expanded(
                         child: ChoiceChip(
-                          label: const Text('Inicial + color'),
+                          label: const Text('Elige el color de tu Inicial'),
                           selected: _avatarMode == AvatarMode.initial,
                           onSelected: (_) {
                             setStateModal(() {
@@ -1247,7 +1247,7 @@ Widget _buildInitialCircle(
                   ),
                   const SizedBox(height: 16),
                   if (_avatarMode == AvatarMode.preset) ...[
-                    Text('Avatares divertidos disponibles:',
+                    Text('Avatars Disponibles:',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                             )),
