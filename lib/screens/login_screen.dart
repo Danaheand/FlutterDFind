@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../services/session_manager.dart';
 import '../providers/font_size_provider.dart';
 import 'verify_email_screen.dart';
+import 'forgot_password_screen.dart';
 
 class AppLoginScreen extends StatefulWidget {
   const AppLoginScreen({super.key});
@@ -246,7 +247,6 @@ class _LoginScreenState extends State<AppLoginScreen> {
                               ? 'Email no válido'
                               : null,
                     ),
-                    const SizedBox(height: 12),
                     TextFormField(
                       controller: _passCtrl,
                       obscureText: _obscure,
@@ -264,6 +264,26 @@ class _LoginScreenState extends State<AppLoginScreen> {
                       ),
                       validator: (v) =>
                           v == null || v.isEmpty ? 'Ingrese contraseña' : null,
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const ForgotPasswordRequestScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          '¿Olvidaste tu contraseña?',
+                          style: TextStyle(
+                            color: Colors.orange,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
                     ),
                     if (_error)
                       Padding(
