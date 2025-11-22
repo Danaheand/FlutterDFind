@@ -410,19 +410,20 @@ Widget _buildAvatar() {
   Widget avatarChild;
   if (_avatarMode == AvatarMode.preset && _selectedAvatarKey != null) {
     avatarChild = CircleAvatar(
-      radius: 48,
+      radius: 70,
       backgroundImage:
           AssetImage('assets/avatars/${_selectedAvatarKey!}.png'),
       backgroundColor: Colors.transparent,
     );
   } else {
     avatarChild = CircleAvatar(
-      radius: 48,
+      radius: 70,
       backgroundColor: _initialColor,
       child: Text(
         nameInitial,
+        textAlign: TextAlign.center,
         style: const TextStyle(
-          fontSize: 40,
+          fontSize: 72,
           fontWeight: FontWeight.bold,
           color: Colors.white,
         ),
@@ -436,8 +437,8 @@ Widget _buildAvatar() {
       alignment: Alignment.center,
       children: [
         Container(
-          width: 96,
-          height: 96,
+          width: 140,
+          height: 140,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(color: Colors.white, width: 4),
@@ -913,9 +914,11 @@ Widget _buildInitialCircle(
 
 
   @override
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final screenHeight = MediaQuery.of(context).size.height;
 
     // Mostrar indicador de carga si aún está cargando el usuario
     if (_isLoading) {
@@ -963,94 +966,114 @@ Widget _buildInitialCircle(
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
             children: [
+              // Header con gradient - ocupa la mitad de la pantalla
               Container(
-                height: 120,
-                color: Theme.of(context).brightness == Brightness.light
-                    ? Colors.blue[500]
-                    : AppTheme.cardDark,
-                child: null,
+                height: screenHeight * 0.45,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: theme.brightness == Brightness.light
+                        ? [
+                            Color(0xFF3B82F6).withOpacity(0.25),
+                            Color(0xFF60A5FA).withOpacity(0.15),
+                          ]
+                        : [
+                            AppTheme.primaryDark.withOpacity(0.3),
+                            AppTheme.primaryDark.withOpacity(0.2),
+                          ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildAvatar(),
+                      const SizedBox(height: 16),
+                      Text(
+                        _userName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: fontSizeProvider.fontSize + 6,
+                          color: theme.brightness == Brightness.light
+                              ? Color(0xFF3B82F6)
+                              : Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _userEmail,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontSize: fontSizeProvider.fontSize,
+                          color: theme.brightness == Brightness.light
+                              ? Colors.black54
+                              : Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              Transform.translate(
-                offset: const Offset(0, -48),
+              // Contenido - formularios y opciones
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
                 child: Column(
                   children: [
-                    _buildAvatar(),
-                    const SizedBox(height: 8),
-                    Text(_userName,
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          fontSize: fontSizeProvider.fontSize + 4,
-                        )),
-                    Text(_userEmail,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: AppTheme.getTextSecondary(context),
-                          fontSize: fontSizeProvider.fontSize,
-                        )),
-                    const SizedBox(height: 16),
                     // CONFIGURACIONES DE LA APLICACIÓN
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: _buildCard(
-                        margin: EdgeInsets.zero,
-                        child: ListTile(
-                          leading: const Icon(Icons.settings_outlined),
-                          title: const Text('Configuración'),
-                          subtitle: const Text('Tema, vibración y sonido'),
-                          trailing:
-                              const Icon(Icons.arrow_forward_ios, size: 16),
-                          onTap: _showAppSettingsDialog,
-                        ),
+                    _buildCard(
+                      margin: EdgeInsets.zero,
+                      child: ListTile(
+                        leading: const Icon(Icons.settings_outlined),
+                        title: const Text('Configuración'),
+                        subtitle: const Text('Tema, vibración y sonido'),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: _showAppSettingsDialog,
                       ),
                     ),
                     const SizedBox(height: 16),
                     // PAPELERA DE RECICLAJE
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: _buildCard(
-                        margin: EdgeInsets.zero,
-                        child: ListTile(
-                          leading: Icon(Icons.delete_outline,
-                              color: Theme.of(context).brightness ==
-                                      Brightness.light
-                                  ? Colors.orange
-                                  : AppTheme.warningDark),
-                          title: const Text('Papelera'),
-                          subtitle: Text(
-                              '${_trashService.getTrashItems().length} elementos eliminados'),
-                          trailing:
-                              const Icon(Icons.arrow_forward_ios, size: 16),
-                          onTap: _showTrashDialog,
-                        ),
+                    _buildCard(
+                      margin: EdgeInsets.zero,
+                      child: ListTile(
+                        leading: Icon(Icons.delete_outline,
+                            color: theme.brightness == Brightness.light
+                                ? Colors.orange
+                                : AppTheme.warningDark),
+                        title: const Text('Papelera'),
+                        subtitle: Text(
+                            '${_trashService.getTrashItems().length} elementos eliminados'),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: _showTrashDialog,
                       ),
                     ),
                     const SizedBox(height: 16),
                     // CERRAR SESIÓN
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).brightness == Brightness.light
-                                  ? Colors.white
-                                  : AppTheme.cardDark,
-                          foregroundColor:
-                              Theme.of(context).brightness == Brightness.light
-                                  ? Colors.red
-                                  : AppTheme.errorDark,
-                          side: BorderSide(
-                              color: Theme.of(context).brightness ==
-                                      Brightness.light
-                                  ? Colors.redAccent
-                                  : AppTheme.errorDark),
-                          minimumSize: const Size.fromHeight(48),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          elevation: 0,
-                        ),
-                        onPressed: _showLogoutConfirm,
-                        child: const Text('Cerrar Sesión',
-                            style: TextStyle(fontWeight: FontWeight.w600)),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            theme.brightness == Brightness.light
+                                ? Colors.white
+                                : AppTheme.cardDark,
+                        foregroundColor:
+                            theme.brightness == Brightness.light
+                                ? Colors.red
+                                : AppTheme.errorDark,
+                        side: BorderSide(
+                            color: theme.brightness == Brightness.light
+                                ? Colors.redAccent
+                                : AppTheme.errorDark),
+                        minimumSize: const Size.fromHeight(48),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
                       ),
+                      onPressed: _showLogoutConfirm,
+                      child: const Text('Cerrar Sesión',
+                          style: TextStyle(fontWeight: FontWeight.w600)),
                     ),
                     const SizedBox(height: 32),
                   ],
