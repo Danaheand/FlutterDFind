@@ -31,7 +31,7 @@ class AlertTabBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: tabIndex == 0
                       ? isLight
-                          ? Colors.blue.shade50
+                          ? AppTheme.primaryLight.withOpacity(0.1)
                           : AppTheme.primaryDark.withOpacity(0.2)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(16),
@@ -44,7 +44,7 @@ class AlertTabBar extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                       color: tabIndex == 0
                           ? isLight
-                              ? Colors.blue.shade800
+                              ? AppTheme.primaryLight
                               : AppTheme.primaryDark
                           : isLight
                               ? Colors.black54
@@ -64,7 +64,7 @@ class AlertTabBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: tabIndex == 1
                       ? isLight
-                          ? Colors.blue.shade50
+                          ? AppTheme.primaryLight.withOpacity(0.1)
                           : AppTheme.primaryDark.withOpacity(0.2)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(16),
@@ -77,7 +77,7 @@ class AlertTabBar extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                       color: tabIndex == 1
                           ? isLight
-                              ? Colors.blue.shade800
+                              ? AppTheme.primaryLight
                               : AppTheme.primaryDark
                           : isLight
                               ? Colors.black54
