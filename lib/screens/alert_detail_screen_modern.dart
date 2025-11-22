@@ -24,7 +24,8 @@ class AlertDetailScreenModern extends StatefulWidget {
       _AlertDetailScreenModernState();
 }
 
-class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
+class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
+    with TickerProviderStateMixin {
   late AlertData data;
   bool isEditing = false;
   bool isCompleted = false;
@@ -81,7 +82,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
   }
 
   Color get _priorityColor {
-    if (isCompleted) return AppTheme.successLight;
+    if (isCompleted) return const Color(0xFF86EFAC);
     if (!data.active) return Colors.grey.shade400;
     return data.color ?? defaultColorFor(selectedPriority);
   }
@@ -126,10 +127,10 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
       if (mounted) {
         Navigator.pop(context); // Cerrar loading
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Cambios guardados exitosamente'),
-            backgroundColor: Color(0xFF10B981),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: const Text('Cambios guardados exitosamente'),
+            backgroundColor: AppTheme.primaryLight,
+            duration: const Duration(seconds: 2),
           ),
         );
 
@@ -186,14 +187,91 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
     });
 
     if (isCompleted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('✅ Alerta completada'),
-          backgroundColor: Color(0xFF10B981),
-          duration: Duration(seconds: 1),
-        ),
-      );
+      _showCustomNotification('Completado', Icons.check_circle);
+    } else {
+      _showCustomNotification('Recordatorio activado', Icons.restore);
     }
+  }
+
+  void _showCustomNotification(String text, IconData icon) {
+    final overlay = Overlay.of(context);
+
+    late OverlayEntry entry;
+    final controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 320),
+    );
+    final animation = CurvedAnimation(
+      parent: controller,
+      curve: Curves.easeOutBack,
+      reverseCurve: Curves.easeIn,
+    );
+
+    entry = OverlayEntry(
+      builder: (ctx) {
+        return Positioned(
+          left: 16,
+          right: 16,
+          bottom: 80,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(-1.0, 0.0),
+              end: Offset.zero,
+            ).animate(animation),
+            child: FadeTransition(
+              opacity: animation,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    color: AppTheme.primaryLight,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        icon,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          text,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    overlay.insert(entry);
+    controller.forward();
+
+    Future.delayed(const Duration(seconds: 2), () async {
+      try {
+        await controller.reverse();
+      } catch (_) {}
+      entry.remove();
+      controller.dispose();
+    });
   }
 
   Future<void> _deleteAlert() async {
@@ -565,15 +643,11 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                     child: Container(
                       height: 56,
                       decoration: BoxDecoration(
-                        color: isCompleted
-                            ? AppTheme.successLight
-                            : AppTheme.successDark,
-                        // isEditing
-                        //     ? AppTheme.successDark
-                        //     : Theme.of(context).brightness ==
-                        //             Brightness.light
-                        //         ? const Color(0xFF1E293B)
-                        //         : AppTheme.cardDark,
+                        color: AppTheme.successLight.withOpacity(0.2),
+                        border: Border.all(
+                          color: AppTheme.successLight,
+                          width: 1.5,
+                        ),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
@@ -585,7 +659,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                                 : (isCompleted
                                     ? Icons.check_circle
                                     : Icons.check_circle_outline),
-                            color: Colors.white,
+                            color: AppTheme.successLight,
                             size: 24,
                           ),
                           const SizedBox(width: 8),
@@ -593,8 +667,8 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                             isEditing
                                 ? 'Guardar'
                                 : (isCompleted ? 'Completado' : 'Completar'),
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: AppTheme.successLight,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -646,8 +720,8 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
               ),
               title: Text(
                 isCompleted ? 'COMPLETADA' : _getPriorityText().toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: isCompleted ? Colors.black87 : Colors.white,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 1.5,
