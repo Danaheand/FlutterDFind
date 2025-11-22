@@ -43,6 +43,10 @@ class _InventoryScreenState extends State<InventoryScreen>
   late final ConfettiController _taskConfettiController;
   late final ConfettiController _placeConfettiController;
 
+  // 🗑️ Modo selección para eliminar categorías
+  bool _selectionMode = false;
+  Set<String> _selectedPlaces = {};
+
   @override
   void initState() {
     super.initState();
@@ -374,7 +378,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
-                    color: Colors.green.shade600, // cuadro verde bonito
+                    color: AppTheme.primaryLight, // morado azulado
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.15),
@@ -431,6 +435,58 @@ class _InventoryScreenState extends State<InventoryScreen>
   }
 
   // ================================================================
+  //                     SELECCIÓN Y ELIMINACIÓN
+  // ================================================================
+
+  Future<void> _deleteSelectedPlaces() async {
+    if (_selectedPlaces.isEmpty) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Eliminar categorías'),
+        content: Text(
+            '¿Eliminar ${_selectedPlaces.length} categoría(s) y todos sus elementos?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    // Eliminar todos los items que pertenecen a las categorías seleccionadas
+    final itemsToDelete = _items
+        .where((item) => _selectedPlaces.contains(item.placeName))
+        .toList();
+
+    for (var item in itemsToDelete) {
+      await _deleteAPI(item);
+    }
+
+    final categoriesCount = _selectedPlaces.length;
+    
+    setState(() {
+      _selectionMode = false;
+      _selectedPlaces.clear();
+    });
+
+    if (mounted) {
+      _showCuteMessage(
+        categoriesCount == 1 ? 'Categoría eliminada' : '$categoriesCount categorías eliminadas',
+        Icons.delete_outline,
+      );
+    }
+  }
+
+  // ================================================================
   //                            UI
   // ================================================================
 
@@ -440,6 +496,26 @@ class _InventoryScreenState extends State<InventoryScreen>
       appBar: AppBar(
         title: const Text('Pendientes'),
         automaticallyImplyLeading: false,
+        actions: [
+          // Botón de selección
+          IconButton(
+            icon: Icon(_selectionMode ? Icons.close : Icons.check_box_outline_blank),
+            tooltip: _selectionMode ? 'Cancelar selección' : 'Seleccionar',
+            onPressed: () {
+              setState(() {
+                _selectionMode = !_selectionMode;
+                if (!_selectionMode) _selectedPlaces.clear();
+              });
+            },
+          ),
+          // Botón de eliminar (solo visible en modo selección)
+          if (_selectionMode && _selectedPlaces.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.delete),
+              tooltip: 'Eliminar seleccionadas',
+              onPressed: _deleteSelectedPlaces,
+            ),
+        ],
       ),
       body: Stack(
         children: [
@@ -615,18 +691,45 @@ class _InventoryScreenState extends State<InventoryScreen>
             children: [
               InkWell(
                 onTap: () {
-                  pendientesState.togglePlace(place);
+                  if (_selectionMode) {
+                    // En modo selección, seleccionar/deseleccionar la categoría
+                    setState(() {
+                      if (_selectedPlaces.contains(place)) {
+                        _selectedPlaces.remove(place);
+                      } else {
+                        _selectedPlaces.add(place);
+                      }
+                    });
+                  } else {
+                    // Modo normal, expandir/contraer
+                    pendientesState.togglePlace(place);
+                  }
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
-                      Icon(
-                        isExpanded
-                            ? Icons.keyboard_arrow_down
-                            : Icons.keyboard_arrow_right,
-                        size: 28,
-                      ),
+                      // Checkbox si está en modo selección
+                      if (_selectionMode)
+                        Checkbox(
+                          value: _selectedPlaces.contains(place),
+                          onChanged: (_) {
+                            setState(() {
+                              if (_selectedPlaces.contains(place)) {
+                                _selectedPlaces.remove(place);
+                              } else {
+                                _selectedPlaces.add(place);
+                              }
+                            });
+                          },
+                        )
+                      else
+                        Icon(
+                          isExpanded
+                              ? Icons.keyboard_arrow_down
+                              : Icons.keyboard_arrow_right,
+                          size: 28,
+                        ),
                       const SizedBox(width: 8),
                       Icon(Icons.store, color: AppTheme.getPlaceIcon(context)),
                       const SizedBox(width: 8),
@@ -662,17 +765,18 @@ class _InventoryScreenState extends State<InventoryScreen>
                         ),
                       ),
                       const SizedBox(width: 4),
-                      // 🔹 Botón + que abre el MISMO modal, con lugar predefinido
-                      IconButton(
-                        icon: const Icon(Icons.add),
-                        tooltip: 'Agregar pendiente aquí',
-                        onPressed: () => _openAddItemForPlace(place),
-                      ),
+                      // 🔹 Botón + que abre el MISMO modal, con lugar predefinido (solo en modo normal)
+                      if (!_selectionMode)
+                        IconButton(
+                          icon: const Icon(Icons.add),
+                          tooltip: 'Agregar pendiente aquí',
+                          onPressed: () => _openAddItemForPlace(place),
+                        ),
                     ],
                   ),
                 ),
               ),
-              if (isExpanded) ...[
+              if (isExpanded && !_selectionMode) ...[
                 const Divider(height: 1),
                 ...items.map(
                   (item) => ListTile(
