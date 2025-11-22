@@ -453,62 +453,66 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           validator: _validateConfirm,
                         ),
                         const SizedBox(height: 12),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Checkbox(
-                              value: _agreeTerms,
-                              onChanged: (v) =>
-                                  setState(() => _agreeTerms = v ?? false),
-                              activeColor: const Color(0xFF6A4C93),
-                              checkColor: Colors.white,
-                            ),
-                            Expanded(
-                              child: RichText(
-                                text: TextSpan(
-                                  text: 'Acepto los ',
-                                  style: theme.textTheme.bodyMedium,
-                                  children: [
-                                    TextSpan(
-                                      text: 'Términos',
-                                      style: const TextStyle(
-                                        color: Color(0xFF6A4C93),
-                                        decoration: TextDecoration.underline,
+                        Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Checkbox(
+                                value: _agreeTerms,
+                                onChanged: (v) =>
+                                    setState(() => _agreeTerms = v ?? false),
+                                activeColor: const Color(0xFF6A4C93),
+                                checkColor: Colors.white,
+                              ),
+                              Expanded(
+                                child: RichText(
+                                  text: TextSpan(
+                                    text: 'Acepto los ',
+                                    style: theme.textTheme.bodyMedium,
+                                    children: [
+                                      TextSpan(
+                                        text: 'Términos',
+                                        style: const TextStyle(
+                                          color: Color(0xFF6A4C93),
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap = () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    const TermsScreen(),
+                                              ),
+                                            );
+                                          },
                                       ),
-                                      recognizer: TapGestureRecognizer()
-                                        ..onTap = () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) =>
-                                                  const TermsScreen(),
-                                            ),
-                                          );
-                                        },
-                                    ),
-                                    const TextSpan(text: ' y la '),
-                                    TextSpan(
-                                      text: 'Política de privacidad',
-                                      style: const TextStyle(
-                                        color: Color(0xFF6A4C93),
-                                        decoration: TextDecoration.underline,
+                                      const TextSpan(text: ' y la '),
+                                      TextSpan(
+                                        text: 'Política de privacidad',
+                                        style: const TextStyle(
+                                          color: Color(0xFF6A4C93),
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap = () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    const PrivacyPolicyScreen(),
+                                              ),
+                                            );
+                                          },
                                       ),
-                                      recognizer: TapGestureRecognizer()
-                                        ..onTap = () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) =>
-                                                  const PrivacyPolicyScreen(),
-                                            ),
-                                          );
-                                        },
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 16),
                         SizedBox(
