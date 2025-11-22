@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:confetti/confetti.dart';
 
 import '../providers/font_size_provider.dart';
+import '../providers/pendientes_state_provider.dart';
 import '../models/shopping_item.dart';
 import '../theme/app_theme.dart';
 import '../services/trash_service.dart';
@@ -28,7 +29,6 @@ class InventoryScreen extends StatefulWidget {
 class _InventoryScreenState extends State<InventoryScreen>
     with TickerProviderStateMixin {
   final List<ShoppingItem> _items = [];
-  final Map<String, bool> _expandedPlaces = {};
   late final TrashService _trashService;
 
   bool _loading = false;
@@ -342,7 +342,6 @@ class _InventoryScreenState extends State<InventoryScreen>
 
   void _showCuteMessage(String text, IconData icon) {
     final overlay = Overlay.of(context);
-    if (overlay == null) return;
 
     late OverlayEntry entry;
     final controller = AnimationController(
@@ -605,116 +604,118 @@ class _InventoryScreenState extends State<InventoryScreen>
   }
 
   Widget _buildPlaceGroup(String place, List<ShoppingItem> items) {
-    final isExpanded = _expandedPlaces[place] ?? true;
-    final totalItems = items.length;
+    return Consumer<PendientesStateProvider>(
+      builder: (context, pendientesState, _) {
+        final isExpanded = pendientesState.isExpanded(place);
+        final totalItems = items.length;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        children: [
-          InkWell(
-            onTap: () {
-              setState(() {
-                _expandedPlaces[place] = !isExpanded;
-              });
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  Icon(
-                    isExpanded
-                        ? Icons.keyboard_arrow_down
-                        : Icons.keyboard_arrow_right,
-                    size: 28,
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(Icons.store, color: AppTheme.getPlaceIcon(context)),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Consumer<FontSizeProvider>(
-                      builder: (context, fontSizeProvider, _) => Text(
-                        place,
-                        style: TextStyle(
-                          fontSize: fontSizeProvider.fontSize + 2,
-                          fontWeight: FontWeight.bold,
-                        ),
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          child: Column(
+            children: [
+              InkWell(
+                onTap: () {
+                  pendientesState.togglePlace(place);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isExpanded
+                            ? Icons.keyboard_arrow_down
+                            : Icons.keyboard_arrow_right,
+                        size: 28,
                       ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppTheme.getPlaceBadgeBackground(context),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '$totalItems',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color:
-                            Theme.of(context).brightness == Brightness.light
-                                ? AppTheme.placeIconLight
-                                : AppTheme.textPrimaryDark,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  // 🔹 Botón + que abre el MISMO modal, con lugar predefinido
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    tooltip: 'Agregar pendiente aquí',
-                    onPressed: () => _openAddItemForPlace(place),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (isExpanded) ...[
-            const Divider(height: 1),
-            ...items.map(
-              (item) => ListTile(
-                leading: Checkbox(
-                  value: item.isPurchased,
-                  onChanged: (_) => _toggleItem(item),
-                ),
-                title: Consumer<FontSizeProvider>(
-                  builder: (context, fontSizeProvider, _) => Text(
-                    item.name,
-                    style: TextStyle(
-                      fontSize: fontSizeProvider.fontSize + 2,
-                      decoration: item.isPurchased
-                          ? TextDecoration.lineThrough
-                          : TextDecoration.none,
-                      color: item.isPurchased
-                          ? AppTheme.getPurchasedColor(context)
-                          : null,
-                    ),
-                  ),
-                ),
-                subtitle: item.quantity != null && item.quantity! > 1
-                    ? Consumer<FontSizeProvider>(
-                        builder: (context, fontSizeProvider, _) => Text(
-                          'Cantidad: ${item.quantity}',
-                          style: TextStyle(
-                            fontSize: fontSizeProvider.fontSize - 2,
-                            color: AppTheme.getTextSecondary(context),
+                      const SizedBox(width: 8),
+                      Icon(Icons.store, color: AppTheme.getPlaceIcon(context)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Consumer<FontSizeProvider>(
+                          builder: (context, fontSizeProvider, _) => Text(
+                            place,
+                            style: TextStyle(
+                              fontSize: fontSizeProvider.fontSize + 2,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      )
-                    : null,
-                trailing: IconButton(
-                  icon: const Icon(Icons.close, size: 20),
-                  onPressed: () => _removeItem(item),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.getPlaceBadgeBackground(context),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '$totalItems',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color:
+                                Theme.of(context).brightness == Brightness.light
+                                    ? AppTheme.placeIconLight
+                                    : AppTheme.textPrimaryDark,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      // 🔹 Botón + que abre el MISMO modal, con lugar predefinido
+                      IconButton(
+                        icon: const Icon(Icons.add),
+                        tooltip: 'Agregar pendiente aquí',
+                        onPressed: () => _openAddItemForPlace(place),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        ],
-      ),
+              if (isExpanded) ...[
+                const Divider(height: 1),
+                ...items.map(
+                  (item) => ListTile(
+                    leading: Checkbox(
+                      value: item.isPurchased,
+                      onChanged: (_) => _toggleItem(item),
+                    ),
+                    title: Consumer<FontSizeProvider>(
+                      builder: (context, fontSizeProvider, _) => Text(
+                        item.name,
+                        style: TextStyle(
+                          fontSize: fontSizeProvider.fontSize + 2,
+                          decoration: item.isPurchased
+                              ? TextDecoration.lineThrough
+                              : TextDecoration.none,
+                          color: item.isPurchased
+                              ? AppTheme.getPurchasedColor(context)
+                              : null,
+                        ),
+                      ),
+                    ),
+                    subtitle: item.quantity != null && item.quantity! > 1
+                        ? Consumer<FontSizeProvider>(
+                            builder: (context, fontSizeProvider, _) => Text(
+                              'Cantidad: ${item.quantity}',
+                              style: TextStyle(
+                                fontSize: fontSizeProvider.fontSize - 2,
+                                color: AppTheme.getTextSecondary(context),
+                              ),
+                            ),
+                          )
+                        : null,
+                    trailing: IconButton(
+                      icon: const Icon(Icons.close, size: 20),
+                      onPressed: () => _removeItem(item),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -330,15 +330,15 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // 1. Color Semilla (Base para Material 3)
-  static const Color seedColor = Color(0xFF1976D2);
+  static const Color seedColor = Color(0xFF7C5BA6); // Morado azulado
 
   // ===========================================================================
   // 2. VARIABLES ESTÁTICAS (Restauradas para COMPATIBILIDAD TOTAL)
   // ===========================================================================
 
   // Primarios
-  static const Color primaryLight = seedColor;
-  static const Color primaryDark = Color(0xFF42A5F5);
+  static const Color primaryLight = Color(0xFF7C5BA6); // Morado azulado claro
+  static const Color primaryDark = Color(0xFF9B7CC4); // Morado azulado oscuro
 
   // Secundarios
   static const Color secondaryLight = Color(0xFFFF9800);
@@ -377,11 +377,11 @@ class AppTheme {
   // --- SECCIÓN FALTANTE: COLORES DE PENDIENTES/COMPRAS ---
 
   // Agrupación y Lugares (Places)
-  static const Color placeIconLight = Color(0xFF1976D2);
-  static const Color placeIconDark = Color(0xFF42A5F5);
+  static const Color placeIconLight = Color(0xFF7C5BA6); // Morado azulado
+  static const Color placeIconDark = Color(0xFF9B7CC4); // Morado azulado oscuro
 
-  static const Color placeBadgeBackgroundLight = Color(0xFFBBDEFB);
-  static const Color placeBadgeBackgroundDark = Color(0xFF1565C0);
+  static const Color placeBadgeBackgroundLight = Color(0xFFE8E0F5); // Morado muy claro
+  static const Color placeBadgeBackgroundDark = Color(0xFF5A3D7F); // Morado más oscuro
 
   // Categorías (Headers)
   static const Color categoryHeaderLight = Color(0xFFF5F5F5);

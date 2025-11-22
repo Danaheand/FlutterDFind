@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'providers/font_size_provider.dart';
 import 'providers/recordatorio_provider.dart';
 import 'providers/theme_provider.dart';
+import 'providers/pendientes_state_provider.dart';
 import 'screens/pendientes_screen.dart';
 import 'screens/recordatorios_screen.dart';
 import 'screens/perfil_screen.dart';
@@ -112,6 +113,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<ThemeProvider>(
           create: (_) => ThemeProvider(),
+        ),
+        ChangeNotifierProvider<PendientesStateProvider>(
+          create: (_) => PendientesStateProvider(),
         ),
       ],
       child: Consumer<ThemeProvider>(

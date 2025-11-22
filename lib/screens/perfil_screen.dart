@@ -32,7 +32,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoading = true;
   AvatarMode _avatarMode = AvatarMode.initial;
   String? _selectedAvatarKey; // 'avatar1'..'avatar5'
-  Color _initialColor = const Color(0xFF42A5F5);
+  Color _initialColor = const Color(0xFF7C5BA6);
 
   late final TrashService _trashService;
 
@@ -1150,8 +1150,8 @@ Widget _buildInitialCircle(
                   gradient: LinearGradient(
                     colors: theme.brightness == Brightness.light
                         ? [
-                            Color(0xFF3B82F6).withOpacity(0.25),
-                            Color(0xFF60A5FA).withOpacity(0.15),
+                            AppTheme.primaryLight.withOpacity(0.25),
+                            AppTheme.primaryLight.withOpacity(0.15),
                           ]
                         : [
                             AppTheme.primaryDark.withOpacity(0.3),
