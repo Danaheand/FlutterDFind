@@ -125,7 +125,7 @@ class _AlertsScreenState extends State<AlertsScreen>
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
-                    color: backgroundColor ?? Colors.green.shade600,
+                    color: backgroundColor ?? const Color.fromARGB(255, 98, 77, 129),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.15),

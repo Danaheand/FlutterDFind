@@ -1249,7 +1249,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
               ),
               const SizedBox(width: 6),
               Text(
-                'Prioridad',
+                '❗ Prioridad',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -1278,7 +1278,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
               _buildPriorityChip(
                 priority: AlertPriority.baja,
                 label: 'Baja',
-                color: const Color(0xFF10B981),
+                color: const Color(0xFF6A4C93),
               ),
             ],
           ),

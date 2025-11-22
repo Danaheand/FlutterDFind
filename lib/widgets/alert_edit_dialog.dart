@@ -332,11 +332,12 @@ class AlertEditDialogState extends State<AlertEditDialog> {
                 children: [
                   Row(
                     children: [
-                      Text('❗ ',
+                      Text('❗',
                           style: TextStyle(
-                            color: Colors.grey.shade600,
+                            color: Colors.grey.shade500,
                             fontSize: 18,
                           )),
+                      const SizedBox(width: 4),
                       Text('Prioridad',
                           style: Theme.of(context).textTheme.titleSmall),
                     ],
