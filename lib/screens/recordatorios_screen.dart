@@ -165,7 +165,7 @@ class _AlertsScreenState extends State<AlertsScreen>
     overlay.insert(entry);
     controller.forward();
 
-    Future.delayed(const Duration(seconds: 2), () async {
+    Future.delayed(const Duration(seconds: 6), () async {
       try {
         await controller.reverse();
       } catch (_) {}

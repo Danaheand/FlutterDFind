@@ -201,7 +201,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
           gradient: LinearGradient(
             colors: theme.brightness == Brightness.light
                 ? [
-                    const Color(0xFF6A4C93).withValues(alpha: 0.08),
+                    const Color.fromARGB(255, 133, 118, 155).withValues(alpha: 0.08),
                     const Color(0xFF9D84B7).withValues(alpha: 0.05),
                     theme.colorScheme.surface,
                   ]
@@ -359,7 +359,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                       child: ElevatedButton(
                         onPressed: _verifying ? null : _verify,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6A4C93),
+                          backgroundColor: const Color.fromARGB(255, 160, 137, 194),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(

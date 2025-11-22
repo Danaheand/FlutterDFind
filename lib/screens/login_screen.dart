@@ -69,13 +69,14 @@ class _LoginScreenState extends State<AppLoginScreen> {
         if (!mounted) return;
 
         final errorText = (result['error'] ?? '').toString();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorText),
-            duration: const Duration(seconds: 4),
-            backgroundColor: const Color.fromARGB(255, 54, 114, 244),
-          ),
-        );
+        // No mostrar el SnackBar de error de credenciales
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(
+        //     content: Text(errorText),
+        //     duration: const Duration(seconds: 4),
+        //     backgroundColor: const Color.fromARGB(255, 54, 114, 244),
+        //   ),
+        // );
 
         final lower = errorText.toLowerCase();
         if (lower.contains('verificar') || lower.contains('no verificado')) {

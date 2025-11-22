@@ -112,7 +112,7 @@ class _RegisterScreenState extends State<RegisterScreen>
     overlay.insert(entry);
     controller.forward();
 
-    Future.delayed(const Duration(seconds: 2), () async {
+    Future.delayed(const Duration(milliseconds: 2500), () async {
       try {
         await controller.reverse();
       } catch (_) {}
@@ -244,8 +244,18 @@ class _RegisterScreenState extends State<RegisterScreen>
         );
       } else {
         if (!mounted) return;
+        
+        // Limpiar el mensaje de error
+        String errorMsg = '${result['error']}';
+        
+        // Si contiene "correo ya está registrado", simplificar el mensaje
+        if (errorMsg.toLowerCase().contains('correo') && 
+            errorMsg.toLowerCase().contains('registrado')) {
+          errorMsg = 'El correo ya está registrado.';
+        }
+        
         _showCuteMessage(
-          '${result['error']}',
+          errorMsg,
           Icons.error_rounded,
           backgroundColor: const Color(0xFF6A4C93),
         );
