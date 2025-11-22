@@ -330,8 +330,17 @@ class AlertEditDialogState extends State<AlertEditDialog> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Prioridad',
-                      style: Theme.of(context).textTheme.titleSmall),
+                  Row(
+                    children: [
+                      Text('❗ ',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 18,
+                          )),
+                      Text('Prioridad',
+                          style: Theme.of(context).textTheme.titleSmall),
+                    ],
+                  ),
                   const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -339,7 +348,7 @@ class AlertEditDialogState extends State<AlertEditDialog> {
                       _buildPriorityChip(
                         'Baja',
                         AlertPriority.baja,
-                        Colors.blue.shade400,
+                        const Color(0xFF6A4C93),
                       ),
                       _buildPriorityChip(
                         'Media',
@@ -545,9 +554,7 @@ class AlertEditDialogState extends State<AlertEditDialog> {
         onTap: () {
           setState(() {
             priority = value;
-            if (customColor == null) {
-              customColor = defaultColorFor(value);
-            }
+            customColor = color;
           });
         },
         borderRadius: BorderRadius.circular(12),
