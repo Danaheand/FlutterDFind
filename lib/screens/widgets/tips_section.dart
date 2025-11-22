@@ -112,7 +112,7 @@ class _TipsSectionState extends State<TipsSection> {
                       children: [
                         Consumer<FontSizeProvider>(
                           builder: (context, fontSizeProvider, _) => Text(
-                            'Tips para el uso',
+                            'Tips en Pendientes',
                             style: TextStyle(
                               fontSize: fontSizeProvider.fontSize + 4,
                               fontWeight: FontWeight.bold,
@@ -305,32 +305,29 @@ class _TipsSectionState extends State<TipsSection> {
   Widget _buildTipCard(BuildContext context, TipItem tip) {
     final bool isLight = Theme.of(context).brightness == Brightness.light;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isLight ? AppTheme.cardLight : AppTheme.cardDark,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isLight ? AppTheme.dividerLight : AppTheme.dividerDark,
-          width: 1,
-        ),
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Icono con diseño más elegante
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: tip.color.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(10),
+              color: tip.color.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: tip.color.withOpacity(0.2),
+                width: 1,
+              ),
             ),
             child: Icon(
               tip.icon,
               color: tip.color,
-              size: 24,
+              size: 22,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -339,22 +336,24 @@ class _TipsSectionState extends State<TipsSection> {
                   builder: (context, fontSizeProvider, _) => Text(
                     tip.title,
                     style: TextStyle(
-                      fontSize: fontSizeProvider.fontSize,
-                      fontWeight: FontWeight.bold,
+                      fontSize: fontSizeProvider.fontSize + 1,
+                      fontWeight: FontWeight.w700,
                       color: isLight
                           ? AppTheme.textPrimaryLight
                           : AppTheme.textPrimaryDark,
+                      letterSpacing: 0.3,
                     ),
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Consumer<FontSizeProvider>(
                   builder: (context, fontSizeProvider, _) => Text(
                     tip.description,
                     style: TextStyle(
-                      fontSize: fontSizeProvider.fontSize - 2,
+                      fontSize: fontSizeProvider.fontSize - 1.5,
                       color: AppTheme.getTextSecondary(context),
-                      height: 1.3,
+                      height: 1.5,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ),
