@@ -89,36 +89,6 @@ class AlertTabBar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          // Botón de toggle de agrupación por prioridad
-          InkWell(
-            onTap: () => onGroupByPriorityChanged(!groupByPriority),
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: groupByPriority
-                    ? Colors.blue.shade400
-                    : isLight
-                        ? Colors.grey.shade200
-                        : Colors.grey.shade800,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: groupByPriority
-                      ? Colors.blue.shade600
-                      : Colors.transparent,
-                  width: 2,
-                ),
-              ),
-              child: Icon(
-                Icons.sort,
-                size: 20,
-                color: groupByPriority
-                    ? Colors.white
-                    : isLight
-                        ? Colors.grey.shade600
-                        : Colors.grey.shade400,
-              ),
-            ),
-          ),
         ],
       ),
     );
