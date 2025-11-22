@@ -56,7 +56,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.delete_outline,
-                          size: 64, color: AppTheme.getTextSecondary(context)),
+                          size: 64, color: AppTheme.primaryLight),
                       const SizedBox(height: 12),
                       Text('No hay elementos eliminados',
                           style: TextStyle(
@@ -1217,9 +1217,7 @@ Widget _buildInitialCircle(
                       margin: EdgeInsets.zero,
                       child: ListTile(
                         leading: Icon(Icons.delete_outline,
-                            color: theme.brightness == Brightness.light
-                                ? Colors.orange
-                                : AppTheme.warningDark),
+                            color: AppTheme.primaryLight),
                         title: const Text('Papelera'),
                         subtitle: Text(
                             '${_trashService.getTrashItems().length} elementos eliminados'),
