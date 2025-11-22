@@ -522,12 +522,12 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                                     horizontal: 16, vertical: 10),
                                 decoration: BoxDecoration(
                                   color: fontSizeProvider.fontSize == 16.0
-                                      ? Colors.green.withOpacity(0.1)
+                                      ? AppTheme.primaryLight.withOpacity(0.1)
                                       : Colors.grey.withOpacity(0.05),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: fontSizeProvider.fontSize == 16.0
-                                        ? Colors.green[300]!
+                                        ? AppTheme.primaryLight.withOpacity(0.3)
                                         : Colors.grey[300]!,
                                   ),
                                 ),
@@ -536,7 +536,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: fontSizeProvider.fontSize == 16.0
-                                        ? Colors.green[700]
+                                        ? AppTheme.primaryLight
                                         : Colors.grey[700],
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -1024,10 +1024,10 @@ Widget _buildAvatar() {
 
                                 if (!mounted) return;
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
+                                  SnackBar(
                                     content:
-                                        Text('Perfil actualizado correctamente'),
-                                    backgroundColor: Colors.green,
+                                        const Text('Perfil actualizado correctamente'),
+                                    backgroundColor: AppTheme.primaryLight,
                                   ),
                                 );
                                 Navigator.pop(context);
