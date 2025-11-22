@@ -435,7 +435,8 @@ class _AlertsScreenState extends State<AlertsScreen>
   Widget _buildPriorityFilters() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Prioridad:',
@@ -445,54 +446,60 @@ class _AlertsScreenState extends State<AlertsScreen>
               color: Colors.grey.shade700,
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Wrap(
-              spacing: 8,
-              children: [
-                _buildPriorityChip(
-                  label: 'Todas',
-                  isSelected: selectedPriorities.length == 3,
-                  color: const Color.fromARGB(255, 134, 106, 172),
-                  onTap: () {
-                    setState(() {
-                      selectedPriorities = {
-                        AlertPriority.alta,
-                        AlertPriority.media,
-                        AlertPriority.baja
-                      };
-                    });
-                  },
-                ),
-                _buildPriorityChip(
-                  label: 'Alta',
-                  isSelected: selectedPriorities.contains(AlertPriority.alta) &&
-                      selectedPriorities.length == 1,
-                  color: Colors.red.shade400,
-                  onTap: () {
-                    setState(() {
-                      selectedPriorities = {AlertPriority.alta};
-                    });
-                  },
-                ),
-                _buildPriorityChip(
-                  label: 'Media',
-                  isSelected:
-                      selectedPriorities.contains(AlertPriority.media) &&
-                          selectedPriorities.length == 2,
-                  color: Colors.orange.shade400,
-                  onTap: () {
-                    setState(() {
-                      // Al seleccionar media, también incluimos alta
-                      selectedPriorities = {
-                        AlertPriority.alta,
-                        AlertPriority.media
-                      };
-                    });
-                  },
-                ),
-              ],
-            ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildPriorityChip(
+                label: 'Todas',
+                isSelected: selectedPriorities.length == 3,
+                color: const Color(0xFF6A4C93),
+                onTap: () {
+                  setState(() {
+                    selectedPriorities = {
+                      AlertPriority.alta,
+                      AlertPriority.media,
+                      AlertPriority.baja
+                    };
+                  });
+                },
+              ),
+              _buildPriorityChip(
+                label: 'Alta',
+                isSelected: selectedPriorities.contains(AlertPriority.alta) &&
+                    selectedPriorities.length == 1,
+                color: Colors.red.shade400,
+                onTap: () {
+                  setState(() {
+                    selectedPriorities = {AlertPriority.alta};
+                  });
+                },
+              ),
+              _buildPriorityChip(
+                label: 'Media',
+                isSelected:
+                    selectedPriorities.contains(AlertPriority.media) &&
+                        selectedPriorities.length == 1,
+                color: Colors.orange.shade400,
+                onTap: () {
+                  setState(() {
+                    selectedPriorities = {AlertPriority.media};
+                  });
+                },
+              ),
+              _buildPriorityChip(
+                label: 'Baja',
+                isSelected: selectedPriorities.contains(AlertPriority.baja) &&
+                    selectedPriorities.length == 1,
+                color: const Color(0xFFD4C5E2),
+                onTap: () {
+                  setState(() {
+                    selectedPriorities = {AlertPriority.baja};
+                  });
+                },
+              ),
+            ],
           ),
         ],
       ),
