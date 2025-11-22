@@ -153,6 +153,7 @@ class _LoginScreenState extends State<AppLoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isLight = theme.brightness == Brightness.light;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -164,15 +165,15 @@ class _LoginScreenState extends State<AppLoginScreen> {
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: theme.brightness == Brightness.light
+                  colors: isLight
                       ? [
-                          theme.colorScheme.primary.withOpacity(0.15),
-                          theme.colorScheme.secondary.withOpacity(0.08),
-                          theme.colorScheme.background,
+                          const Color(0xFF6A4C93).withValues(alpha: 0.08),
+                          const Color(0xFF9D84B7).withValues(alpha: 0.05),
+                          theme.colorScheme.surface,
                         ]
                       : [
-                          theme.colorScheme.surface,
-                          theme.colorScheme.background,
+                          const Color(0xFF6A4C93).withValues(alpha: 0.15),
+                          const Color(0xFF2C1B47),
                         ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -185,12 +186,12 @@ class _LoginScreenState extends State<AppLoginScreen> {
                     constraints: const BoxConstraints(maxWidth: 480),
                     padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
                     decoration: BoxDecoration(
-                      color: theme.cardColor.withOpacity(
-                          theme.brightness == Brightness.light ? 0.98 : 0.92),
+                      color: theme.cardColor.withValues(
+                          alpha: isLight ? 0.98 : 0.92),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color: const Color(0xFF6A4C93).withValues(alpha: 0.1),
                           blurRadius: 18,
                           offset: const Offset(0, 10),
                         ),
@@ -205,12 +206,12 @@ class _LoginScreenState extends State<AppLoginScreen> {
                             height: 56,
                             width: 56,
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withOpacity(0.12),
+                              color: const Color(0xFF6A4C93).withValues(alpha: 0.12),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(
+                            child: const Icon(
                               Icons.inventory_2_rounded,
-                              color: theme.colorScheme.primary,
+                              color: Color(0xFF6A4C93),
                               size: 30,
                             ),
                           ),
@@ -218,30 +219,33 @@ class _LoginScreenState extends State<AppLoginScreen> {
                           Text(
                             'DFind',
                             style: theme.textTheme.headlineMedium?.copyWith(
-                              color: theme.brightness == Brightness.light
-                                  ? theme.colorScheme.primary
-                                  : theme.colorScheme.primary,
+                              color: const Color(0xFF6A4C93),
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,
                             ),
                           ),
                           const SizedBox(height: 6),
-                          Text(
-                            'Organiza tus cosas sin perder nada',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.textTheme.bodyMedium?.color
-                                  ?.withOpacity(0.75),
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
                           const SizedBox(height: 24),
                           TextFormField(
                             controller: _userCtrl,
                             keyboardType: TextInputType.emailAddress,
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               labelText: 'Email',
                               hintText: 'tucorreo@dominio.com',
-                              prefixIcon: Icon(Icons.email_outlined),
+                              prefixIcon: const Icon(Icons.email_outlined),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFF6A4C93),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFF6A4C93),
+                                  width: 2,
+                                ),
+                              ),
                             ),
                             validator: (v) => v == null || v.trim().isEmpty
                                 ? 'Ingrese su email'
@@ -250,6 +254,7 @@ class _LoginScreenState extends State<AppLoginScreen> {
                                     ? 'Email no válido'
                                     : null,
                           ),
+                          const SizedBox(height: 16),
                           TextFormField(
                             controller: _passCtrl,
                             obscureText: _obscure,
@@ -264,6 +269,19 @@ class _LoginScreenState extends State<AppLoginScreen> {
                                 ),
                                 onPressed: () =>
                                     setState(() => _obscure = !_obscure),
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFF6A4C93),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFF6A4C93),
+                                  width: 2,
+                                ),
                               ),
                             ),
                             validator: (v) => v == null || v.isEmpty
@@ -284,7 +302,7 @@ class _LoginScreenState extends State<AppLoginScreen> {
                               child: const Text(
                                 '¿Olvidaste tu contraseña?',
                                 style: TextStyle(
-                                  color: Color.fromARGB(255, 0, 119, 255),
+                                  color: Color(0xFF6A4C93),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -312,6 +330,8 @@ class _LoginScreenState extends State<AppLoginScreen> {
                             child: ElevatedButton(
                               onPressed: _isLoading ? null : _login,
                               style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF6A4C93),
+                                foregroundColor: Colors.white,
                                 minimumSize: const Size.fromHeight(48),
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 14),
@@ -325,6 +345,8 @@ class _LoginScreenState extends State<AppLoginScreen> {
                                       width: 22,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                            Colors.white),
                                       ),
                                     )
                                   : const Text(
@@ -356,8 +378,8 @@ class _LoginScreenState extends State<AppLoginScreen> {
                                         horizontal: 8.0),
                                     child: Text(
                                       'Regístrate',
-                                      style: TextStyle(
-                                        color: theme.colorScheme.primary,
+                                      style: const TextStyle(
+                                        color: Color(0xFF6A4C93),
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),

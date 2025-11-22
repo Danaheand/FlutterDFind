@@ -144,7 +144,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
             borderSide: BorderSide(
               color: state.hasError
                   ? theme.colorScheme.error
-                  : Colors.grey.shade300,
+                  : const Color(0xFF9D84B7),
               width: 1.2,
             ),
           ),
@@ -153,7 +153,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
             borderSide: BorderSide(
               color: state.hasError
                   ? theme.colorScheme.error
-                  : theme.colorScheme.primary,
+                  : const Color(0xFF6A4C93),
               width: 1.8,
             ),
           ),
@@ -201,13 +201,13 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
           gradient: LinearGradient(
             colors: theme.brightness == Brightness.light
                 ? [
-                    theme.colorScheme.primary.withOpacity(0.15),
-                    theme.colorScheme.secondary.withOpacity(0.08),
-                    theme.colorScheme.background,
+                    const Color(0xFF6A4C93).withValues(alpha: 0.08),
+                    const Color(0xFF9D84B7).withValues(alpha: 0.05),
+                    theme.colorScheme.surface,
                   ]
                 : [
-                    theme.colorScheme.surface,
-                    theme.colorScheme.background,
+                    const Color(0xFF6A4C93).withValues(alpha: 0.15),
+                    const Color(0xFF2C1B47),
                   ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -220,12 +220,12 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
               constraints: const BoxConstraints(maxWidth: 500),
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: theme.cardColor.withOpacity(
-                    theme.brightness == Brightness.light ? 0.98 : 0.92),
+                color: theme.cardColor.withValues(
+                    alpha: theme.brightness == Brightness.light ? 0.98 : 0.92),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: const Color(0xFF6A4C93).withValues(alpha: 0.1),
                     blurRadius: 18,
                     offset: const Offset(0, 10),
                   ),
@@ -239,13 +239,13 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                     Container(
                       height: 56,
                       width: 56,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withOpacity(0.12),
+                      decoration: const BoxDecoration(
+                        color: Color.fromARGB(39, 106, 76, 147),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.mark_email_read_rounded,
-                        color: theme.colorScheme.primary,
+                        color: Color(0xFF6A4C93),
                         size: 30,
                       ),
                     ),
@@ -255,6 +255,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                       style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.2,
+                        color: const Color(0xFF6A4C93),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -263,7 +264,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                       'Te enviamos un código de verificación a:',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color:
-                            theme.textTheme.bodyMedium?.color?.withOpacity(0.8),
+                            theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -301,8 +302,8 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                         'Código de verificación',
                         style: theme.textTheme.labelLarge?.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: theme.textTheme.bodyMedium?.color?.withOpacity(
-                            0.9,
+                          color: theme.textTheme.bodyMedium?.color?.withValues(
+                            alpha: 0.9,
                           ),
                         ),
                       ),
@@ -358,6 +359,8 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                       child: ElevatedButton(
                         onPressed: _verifying ? null : _verify,
                         style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6A4C93),
+                          foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
@@ -367,8 +370,11 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                             ? const SizedBox(
                                 height: 20,
                                 width: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
                               )
                             : const Text('Verificar'),
                       ),
@@ -377,9 +383,10 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                     TextButton.icon(
                       onPressed:
                           _sending ? null : () => _sendCode(initial: false),
-                      icon: const Icon(Icons.refresh_rounded),
+                      icon: const Icon(Icons.refresh_rounded, color: Color(0xFF6A4C93)),
                       label: Text(
                         _sending ? 'Reenviando...' : 'Reenviar código',
+                        style: const TextStyle(color: Color(0xFF6A4C93)),
                       ),
                     ),
                   ],
