@@ -327,29 +327,33 @@ class AlertEditDialogState extends State<AlertEditDialog> {
                 ],
               ),
               _vGap,
-              DropdownButtonFormField<AlertPriority>(
-                value: priority,
-                decoration: const InputDecoration(
-                  labelText: 'Prioridad',
-                  hintText: 'Selecciona la prioridad',
-                  prefixIcon: Icon(Icons.priority_high_rounded),
-                ),
-                items: const [
-                  DropdownMenuItem(
-                      value: AlertPriority.baja, child: Text('Baja')),
-                  DropdownMenuItem(
-                      value: AlertPriority.media, child: Text('Media')),
-                  DropdownMenuItem(
-                      value: AlertPriority.alta, child: Text('Alta')),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Prioridad',
+                      style: Theme.of(context).textTheme.titleSmall),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildPriorityChip(
+                        'Baja',
+                        AlertPriority.baja,
+                        Colors.blue.shade400,
+                      ),
+                      _buildPriorityChip(
+                        'Media',
+                        AlertPriority.media,
+                        Colors.amber.shade600,
+                      ),
+                      _buildPriorityChip(
+                        'Alta',
+                        AlertPriority.alta,
+                        Colors.red.shade400,
+                      ),
+                    ],
+                  ),
                 ],
-                onChanged: (val) {
-                  setState(() {
-                    priority = val;
-                    if (val != null && customColor == null) {
-                      customColor = defaultColorFor(val);
-                    }
-                  });
-                },
               ),
               _vGap,
               Row(
@@ -531,6 +535,73 @@ class AlertEditDialogState extends State<AlertEditDialog> {
           label: const Text('Guardar'),
         ),
       ],
+    );
+  }
+
+  Widget _buildPriorityChip(String label, AlertPriority value, Color color) {
+    final isSelected = priority == value;
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            priority = value;
+            if (customColor == null) {
+              customColor = defaultColorFor(value);
+            }
+          });
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? color.withOpacity(0.15) : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? color : Colors.grey.shade300,
+              width: isSelected ? 2.5 : 1.5,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: color.withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    )
+                  ]
+                : null,
+          ),
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  value == AlertPriority.alta
+                      ? Icons.priority_high
+                      : value == AlertPriority.media
+                          ? Icons.unfold_more
+                          : Icons.trending_down,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? color : Colors.grey.shade600,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
