@@ -22,7 +22,7 @@ class ProfileScreen extends StatefulWidget {
 
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateMixin {
   bool _showLogoutDialog = false;
   bool _notifSound = true;
   bool _notifVibration = true;
@@ -35,6 +35,88 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Color _initialColor = const Color(0xFF6A4C93);
 
   late final TrashService _trashService;
+
+  void _showCuteMessage(String text, IconData icon, {Color? backgroundColor}) {
+    final overlay = Overlay.of(context);
+
+    late OverlayEntry entry;
+    final controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 320),
+    );
+    final animation = CurvedAnimation(
+      parent: controller,
+      curve: Curves.easeOutBack,
+      reverseCurve: Curves.easeIn,
+    );
+
+    entry = OverlayEntry(
+      builder: (ctx) {
+        return Positioned(
+          left: 16,
+          right: 16,
+          bottom: 80,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(-1.0, 0.0),
+              end: Offset.zero,
+            ).animate(animation),
+            child: FadeTransition(
+              opacity: animation,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    color: backgroundColor ?? AppTheme.primaryLight,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        icon,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          text,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    overlay.insert(entry);
+    controller.forward();
+
+    Future.delayed(const Duration(seconds: 2), () async {
+      try {
+        await controller.reverse();
+      } catch (_) {}
+      entry.remove();
+      controller.dispose();
+    });
+  }
 
   void _showTrashDialog() {
     // Obtener elementos de papelera del servicio
@@ -74,22 +156,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           final icon = item.originalType == 'alert'
                               ? Icons.notifications
                               : Icons.shopping_cart;
-                          final color = item.originalType == 'alert'
-                              ? Colors.orange
-                              : AppTheme.primaryLight;
 
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            color:
-                                Theme.of(context).brightness == Brightness.light
-                                    ? Colors.white
-                                    : AppTheme.cardDark,
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              gradient: LinearGradient(
+                                colors: Theme.of(context).brightness == Brightness.light
+                                    ? [
+                                        Colors.white,
+                                        Colors.grey[50]!,
+                                      ]
+                                    : [
+                                        AppTheme.cardDark,
+                                        AppTheme.cardDark.withOpacity(0.8),
+                                      ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.08),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
                             child: ListTile(
-                              leading: Icon(icon, color: color),
+                              leading: Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryLight.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(icon, color: AppTheme.primaryLight),
+                              ),
                               title: Text(item.name,
                                   style: TextStyle(
                                       fontSize:
                                           fontSizeProvider.getScaledSize(16),
+                                      fontWeight: FontWeight.w600,
                                       color: Theme.of(context).brightness ==
                                               Brightness.light
                                           ? Colors.black87
@@ -105,8 +212,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.restore,
-                                        color: Colors.green),
+                                    icon: Icon(Icons.restore,
+                                        color: AppTheme.primaryLight),
+                                    tooltip: 'Restaurar',
+                                    splashRadius: 24,
                                     onPressed: () async {
                                       try {
                                         await _trashService
@@ -174,12 +283,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         );
                                         Navigator.pop(context);
                                         _showTrashDialog();
+                                        _showCuteMessage(
+                                          'Recordatorio restaurado',
+                                          Icons.restore_rounded,
+                                        );
                                       } catch (e) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                              content: Text(
-                                                  'Error al restaurar: $e')),
+                                        _showCuteMessage(
+                                          'Error al restaurar',
+                                          Icons.error_rounded,
+                                          backgroundColor: Colors.red.shade600,
                                         );
                                       }
                                     },
@@ -187,11 +299,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   IconButton(
                                     icon: const Icon(Icons.delete_forever,
                                         color: Colors.red),
+                                    tooltip: 'Eliminar permanentemente',
+                                    splashRadius: 24,
                                     onPressed: () async {
                                       await _trashService
                                           .deleteItemPermanently(item.id);
                                       Navigator.pop(context);
                                       _showTrashDialog();
+                                      _showCuteMessage(
+                                        'Recordatorio eliminado',
+                                        Icons.delete_rounded,
+                                        backgroundColor: Colors.red.shade600,
+                                      );
                                     },
                                   ),
                                 ],
@@ -216,7 +335,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 fontSize: fontSizeProvider.getScaledSize(18),
                                 fontWeight: FontWeight.bold)),
                         content: Text(
-                            '¿Estás seguro de que quieres eliminar permanentemente todos los elementos?',
+                            '¿Eliminar todos los elementos permanentemente?',
                             style: TextStyle(
                                 fontSize: fontSizeProvider.getScaledSize(14))),
                         actions: [
@@ -239,15 +358,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   try {
                     await _trashService.emptyTrash();
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Papelera vaciada')),
-                      );
                       Navigator.pop(context);
+                      _showCuteMessage(
+                        'Papelera vaciada',
+                        Icons.delete_sweep_rounded,
+                      );
                     }
                   } catch (e) {
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error al vaciar: $e')),
+                      _showCuteMessage(
+                        'Error al vaciar papelera',
+                        Icons.error_rounded,
+                        backgroundColor: Colors.red.shade600,
                       );
                     }
                   }
