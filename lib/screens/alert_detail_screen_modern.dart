@@ -82,7 +82,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
   }
 
   Color get _priorityColor {
-    if (isCompleted) return const Color(0xFF86EFAC);
+    if (isCompleted) return AppTheme.primaryLight.withOpacity(0.5);
     if (!data.active) return Colors.grey.shade400;
     return data.color ?? defaultColorFor(selectedPriority);
   }
@@ -439,27 +439,27 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
                                 //           ? const Color(0xFF64748B)
                                 //           : Colors.grey[400],
                                 // ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  isCompleted
-                                      ? 'LISTO'
-                                      : (isEditing
-                                          ? 'TOCA PARA EDITAR'
-                                          : timeInfo['label']),
-                                  style: TextStyle(
-                                    fontSize: isEditing ? 13 : 12,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 1.2,
-                                    color: isCompleted
-                                        ? AppTheme.successLight
-                                        : (isEditing
-                                            ? AppTheme.primaryLight
-                                            : Theme.of(context).brightness ==
-                                                    Brightness.light
-                                                ? const Color(0xFF64748B)
-                                                : Colors.grey[400]),
-                                  ),
-                                ),
+                            const SizedBox(width: 6),
+                            Text(
+                              isCompleted
+                                  ? 'LISTO'
+                                  : (isEditing
+                                      ? 'TOCA PARA EDITAR'
+                                      : timeInfo['label']),
+                              style: TextStyle(
+                                fontSize: isEditing ? 13 : 12,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1.2,
+                                color: isCompleted
+                                    ? Colors.black87
+                                    : (isEditing
+                                        ? AppTheme.primaryLight
+                                        : Theme.of(context).brightness ==
+                                                Brightness.light
+                                            ? const Color(0xFF64748B)
+                                            : Colors.grey[400]),
+                              ),
+                            ),
                               ],
                             ),
                             const SizedBox(height: 8),
@@ -470,7 +470,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
                                   fontSize: fontSizeProvider.getScaledSize(48),
                                   fontWeight: FontWeight.w900,
                                   color: isCompleted
-                                      ? AppTheme.successLight
+                                      ? AppTheme.primaryLight
                                       : (isEditing
                                           ? const Color(0xFF3B82F6)
                                           : (Theme.of(context).brightness == Brightness.light
