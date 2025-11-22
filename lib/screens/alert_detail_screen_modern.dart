@@ -395,7 +395,9 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                                       ? AppTheme.successLight
                                       : (isEditing
                                           ? const Color(0xFF3B82F6)
-                                          : Colors.black87),
+                                          : (Theme.of(context).brightness == Brightness.light
+                                              ? Colors.black87
+                                              : Colors.white)),
                                   height: 1.1,
                                 ),
                               ),
