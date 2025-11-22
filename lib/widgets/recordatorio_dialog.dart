@@ -5,6 +5,7 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/notification_service.dart';
 import '../widgets/custom_text_button.dart';
+import '../theme/app_theme.dart';
 
 enum AlertPriority { baja, media, alta }
 
@@ -182,11 +183,11 @@ class _RecordatorioDialogState extends State<RecordatorioDialog> {
                 },
                 icon: Icon(
                   allDaysSelected ? Icons.check_circle : Icons.circle_outlined,
-                  color: Colors.blue,
+                  color: AppTheme.primaryLight,
                 ),
                 label: Text(
                   allDaysSelected ? 'Desmarcar todos' : 'Marcar todos los días',
-                  style: const TextStyle(color: Colors.blue),
+                  style: const TextStyle(color: AppTheme.primaryLight),
                 ),
               ),
             ],
@@ -211,10 +212,18 @@ class _RecordatorioDialogState extends State<RecordatorioDialog> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.blue : Colors.grey.shade200,
+                  color: isSelected 
+                      ? AppTheme.primaryLight
+                      : (Theme.of(context).brightness == Brightness.light
+                          ? const Color(0xFFE8DEF8)
+                          : Colors.grey.shade700),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isSelected ? Colors.blue : Colors.grey.shade400,
+                    color: isSelected 
+                        ? AppTheme.primaryLight 
+                        : (Theme.of(context).brightness == Brightness.light
+                            ? const Color(0xFFD4C5E2)
+                            : Colors.grey.shade600),
                     width: 1,
                   ),
                 ),
@@ -222,7 +231,11 @@ class _RecordatorioDialogState extends State<RecordatorioDialog> {
                   child: Text(
                     day['name'] as String,
                     style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black87,
+                      color: isSelected 
+                          ? Colors.white 
+                          : (Theme.of(context).brightness == Brightness.light
+                              ? Colors.black87
+                              : Colors.white),
                       fontWeight: FontWeight.bold,
                     ),
                   ),

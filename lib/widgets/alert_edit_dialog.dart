@@ -4,6 +4,7 @@ import 'package:Dfind/models/alert_data.dart';
 import 'package:Dfind/services/notification_service.dart';
 import 'package:Dfind/utils/alert_utils.dart';
 import 'package:Dfind/widgets/custom_text_button.dart';
+import 'package:Dfind/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
@@ -109,11 +110,11 @@ class AlertEditDialogState extends State<AlertEditDialog> {
                 },
                 icon: Icon(
                   allDaysSelected ? Icons.check_circle : Icons.circle_outlined,
-                  color: Colors.blue,
+                  color: AppTheme.primaryLight,
                 ),
                 label: Text(
                   allDaysSelected ? 'Desmarcar todos' : 'Marcar todos los días',
-                  style: const TextStyle(color: Colors.blue),
+                  style: const TextStyle(color: AppTheme.primaryLight),
                 ),
               ),
             ],
@@ -139,10 +140,18 @@ class AlertEditDialogState extends State<AlertEditDialog> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.blue : Colors.grey.shade200,
+                  color: isSelected 
+                      ? AppTheme.primaryLight
+                      : (Theme.of(context).brightness == Brightness.light
+                          ? const Color(0xFFE8DEF8)
+                          : Colors.grey.shade700),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isSelected ? Colors.blue : Colors.grey.shade400,
+                    color: isSelected 
+                        ? AppTheme.primaryLight
+                        : (Theme.of(context).brightness == Brightness.light
+                            ? const Color(0xFFD4C5E2)
+                            : Colors.grey.shade600),
                     width: 1,
                   ),
                 ),
@@ -150,7 +159,11 @@ class AlertEditDialogState extends State<AlertEditDialog> {
                   child: Text(
                     day['name'] as String,
                     style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black87,
+                      color: isSelected 
+                          ? Colors.white 
+                          : (Theme.of(context).brightness == Brightness.light
+                              ? Colors.black87
+                              : Colors.white),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -418,7 +431,7 @@ class AlertEditDialogState extends State<AlertEditDialog> {
                       ? 'Selecciona al menos un día'
                       : 'Se repetirá: ${_getSelectedDaysText()}',
                   style: TextStyle(
-                    color: selectedWeekdays.isEmpty ? Colors.red : Colors.green,
+                    color: selectedWeekdays.isEmpty ? Colors.red : AppTheme.primaryLight,
                     fontSize: 12,
                   ),
                 ),

@@ -34,6 +34,49 @@ class _CollapsibleSectionState extends State<CollapsibleSection> {
     _isExpanded = widget.initiallyExpanded;
   }
 
+  /// Obtiene el color del header adaptado al modo oscuro
+  Color _getHeaderColor(BuildContext context) {
+    if (widget.headerColor == null) {
+      return Theme.of(context).brightness == Brightness.light 
+          ? Colors.grey.shade100 
+          : Colors.grey.shade800;
+    }
+
+    // Si se proporciona un color personalizado, adaptarlo al modo oscuro
+    if (Theme.of(context).brightness == Brightness.light) {
+      return widget.headerColor!;
+    }
+
+    // Mapeo de colores light a dark
+    if (widget.headerColor == Colors.amber.shade50) {
+      return Colors.amber.shade900;
+    } else if (widget.headerColor == Colors.red.shade50) {
+      return Colors.red.shade900;
+    } else if (widget.headerColor == Colors.orange.shade50) {
+      return Colors.orange.shade900;
+    } else if (widget.headerColor == Colors.green.shade50) {
+      return Colors.green.shade900;
+    } else if (widget.headerColor == Colors.grey.shade200) {
+      return Colors.grey.shade700;
+    }
+
+    return widget.headerColor!;
+  }
+
+  /// Obtiene el color de texto adaptado al modo oscuro
+  Color _getTextColor(BuildContext context) {
+    if (widget.headerColor == null) {
+      return Theme.of(context).brightness == Brightness.light
+          ? Colors.black87
+          : Colors.white;
+    }
+
+    // Para colores personalizados, usar blanco en dark mode
+    return Theme.of(context).brightness == Brightness.light
+        ? Colors.black87
+        : Colors.white;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.count == 0) {
@@ -52,7 +95,7 @@ class _CollapsibleSectionState extends State<CollapsibleSection> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: widget.headerColor ?? Colors.grey.shade100,
+              color: _getHeaderColor(context),
               borderRadius: BorderRadius.circular(12),
             ),
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -62,17 +105,17 @@ class _CollapsibleSectionState extends State<CollapsibleSection> {
                   Icon(
                     widget.icon,
                     size: 20,
-                    color: Colors.black87,
+                    color: _getTextColor(context),
                   ),
                   const SizedBox(width: 12),
                 ],
                 Expanded(
                   child: Text(
                     widget.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: _getTextColor(context),
                     ),
                   ),
                 ),
@@ -83,7 +126,9 @@ class _CollapsibleSectionState extends State<CollapsibleSection> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? Colors.white
+                        : Colors.grey.shade700,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
@@ -95,10 +140,10 @@ class _CollapsibleSectionState extends State<CollapsibleSection> {
                   ),
                   child: Text(
                     '${widget.count}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: _getTextColor(context),
                     ),
                   ),
                 ),
@@ -109,7 +154,7 @@ class _CollapsibleSectionState extends State<CollapsibleSection> {
                       ? Icons.keyboard_arrow_up
                       : Icons.keyboard_arrow_down,
                   size: 24,
-                  color: Colors.black87,
+                  color: _getTextColor(context),
                 ),
               ],
             ),

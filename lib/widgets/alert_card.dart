@@ -52,7 +52,9 @@ class AlertCard extends StatelessWidget {
             : null,
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).brightness == Brightness.light
+                ? Colors.white
+                : Colors.grey.shade900,
           ),
           child: Row(
             children: [
@@ -98,7 +100,9 @@ class AlertCard extends StatelessWidget {
                                   fontSize: fontSizeProvider.getScaledSize(18),
                                   fontWeight: FontWeight.bold,
                                   color: alert.active
-                                      ? Colors.black87
+                                      ? (Theme.of(context).brightness == Brightness.light
+                                          ? Colors.black87
+                                          : Colors.white)
                                       : Colors.grey,
                                 ),
                                 maxLines: 2,

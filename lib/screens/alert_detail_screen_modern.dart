@@ -330,8 +330,8 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                         side: isEditing
-                            ? const BorderSide(
-                                color: Color(0xFF3B82F6), width: 3)
+                            ? BorderSide(
+                                color: AppTheme.primaryLight, width: 3)
                             : BorderSide.none,
                       ),
                       child: Container(
@@ -339,7 +339,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
                           color: isEditing
-                              ? const Color(0xFF3B82F6).withOpacity(0.1)
+                              ? AppTheme.primaryLight.withOpacity(0.1)
                               : Theme.of(context).brightness == Brightness.light
                                   ? Colors.white
                                   : AppTheme.cardDark,
@@ -375,7 +375,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                                     color: isCompleted
                                         ? AppTheme.successLight
                                         : (isEditing
-                                            ? const Color(0xFF3B82F6)
+                                            ? AppTheme.primaryLight
                                             : Theme.of(context).brightness ==
                                                     Brightness.light
                                                 ? const Color(0xFF64748B)
@@ -607,7 +607,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                 // Botón Editar
                 _buildActionButton(
                   icon: isEditing ? Icons.close : Icons.edit_outlined,
-                  color: const Color(0xFF3B82F6),
+                  color: AppTheme.primaryLight,
                   onTap: () {
                     setState(() {
                       if (isEditing) {
@@ -951,7 +951,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
                     color: Theme.of(context).brightness == Brightness.light
-                        ? const Color(0xFF3B82F6)
+                        ? AppTheme.primaryLight
                         : AppTheme.primaryDark,
                     width: 2),
               ),
@@ -1122,15 +1122,15 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                     decoration: BoxDecoration(
                       color: selectedWeekdays.length == 7
                           ? (Theme.of(context).brightness == Brightness.light
-                              ? const Color(0xFF3B82F6)
+                              ? AppTheme.primaryLight
                               : AppTheme.primaryDark)
                           : (Theme.of(context).brightness == Brightness.light
-                              ? const Color(0xFF3B82F6).withOpacity(0.1)
+                              ? AppTheme.primaryLight.withOpacity(0.1)
                               : AppTheme.primaryDark.withOpacity(0.2)),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: Theme.of(context).brightness == Brightness.light
-                            ? const Color(0xFF3B82F6).withOpacity(0.3)
+                            ? AppTheme.primaryLight.withOpacity(0.3)
                             : AppTheme.primaryDark.withOpacity(0.4),
                         width: 1.5,
                       ),
@@ -1147,7 +1147,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                               ? Colors.white
                               : (Theme.of(context).brightness ==
                                       Brightness.light
-                                  ? const Color(0xFF3B82F6)
+                                  ? AppTheme.primaryLight
                                   : AppTheme.primaryDark),
                         ),
                         const SizedBox(width: 4),
@@ -1162,7 +1162,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                                 ? Colors.white
                                 : (Theme.of(context).brightness ==
                                         Brightness.light
-                                    ? const Color(0xFF3B82F6)
+                                    ? AppTheme.primaryLight
                                     : AppTheme.primaryDark),
                           ),
                         ),
@@ -1249,7 +1249,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
               ),
               const SizedBox(width: 6),
               Text(
-                '❗ Prioridad',
+                '! Prioridad',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,

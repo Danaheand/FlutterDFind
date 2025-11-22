@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/time_utils.dart';
+import '../theme/app_theme.dart';
 
 /// Widget que muestra los días de la semana como círculos
 /// Permite selección/deselección cuando está en modo edición

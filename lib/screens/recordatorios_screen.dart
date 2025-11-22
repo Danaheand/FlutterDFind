@@ -433,8 +433,14 @@ class _AlertsScreenState extends State<AlertsScreen>
   }
 
   Widget _buildPriorityFilters() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: isDarkMode ? Colors.grey.shade900 : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -443,7 +449,9 @@ class _AlertsScreenState extends State<AlertsScreen>
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Colors.grey.shade700,
+              color: Theme.of(context).brightness == Brightness.light
+                  ? Colors.grey.shade700
+                  : Colors.grey.shade300,
             ),
           ),
           const SizedBox(height: 12),
@@ -454,7 +462,9 @@ class _AlertsScreenState extends State<AlertsScreen>
               _buildPriorityChip(
                 label: 'Todas',
                 isSelected: selectedPriorities.length == 3,
-                color: const Color(0xFF6A4C93),
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFF6A4C93)
+                    : const Color(0xFF9D84B7),
                 onTap: () {
                   setState(() {
                     selectedPriorities = {
@@ -469,7 +479,9 @@ class _AlertsScreenState extends State<AlertsScreen>
                 label: 'Alta',
                 isSelected: selectedPriorities.contains(AlertPriority.alta) &&
                     selectedPriorities.length == 1,
-                color: Colors.red.shade400,
+                color: Theme.of(context).brightness == Brightness.light
+                    ? Colors.red.shade400
+                    : Colors.red.shade300,
                 onTap: () {
                   setState(() {
                     selectedPriorities = {AlertPriority.alta};
@@ -481,7 +493,9 @@ class _AlertsScreenState extends State<AlertsScreen>
                 isSelected:
                     selectedPriorities.contains(AlertPriority.media) &&
                         selectedPriorities.length == 1,
-                color: Colors.orange.shade400,
+                color: Theme.of(context).brightness == Brightness.light
+                    ? Colors.orange.shade400
+                    : Colors.orange.shade300,
                 onTap: () {
                   setState(() {
                     selectedPriorities = {AlertPriority.media};
@@ -492,7 +506,9 @@ class _AlertsScreenState extends State<AlertsScreen>
                 label: 'Baja',
                 isSelected: selectedPriorities.contains(AlertPriority.baja) &&
                     selectedPriorities.length == 1,
-                color: const Color(0xFFD4C5E2),
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFFD4C5E2)
+                    : const Color(0xFF8B7AA2),
                 onTap: () {
                   setState(() {
                     selectedPriorities = {AlertPriority.baja};
@@ -512,22 +528,28 @@ class _AlertsScreenState extends State<AlertsScreen>
     required Color color,
     required VoidCallback onTap,
   }) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? color : Colors.grey.shade200,
+          color: isSelected 
+              ? color 
+              : (isDarkMode ? Colors.grey.shade700 : Colors.grey.shade200),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? color : Colors.grey.shade300,
+            color: isSelected 
+                ? color 
+                : (isDarkMode ? Colors.grey.shade600 : Colors.grey.shade300),
             width: 2,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: color.withOpacity(0.3),
+                    color: color.withOpacity(0.4),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -540,7 +562,9 @@ class _AlertsScreenState extends State<AlertsScreen>
             Icon(
               isSelected ? Icons.check_circle : Icons.circle_outlined,
               size: 18,
-              color: isSelected ? Colors.white : Colors.grey.shade600,
+              color: isSelected 
+                  ? Colors.white 
+                  : (isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600),
             ),
             const SizedBox(width: 6),
             Text(
@@ -548,7 +572,9 @@ class _AlertsScreenState extends State<AlertsScreen>
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.white : Colors.grey.shade700,
+                color: isSelected 
+                    ? Colors.white 
+                    : (isDarkMode ? Colors.grey.shade200 : Colors.grey.shade700),
               ),
             ),
           ],
