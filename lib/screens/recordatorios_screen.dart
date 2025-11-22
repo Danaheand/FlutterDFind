@@ -180,16 +180,16 @@ class _AlertsScreenState extends State<AlertsScreen>
     final hasSeenTutorial = prefs.getBool('has_seen_swipe_tutorial') ?? false;
     print('🔵🔵🔵Usuario ha visto tutorial antes: $hasSeenTutorial');
 
-    // if (!hasSeenTutorial) {
-    // Esperar un momento para que se carguen las alertas
-    await Future.delayed(const Duration(milliseconds: 1500));
+    if (!hasSeenTutorial) {
+      // Esperar un momento para que se carguen las alertas
+      await Future.delayed(const Duration(milliseconds: 1500));
 
-    if (mounted) {
-      _startTutorialAnimation();
-      // Marcar como visto
-      prefs.setBool('has_seen_swipe_tutorial', true);
+      if (mounted) {
+        _startTutorialAnimation();
+        // Marcar como visto
+        prefs.setBool('has_seen_swipe_tutorial', true);
+      }
     }
-    // }
   }
 
   void _startTutorialAnimation() {
