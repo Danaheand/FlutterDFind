@@ -767,15 +767,31 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
     }
 
     return Consumer<FontSizeProvider>(
-      builder: (context, fontSizeProvider, _) => Text(
-        data.title,
-        style: TextStyle(
-          fontSize: fontSizeProvider.getScaledSize(24),
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).brightness == Brightness.light
-              ? const Color(0xFF1E293B)
-              : Colors.white,
-        ),
+      builder: (context, fontSizeProvider, _) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Título',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).brightness == Brightness.light
+                  ? const Color(0xFF94A3B8)
+                  : Colors.grey[500],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            data.title,
+            style: TextStyle(
+              fontSize: fontSizeProvider.getScaledSize(24),
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).brightness == Brightness.light
+                  ? const Color(0xFF1E293B)
+                  : Colors.white,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -850,15 +866,31 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
     }
 
     return Consumer<FontSizeProvider>(
-      builder: (context, fontSizeProvider, _) => Text(
-        data.description,
-        style: TextStyle(
-          fontSize: fontSizeProvider.getScaledSize(15),
-          color: Theme.of(context).brightness == Brightness.light
-              ? const Color(0xFF475569)
-              : Colors.grey[300],
-          height: 1.5,
-        ),
+      builder: (context, fontSizeProvider, _) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Descripción',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).brightness == Brightness.light
+                  ? const Color(0xFF94A3B8)
+                  : Colors.grey[500],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            data.description,
+            style: TextStyle(
+              fontSize: fontSizeProvider.getScaledSize(15),
+              color: Theme.of(context).brightness == Brightness.light
+                  ? const Color(0xFF475569)
+                  : Colors.grey[300],
+              height: 1.5,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -931,38 +963,54 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
       );
     }
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.light
-            ? Colors.grey[50]
-            : AppTheme.cardDark,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.location_on,
-            size: 20,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Ubicación',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
             color: Theme.of(context).brightness == Brightness.light
                 ? const Color(0xFF94A3B8)
                 : Colors.grey[500],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              data.location ?? '',
-              style: TextStyle(
-                fontSize: 15,
-                color: Theme.of(context).brightness == Brightness.light
-                    ? const Color(0xFF475569)
-                    : Colors.grey[300],
-              ),
-            ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).brightness == Brightness.light
+                ? Colors.grey[50]
+                : AppTheme.cardDark,
+            borderRadius: BorderRadius.circular(12),
           ),
-        ],
-      ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.location_on,
+                size: 20,
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFF94A3B8)
+                    : Colors.grey[500],
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  data.location ?? '',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? const Color(0xFF475569)
+                        : Colors.grey[300],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -1149,11 +1197,10 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                       : Colors.grey[500]),
               const SizedBox(width: 6),
               Text(
-                'FRECUENCIA',
+                'Frecuencia',
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  letterSpacing: 1.2,
                   color: Theme.of(context).brightness == Brightness.light
                       ? const Color(0xFF94A3B8)
                       : Colors.grey[500],
