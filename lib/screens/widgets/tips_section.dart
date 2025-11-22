@@ -33,6 +33,13 @@ class _TipsSectionState extends State<TipsSection> {
         description: 'Los artículos se agrupan automáticamente por tienda',
         color: isLight ? AppTheme.successLight : AppTheme.successDark,
       ),
+      TipItem(
+        icon: Icons.check_box_outline_blank,
+        title: 'Eliminar categorías',
+        description:
+            'Toca el icono de selección en la barra, marca las categorías y presiona eliminar',
+        color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
+      ),
     ];
 
     return Container(
@@ -125,7 +132,7 @@ class _TipsSectionState extends State<TipsSection> {
                         const SizedBox(height: 2),
                         Consumer<FontSizeProvider>(
                           builder: (context, fontSizeProvider, _) => Text(
-                            'Aprovecha al máximo la aplicación',
+                            'Gestiona tu lista de compras fácilmente',
                             style: TextStyle(
                               fontSize: fontSizeProvider.fontSize - 2,
                               color: AppTheme.getTextSecondary(context),
@@ -149,7 +156,7 @@ class _TipsSectionState extends State<TipsSection> {
           // Tips List - Se expande/contrae
           if (_expandTips)
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
               child: Column(
                 children:
                     tips.map((tip) => _buildTipCard(context, tip)).toList(),
@@ -306,7 +313,7 @@ class _TipsSectionState extends State<TipsSection> {
     final bool isLight = Theme.of(context).brightness == Brightness.light;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
