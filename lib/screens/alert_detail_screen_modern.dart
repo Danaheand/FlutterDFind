@@ -49,7 +49,14 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
     titleController = TextEditingController(text: data.title);
     descriptionController = TextEditingController(text: data.description);
     locationController = TextEditingController(text: data.location ?? '');
-    selectedWeekdays = List<int>.from(data.selectedWeekdays ?? []);
+    
+    // Si es repetitiva y no hay días seleccionados, marcar todos por defecto
+    if (data.repetitive && (data.selectedWeekdays == null || data.selectedWeekdays!.isEmpty)) {
+      selectedWeekdays = [0, 1, 2, 3, 4, 5, 6]; // Marcar todos los días
+    } else {
+      selectedWeekdays = List<int>.from(data.selectedWeekdays ?? []);
+    }
+    
     selectedDate = data.date;
     selectedPriority = data.priority;
     selectedColor = data.color;
@@ -1000,11 +1007,15 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
             const SizedBox(height: 12),
             Row(
               children: [
-                // Botón Seleccionar Todos
+                // Botón Marcar/Desmarcar Todos
                 InkWell(
                   onTap: () {
                     setState(() {
-                      selectedWeekdays = [0, 1, 2, 3, 4, 5, 6];
+                      if (selectedWeekdays.length == 7) {
+                        selectedWeekdays = [];
+                      } else {
+                        selectedWeekdays = [0, 1, 2, 3, 4, 5, 6];
+                      }
                     });
                   },
                   borderRadius: BorderRadius.circular(8),
@@ -1046,7 +1057,9 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          'Todos',
+                          selectedWeekdays.length == 7
+                              ? 'Desmarcar todos'
+                              : 'Marcar todos',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -1056,69 +1069,6 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                                         Brightness.light
                                     ? const Color(0xFF3B82F6)
                                     : AppTheme.primaryDark),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Botón Desmarcar Todos
-                InkWell(
-                  onTap: () {
-                    setState(() {
-                      selectedWeekdays = [];
-                    });
-                  },
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: selectedWeekdays.isEmpty
-                          ? (Theme.of(context).brightness == Brightness.light
-                              ? const Color(0xFF64748B)
-                              : Colors.grey[600])
-                          : (Theme.of(context).brightness == Brightness.light
-                              ? Colors.grey[100]
-                              : Colors.grey[800]),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Theme.of(context).brightness == Brightness.light
-                            ? Colors.grey[300]!
-                            : Colors.grey[700]!,
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          selectedWeekdays.isEmpty
-                              ? Icons.check_circle
-                              : Icons.remove_circle_outline,
-                          size: 16,
-                          color: selectedWeekdays.isEmpty
-                              ? Colors.white
-                              : (Theme.of(context).brightness ==
-                                      Brightness.light
-                                  ? const Color(0xFF64748B)
-                                  : Colors.grey[400]),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Ninguno',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: selectedWeekdays.isEmpty
-                                ? Colors.white
-                                : (Theme.of(context).brightness ==
-                                        Brightness.light
-                                    ? const Color(0xFF64748B)
-                                    : Colors.grey[400]),
                           ),
                         ),
                       ],
