@@ -282,9 +282,8 @@ class _InventoryScreenState extends State<InventoryScreen>
       item.isPurchased = newValue;
     });
 
-    // 2) Si acaba de pasar a realizado → SIEMPRE confeti + mensaje
+    // 2) Si acaba de pasar a realizado → SOLO confeti (sin mensaje)
     if (!wasPurchased && newValue) {
-      _showItemCompletedMessage();
       _playTaskConfetti();
     }
 
@@ -424,10 +423,6 @@ class _InventoryScreenState extends State<InventoryScreen>
       entry.remove();
       controller.dispose();
     });
-  }
-
-  void _showItemCompletedMessage() {
-    _showCuteMessage('Pendiente completado', Icons.check_circle_rounded);
   }
 
   void _showPlaceCompletedMessage(String place) {
