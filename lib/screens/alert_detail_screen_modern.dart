@@ -700,53 +700,69 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
 
   Widget _buildTitle() {
     if (isEditing) {
-      return Consumer<FontSizeProvider>(
-        builder: (context, fontSizeProvider, _) => TextField(
-          controller: titleController,
-          onTap: _scrollToShowField,
-          style: TextStyle(
-            fontSize: fontSizeProvider.getScaledSize(24),
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).brightness == Brightness.light
-                ? const Color(0xFF1E293B)
-                : Colors.white,
-          ),
-          decoration: InputDecoration(
-            hintText: 'Título de la alerta',
-            hintStyle: TextStyle(
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Título',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
               color: Theme.of(context).brightness == Brightness.light
-                  ? Colors.grey[400]
-                  : Colors.grey[600],
+                  ? const Color(0xFF94A3B8)
+                  : Colors.grey[500],
             ),
-            filled: true,
-            fillColor: Theme.of(context).brightness == Brightness.light
-                ? Colors.grey[50]
-                : AppTheme.cardDark,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                  color: Theme.of(context).brightness == Brightness.light
-                      ? const Color(0xFFE2E8F0)
-                      : Colors.grey[700]!),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                  color: Theme.of(context).brightness == Brightness.light
-                      ? const Color(0xFFE2E8F0)
-                      : Colors.grey[700]!),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                  color: Theme.of(context).brightness == Brightness.light
-                      ? const Color(0xFF3B82F6)
-                      : AppTheme.primaryDark,
-                  width: 2),
-            ),
-            contentPadding: const EdgeInsets.all(16),
           ),
-        ),
+          const SizedBox(height: 8),
+          Consumer<FontSizeProvider>(
+            builder: (context, fontSizeProvider, _) => TextField(
+              controller: titleController,
+              onTap: _scrollToShowField,
+              style: TextStyle(
+                fontSize: fontSizeProvider.getScaledSize(24),
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFF1E293B)
+                    : Colors.white,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Título de la alerta',
+                hintStyle: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? Colors.grey[400]
+                      : Colors.grey[600],
+                ),
+                filled: true,
+                fillColor: Theme.of(context).brightness == Brightness.light
+                    ? Colors.grey[50]
+                    : AppTheme.cardDark,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? const Color(0xFFE2E8F0)
+                          : Colors.grey[700]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? const Color(0xFFE2E8F0)
+                          : Colors.grey[700]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? const Color(0xFF3B82F6)
+                          : AppTheme.primaryDark,
+                      width: 2),
+                ),
+                contentPadding: const EdgeInsets.all(16),
+              ),
+            ),
+          ),
+        ],
       );
     }
 
@@ -766,54 +782,70 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
 
   Widget _buildDescription() {
     if (isEditing) {
-      return Consumer<FontSizeProvider>(
-        builder: (context, fontSizeProvider, _) => TextField(
-          controller: descriptionController,
-          onTap: _scrollToShowField,
-          maxLines: 3,
-          style: TextStyle(
-            fontSize: fontSizeProvider.getScaledSize(15),
-            color: Theme.of(context).brightness == Brightness.light
-                ? const Color(0xFF475569)
-                : Colors.grey[300],
-            height: 1.5,
-          ),
-          decoration: InputDecoration(
-            hintText: 'Describe los detalles de tu alerta...',
-            hintStyle: TextStyle(
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Descripción',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
               color: Theme.of(context).brightness == Brightness.light
-                  ? Colors.grey[400]
-                  : Colors.grey[600],
+                  ? const Color(0xFF94A3B8)
+                  : Colors.grey[500],
             ),
-            filled: true,
-            fillColor: Theme.of(context).brightness == Brightness.light
-                ? Colors.grey[50]
-                : AppTheme.cardDark,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                  color: Theme.of(context).brightness == Brightness.light
-                      ? const Color(0xFFE2E8F0)
-                      : Colors.grey[700]!),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                  color: Theme.of(context).brightness == Brightness.light
-                      ? const Color(0xFFE2E8F0)
-                      : Colors.grey[700]!),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                  color: Theme.of(context).brightness == Brightness.light
-                      ? const Color(0xFF3B82F6)
-                      : AppTheme.primaryDark,
-                  width: 2),
-            ),
-            contentPadding: const EdgeInsets.all(16),
           ),
-        ),
+          const SizedBox(height: 8),
+          Consumer<FontSizeProvider>(
+            builder: (context, fontSizeProvider, _) => TextField(
+              controller: descriptionController,
+              onTap: _scrollToShowField,
+              maxLines: 3,
+              style: TextStyle(
+                fontSize: fontSizeProvider.getScaledSize(15),
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFF475569)
+                    : Colors.grey[300],
+                height: 1.5,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Describe los detalles de tu alerta...',
+                hintStyle: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? Colors.grey[400]
+                      : Colors.grey[600],
+                ),
+                filled: true,
+                fillColor: Theme.of(context).brightness == Brightness.light
+                    ? Colors.grey[50]
+                    : AppTheme.cardDark,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? const Color(0xFFE2E8F0)
+                          : Colors.grey[700]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? const Color(0xFFE2E8F0)
+                          : Colors.grey[700]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? const Color(0xFF3B82F6)
+                          : AppTheme.primaryDark,
+                      width: 2),
+                ),
+                contentPadding: const EdgeInsets.all(16),
+              ),
+            ),
+          ),
+        ],
       );
     }
 
@@ -833,53 +865,69 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
 
   Widget _buildLocation() {
     if (isEditing) {
-      return TextField(
-        controller: locationController,
-        onTap: _scrollToShowField,
-        style: TextStyle(
-          fontSize: 15,
-          color: Theme.of(context).brightness == Brightness.light
-              ? const Color(0xFF475569)
-              : Colors.grey[300],
-        ),
-        decoration: InputDecoration(
-          hintText: 'Ej: Casa, Oficina, Gimnasio...',
-          prefixIcon: Icon(
-            Icons.location_on,
-            color: Theme.of(context).brightness == Brightness.light
-                ? const Color(0xFF94A3B8)
-                : Colors.grey[500],
-            size: 20,
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Ubicación',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).brightness == Brightness.light
+                  ? const Color(0xFF94A3B8)
+                  : Colors.grey[500],
+            ),
           ),
-          filled: true,
-          fillColor: Theme.of(context).brightness == Brightness.light
-              ? Colors.grey[50]
-              : AppTheme.cardDark,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
+          const SizedBox(height: 8),
+          TextField(
+            controller: locationController,
+            onTap: _scrollToShowField,
+            style: TextStyle(
+              fontSize: 15,
+              color: Theme.of(context).brightness == Brightness.light
+                  ? const Color(0xFF475569)
+                  : Colors.grey[300],
+            ),
+            decoration: InputDecoration(
+              hintText: 'Ej: Casa, Oficina, Gimnasio...',
+              prefixIcon: Icon(
+                Icons.location_on,
                 color: Theme.of(context).brightness == Brightness.light
-                    ? const Color(0xFFE2E8F0)
-                    : Colors.grey[700]!),
+                    ? const Color(0xFF94A3B8)
+                    : Colors.grey[500],
+                size: 20,
+              ),
+              filled: true,
+              fillColor: Theme.of(context).brightness == Brightness.light
+                  ? Colors.grey[50]
+                  : AppTheme.cardDark,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? const Color(0xFFE2E8F0)
+                        : Colors.grey[700]!),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? const Color(0xFFE2E8F0)
+                        : Colors.grey[700]!),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? const Color(0xFF3B82F6)
+                        : AppTheme.primaryDark,
+                    width: 2),
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            ),
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-                color: Theme.of(context).brightness == Brightness.light
-                    ? const Color(0xFFE2E8F0)
-                    : Colors.grey[700]!),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-                color: Theme.of(context).brightness == Brightness.light
-                    ? const Color(0xFF3B82F6)
-                    : AppTheme.primaryDark,
-                width: 2),
-          ),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        ),
+        ],
       );
     }
 
@@ -961,11 +1009,10 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
                       : Colors.grey[500]),
               const SizedBox(width: 6),
               Text(
-                'REPETICIÓN',
+                'Repetición',
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  letterSpacing: 1.2,
                   color: Theme.of(context).brightness == Brightness.light
                       ? const Color(0xFF94A3B8)
                       : Colors.grey[500],
@@ -1155,11 +1202,10 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
               ),
               const SizedBox(width: 6),
               Text(
-                'PRIORIDAD',
+                'Prioridad',
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  letterSpacing: 1.2,
                   color: Theme.of(context).brightness == Brightness.light
                       ? const Color(0xFF94A3B8)
                       : Colors.grey[500],
@@ -1278,11 +1324,10 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'COLOR',
+          'Color',
           style: TextStyle(
-            fontSize: 11,
+            fontSize: 14,
             fontWeight: FontWeight.w600,
-            letterSpacing: 1.2,
             color: Theme.of(context).brightness == Brightness.light
                 ? const Color(0xFF94A3B8)
                 : Colors.grey[500],
