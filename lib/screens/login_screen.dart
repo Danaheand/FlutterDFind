@@ -43,7 +43,7 @@ class _LoginScreenState extends State<AppLoginScreen> {
       final hasConnection = await ApiService.testConnection();
       if (!hasConnection) {
         throw Exception(
-            'No se puede conectar al servidor. Verifica tu conexión a internet.');
+            'Verifica tu conexión a internet.');
       }
 
       final email = _userCtrl.text.trim();
@@ -74,7 +74,7 @@ class _LoginScreenState extends State<AppLoginScreen> {
           SnackBar(
             content: Text(errorText),
             duration: const Duration(seconds: 4),
-            backgroundColor: Colors.red,
+            backgroundColor: const Color.fromARGB(255, 54, 114, 244),
           ),
         );
 
@@ -279,7 +279,7 @@ class _LoginScreenState extends State<AppLoginScreen> {
                         child: const Text(
                           '¿Olvidaste tu contraseña?',
                           style: TextStyle(
-                            color: Colors.orange,
+                            color: Color.fromARGB(255, 0, 119, 255),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
