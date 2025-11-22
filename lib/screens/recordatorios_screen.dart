@@ -453,7 +453,7 @@ class _AlertsScreenState extends State<AlertsScreen>
                 _buildPriorityChip(
                   label: 'Todas',
                   isSelected: selectedPriorities.length == 3,
-                  color: Colors.blue.shade400,
+                  color: const Color.fromARGB(255, 134, 106, 172),
                   onTap: () {
                     setState(() {
                       selectedPriorities = {

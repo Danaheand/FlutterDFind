@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:Dfind/models/alert_data.dart';
+import 'package:Dfind/theme/app_theme.dart';
 
 /// Widget que muestra una sección colapsable con un contador de elementos
 class CollapsibleSection extends StatefulWidget {
@@ -162,8 +163,8 @@ class _ExpiredAlertsBannerState extends State<ExpiredAlertsBanner> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.red.shade400,
-                  Colors.red.shade300,
+                  AppTheme.primaryLight,
+                  AppTheme.primaryDark,
                 ],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
@@ -171,7 +172,7 @@ class _ExpiredAlertsBannerState extends State<ExpiredAlertsBanner> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.red.withOpacity(0.3),
+                  color: const Color.fromARGB(255, 111, 102, 124).withOpacity(0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
@@ -225,7 +226,7 @@ class _ExpiredAlertsBannerState extends State<ExpiredAlertsBanner> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.red.shade400,
+                      color: AppTheme.primaryLight,
                     ),
                   ),
                 ),
