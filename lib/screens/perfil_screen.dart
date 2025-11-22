@@ -32,7 +32,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoading = true;
   AvatarMode _avatarMode = AvatarMode.initial;
   String? _selectedAvatarKey; // 'avatar1'..'avatar5'
-  Color _initialColor = const Color(0xFF7C5BA6);
+  Color _initialColor = const Color(0xFF6A4C93);
 
   late final TrashService _trashService;
 
@@ -76,7 +76,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               : Icons.shopping_cart;
                           final color = item.originalType == 'alert'
                               ? Colors.orange
-                              : Colors.blue;
+                              : AppTheme.primaryLight;
 
                           return Card(
                             margin: const EdgeInsets.only(bottom: 8),
@@ -283,8 +283,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               gradient: LinearGradient(
                 colors: theme.brightness == Brightness.light
                     ? [
-                        Color(0xFF3B82F6).withOpacity(0.08),
-                        Color(0xFF60A5FA).withOpacity(0.05),
+                        AppTheme.primaryLight.withOpacity(0.08),
+                        AppTheme.primaryLight.withOpacity(0.05),
                       ]
                     : [
                         AppTheme.primaryDark.withOpacity(0.1),
@@ -304,7 +304,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: theme.brightness == Brightness.light
-                          ? Color(0xFF3B82F6)
+                          ? AppTheme.primaryLight
                           : Colors.white,
                     ),
                   ),
@@ -433,7 +433,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: theme.brightness == Brightness.light
-                          ? Color(0xFF3B82F6)
+                          ? AppTheme.primaryLight
                           : AppTheme.primaryDark,
                       foregroundColor: Colors.white,
                       minimumSize: const Size.fromHeight(44),
@@ -529,7 +529,7 @@ Widget _buildAvatar() {
               boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
             ),
             padding: const EdgeInsets.all(4),
-            child: const Icon(Icons.edit, size: 20, color: Colors.blueAccent),
+            child: const Icon(Icons.edit, size: 20, color: Color(0xFF6A4C93)),
           ),
         ),
       ],
@@ -598,7 +598,7 @@ Widget _buildAvatar() {
                               child: Container(
                                 decoration: BoxDecoration(
                                   color: Theme.of(context).brightness == Brightness.light
-                                      ? Color(0xFF3B82F6)
+                                      ? AppTheme.primaryLight
                                       : AppTheme.primaryDark,
                                   shape: BoxShape.circle,
                                   boxShadow: [
@@ -671,7 +671,7 @@ Widget _buildAvatar() {
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
                                   color: Theme.of(context).brightness == Brightness.light
-                                      ? const Color(0xFF3B82F6)
+                                      ? AppTheme.primaryLight
                                       : AppTheme.primaryDark,
                                   width: 2,
                                 ),
@@ -742,7 +742,7 @@ Widget _buildAvatar() {
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
                                   color: Theme.of(context).brightness == Brightness.light
-                                      ? const Color(0xFF3B82F6)
+                                      ? AppTheme.primaryLight
                                       : AppTheme.primaryDark,
                                   width: 2,
                                 ),
@@ -785,7 +785,7 @@ Widget _buildAvatar() {
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Theme.of(context).brightness == Brightness.light
-                                  ? Color(0xFF3B82F6)
+                                  ? AppTheme.primaryLight
                                   : AppTheme.primaryDark,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(
@@ -893,7 +893,7 @@ Widget _buildAvatar() {
                                         updatedUser.avatarClave!.length == 7) {
                                       _initialColor = _colorFromHex(updatedUser.avatarClave!);
                                     } else {
-                                      _initialColor = const Color(0xFF42A5F5);
+                                      _initialColor = const Color(0xFF6A4C93);
                                     }
                                   }
                                 });
@@ -1042,7 +1042,7 @@ Widget _buildInitialCircle(
                 user.avatarClave!.length == 7) {
               _initialColor = _colorFromHex(user.avatarClave!);
             } else {
-              _initialColor = const Color(0xFF42A5F5);
+              _initialColor = const Color(0xFF6A4C93);
             }
           }
         });
@@ -1175,7 +1175,7 @@ Widget _buildInitialCircle(
                           fontWeight: FontWeight.bold,
                           fontSize: fontSizeProvider.fontSize + 6,
                           color: theme.brightness == Brightness.light
-                              ? Color(0xFF3B82F6)
+                              ? AppTheme.primaryLight
                               : Colors.white,
                         ),
                       ),
@@ -1320,11 +1320,11 @@ Widget _buildInitialCircle(
     builder: (ctx) {
       final presetKeys = ['avatar1', 'avatar2', 'avatar3', 'avatar4', 'avatar5'];
       final colorOptions = <Color>[
-        const Color(0xFFEF5350),
+        const Color(0xFF6A4C93),
         const Color(0xFFFFA726),
         const Color(0xFFFFEB3B),
         const Color(0xFF66BB6A),
-        const Color(0xFF42A5F5),
+        const Color(0xFF6A4C93),
         const Color(0xFFAB47BC),
         const Color(0xFF8D6E63),
         const Color(0xFF607D8B),
@@ -1417,13 +1417,13 @@ Widget _buildInitialCircle(
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: selected ? Colors.blue : Colors.grey.shade300,
+                                    color: selected ? AppTheme.primaryLight : Colors.grey.shade300,
                                     width: 3,
                                   ),
                                   boxShadow: selected
                                       ? [
-                                          const BoxShadow(
-                                            color: Colors.blue,
+                                          BoxShadow(
+                                            color: AppTheme.primaryLight.withOpacity(0.4),
                                             blurRadius: 8,
                                             spreadRadius: 2,
                                           ),

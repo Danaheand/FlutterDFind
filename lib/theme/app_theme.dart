@@ -330,19 +330,19 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // 1. Color Semilla (Base para Material 3)
-  static const Color seedColor = Color(0xFF7C5BA6); // Morado azulado
+  static const Color seedColor = Color(0xFF6A4C93); // Morado azulado fuerte
 
   // ===========================================================================
   // 2. VARIABLES ESTÁTICAS (Restauradas para COMPATIBILIDAD TOTAL)
   // ===========================================================================
 
-  // Primarios
-  static const Color primaryLight = Color(0xFF7C5BA6); // Morado azulado claro
-  static const Color primaryDark = Color(0xFF9B7CC4); // Morado azulado oscuro
+  // Primarios - Morado azulado fuerte y pesado
+  static const Color primaryLight = Color(0xFF6A4C93); // Morado azulado fuerte
+  static const Color primaryDark = Color(0xFF9D84B7); // Morado azulado más claro para dark
 
-  // Secundarios
-  static const Color secondaryLight = Color(0xFFFF9800);
-  static const Color secondaryDark = Color(0xFFFFB74D);
+  // Secundarios - Azul más fuerte y saturado para complementar
+  static const Color secondaryLight = Color(0xFF5B7DB6); // Azul fuerte
+  static const Color secondaryDark = Color(0xFF8FA8D8); // Azul más claro para dark
 
   // Fondos y Superficies
   static const Color backgroundLight = Color(0xFFF5F5F5);
@@ -376,12 +376,12 @@ class AppTheme {
 
   // --- SECCIÓN FALTANTE: COLORES DE PENDIENTES/COMPRAS ---
 
-  // Agrupación y Lugares (Places)
-  static const Color placeIconLight = Color(0xFF7C5BA6); // Morado azulado
-  static const Color placeIconDark = Color(0xFF9B7CC4); // Morado azulado oscuro
+  // Agrupación y Lugares (Places) - Colores fuertes y pesados
+  static const Color placeIconLight = Color(0xFF5A3D7F); // Morado muy oscuro y fuerte
+  static const Color placeIconDark = Color(0xFF8B7AA2); // Morado azulado más saturado
 
-  static const Color placeBadgeBackgroundLight = Color(0xFFE8E0F5); // Morado muy claro
-  static const Color placeBadgeBackgroundDark = Color(0xFF5A3D7F); // Morado más oscuro
+  static const Color placeBadgeBackgroundLight = Color(0xFFD4C5E2); // Morado claro mais fuerte
+  static const Color placeBadgeBackgroundDark = Color(0xFF4A2F66); // Morado muy oscuro
 
   // Categorías (Headers)
   static const Color categoryHeaderLight = Color(0xFFF5F5F5);
@@ -394,12 +394,12 @@ class AppTheme {
   static const Color purchasedLight = Color(0xFF9E9E9E);
   static const Color purchasedDark = Color(0xFF616161);
 
-  // Modo Compras
-  static const Color shoppingModeBackgroundLight = Color(0xFFE3F2FD);
-  static const Color shoppingModeBackgroundDark = Color(0xFF0D47A1);
+  // Modo Compras - Más saturado y fuerte
+  static const Color shoppingModeBackgroundLight = Color(0xFFD4C5E2); // Morado claro fuerte
+  static const Color shoppingModeBackgroundDark = Color(0xFF3A2354); // Morado muy oscuro
 
-  static const Color shoppingModeTileLight = Color(0xFFBBDEFB);
-  static const Color shoppingModeTileDark = Color(0xFF1565C0);
+  static const Color shoppingModeTileLight = Color(0xFFB8A3D0); // Morado más saturado
+  static const Color shoppingModeTileDark = Color(0xFF5A3D7F); // Morado fuerte
 
   // Sugerencias
   static const Color suggestionBackgroundLight = Color(0xFFFFF8E1);
