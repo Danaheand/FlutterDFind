@@ -165,7 +165,7 @@ class _AlertsScreenState extends State<AlertsScreen>
     overlay.insert(entry);
     controller.forward();
 
-    Future.delayed(const Duration(seconds: 6), () async {
+    Future.delayed(const Duration(milliseconds: 2500), () async {
       try {
         await controller.reverse();
       } catch (_) {}
@@ -242,8 +242,8 @@ class _AlertsScreenState extends State<AlertsScreen>
 
     _tutorialController!.forward();
 
-    // Detener después de 6 segundos (3 ciclos completos)
-    Future.delayed(const Duration(milliseconds: 6000), () {
+    // Detener después de 2.5 segundos
+    Future.delayed(const Duration(milliseconds: 2500), () {
       if (mounted) {
         setState(() {
           _showTutorial = false;

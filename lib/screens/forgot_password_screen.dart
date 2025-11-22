@@ -126,12 +126,6 @@ class _ForgotPasswordRequestScreenState
       if (!mounted) return;
 
       if (result['success'] == true) {
-        _showCuteMessage(
-          'Te enviamos un código de recuperación a $email',
-          Icons.check_circle_rounded,
-          backgroundColor: const Color(0xFF6A4C93),
-        );
-
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => ForgotPasswordCodeScreen(correo: email),
