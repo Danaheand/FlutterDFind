@@ -12,7 +12,8 @@ class RegisterScreen extends StatefulWidget {
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends State<RegisterScreen>
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
@@ -36,6 +37,88 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _passCtrl.dispose();
     _confirmCtrl.dispose();
     super.dispose();
+  }
+
+  void _showCuteMessage(String text, IconData icon, {Color? backgroundColor}) {
+    final overlay = Overlay.of(context);
+
+    late OverlayEntry entry;
+    final controller = AnimationController(
+      vsync: this as TickerProvider,
+      duration: const Duration(milliseconds: 320),
+    );
+    final animation = CurvedAnimation(
+      parent: controller,
+      curve: Curves.easeOutBack,
+      reverseCurve: Curves.easeIn,
+    );
+
+    entry = OverlayEntry(
+      builder: (ctx) {
+        return Positioned(
+          left: 16,
+          right: 16,
+          bottom: 80,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(-1.0, 0.0),
+              end: Offset.zero,
+            ).animate(animation),
+            child: FadeTransition(
+              opacity: animation,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    color: backgroundColor ?? const Color.fromARGB(255, 98, 77, 129),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        icon,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          text,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    overlay.insert(entry);
+    controller.forward();
+
+    Future.delayed(const Duration(seconds: 2), () async {
+      try {
+        await controller.reverse();
+      } catch (_) {}
+      entry.remove();
+      controller.dispose();
+    });
   }
 
   bool _hasLower(String s) => RegExp(r'[a-z]').hasMatch(s);
@@ -75,11 +158,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final valid = _formKey.currentState?.validate() ?? false;
     if (!valid) return;
     if (!_agreeTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-              Text('Debes aceptar los Términos y la Política de Privacidad'),
-        ),
+      _showCuteMessage(
+        'Debes aceptar los Términos y la Política de Privacidad',
+        Icons.warning_rounded,
+        backgroundColor: const Color(0xFF6A4C93),
       );
       return;
     }
@@ -130,26 +212,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
           if (!mounted) return;
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(sendResult['success'] == true
-                  ? 'Registro exitoso. Te enviamos un código a $email'
-                  : 'Hubo un problema al enviar el código de verificación a su correo: ${sendResult['error']}'),
-              backgroundColor:
-                  sendResult['success'] == true ? Colors.green : Colors.orange,
-              duration: const Duration(seconds: 5),
-            ),
+          _showCuteMessage(
+            sendResult['success'] == true
+                ? 'Registro exitoso. Te enviamos un código a $email'
+                : 'Hubo un problema al enviar el código: ${sendResult['error']}',
+            sendResult['success'] == true
+                ? Icons.check_circle_rounded
+                : Icons.warning_rounded,
+            backgroundColor: const Color(0xFF6A4C93),
           );
 
           navigatedWithAlreadySent = sendResult['success'] == true;
         } else {
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Registro exitoso. Te enviamos un código a $email'),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 5),
-            ),
+          _showCuteMessage(
+            'Registro exitoso. Te enviamos un código a $email',
+            Icons.check_circle_rounded,
+            backgroundColor: const Color(0xFF6A4C93),
           );
 
           navigatedWithAlreadySent = true;
@@ -165,21 +244,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
       } else {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${result['error']}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 6),
-          ),
+        _showCuteMessage(
+          '${result['error']}',
+          Icons.error_rounded,
+          backgroundColor: const Color(0xFF6A4C93),
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 6),
-        ),
+      _showCuteMessage(
+        '$e',
+        Icons.error_rounded,
+        backgroundColor: const Color(0xFF6A4C93),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -520,7 +595,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _submit,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF6A4C93),
+                              backgroundColor: const Color.fromARGB(255, 131, 106, 167),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(18),

@@ -5,6 +5,7 @@ import 'package:Dfind/widgets/alert_card.dart';
 import 'package:Dfind/widgets/alert_edit_dialog.dart';
 import 'package:Dfind/widgets/alert_tab_bar.dart';
 import 'package:Dfind/widgets/collapsible_section.dart';
+import 'package:Dfind/widgets/tutorial_alert_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -1233,6 +1234,15 @@ class _AlertsScreenState extends State<AlertsScreen>
                                         ),
                                       ],
                                     ),
+                                  )
+                                else if (_showTutorial && _slideAnimation != null)
+                                  Column(
+                                    children: [
+                                      TutorialAlertCard(
+                                        slideAnimation: _slideAnimation,
+                                      ),
+                                      const SizedBox(height: 16),
+                                    ],
                                   )
                                 else ...[
                                   // Banner de vencidas (si hay)
