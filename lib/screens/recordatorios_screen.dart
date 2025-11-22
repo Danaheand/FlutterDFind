@@ -62,13 +62,13 @@ class _AlertsScreenState extends State<AlertsScreen>
 
         if (_userEmail != null && _userId != null && mounted) {
           // Cargar recordatorios del servidor
-          print('🔵 Cargando recordatorios para $_userEmail...');
+          print('Cargando recordatorios para $_userEmail...');
           final provider = context.read<RecordatorioProvider>();
           await provider.cargarRecordatorios();
-          print('✅ Recordatorios cargados para $_userEmail');
+          print(' Recordatorios cargados para $_userEmail');
         }
       } catch (e) {
-        print('❌ Error cargando recordatorios: $e');
+        print('Error cargando recordatorios: $e');
       }
     });
   }

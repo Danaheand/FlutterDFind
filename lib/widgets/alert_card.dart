@@ -41,12 +41,12 @@ class AlertCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          print('🔵 AlertCard onTap - Alert: ${alert.title}');
+          print('AlertCard onTap - Alert: ${alert.title}');
           onTap();
         },
         onLongPress: onLongPress != null
             ? () {
-                print('🟡 AlertCard onLongPress - Alert: ${alert.title}');
+                print('AlertCard onLongPress - Alert: ${alert.title}');
                 onLongPress!();
               }
             : null,
@@ -120,6 +120,27 @@ class AlertCard extends StatelessWidget {
                             ),
                           ],
                         ],
+                      ),
+                      const SizedBox(height: 8),
+                      // Etiqueta de prioridad
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _color.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: _color.withOpacity(0.3),
+                            width: 0.5,
+                          ),
+                        ),
+                        child: Text(
+                          _getPriorityText(alert.priority),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: _color,
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 8),
                       // Fila horizontal: Ubicación + Hora
@@ -287,6 +308,18 @@ class AlertCard extends StatelessWidget {
     }
 
     return cardWidget;
+  }
+
+  /// Obtiene el texto de la prioridad
+  String _getPriorityText(AlertPriority priority) {
+    switch (priority) {
+      case AlertPriority.alta:
+        return 'Alta';
+      case AlertPriority.media:
+        return 'Media';
+      case AlertPriority.baja:
+        return 'Baja';
+    }
   }
 
   /// Obtiene el color del badge de tiempo relativo según la urgencia

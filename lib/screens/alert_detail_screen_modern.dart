@@ -1240,14 +1240,6 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.flag_rounded,
-                size: 14,
-                color: Theme.of(context).brightness == Brightness.light
-                    ? const Color(0xFF94A3B8)
-                    : Colors.grey[500],
-              ),
-              const SizedBox(width: 6),
               Text(
                 '! Prioridad',
                 style: TextStyle(
@@ -1286,34 +1278,52 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern> {
       );
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 6,
-      ),
-      decoration: BoxDecoration(
-        color: _priorityColor.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.flag_rounded,
-            size: 14,
-            color: _priorityColor,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Prioridad',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFF94A3B8)
+                    : Colors.grey[500],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 6,
           ),
-          const SizedBox(width: 6),
-          Text(
-            '${_getPriorityText()}',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: _priorityColor,
+          decoration: BoxDecoration(
+            color: _priorityColor.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: _priorityColor.withOpacity(0.3),
+              width: 0.5,
             ),
           ),
-        ],
-      ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '${_getPriorityText()}',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: _priorityColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

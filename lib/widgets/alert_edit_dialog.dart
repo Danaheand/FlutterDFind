@@ -345,7 +345,7 @@ class AlertEditDialogState extends State<AlertEditDialog> {
                 children: [
                   Row(
                     children: [
-                      Text('❗',
+                      Text('!',
                           style: TextStyle(
                             color: Colors.grey.shade500,
                             fontSize: 18,
