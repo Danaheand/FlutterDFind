@@ -270,119 +270,190 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final fontSizeProvider =
         Provider.of<FontSizeProvider>(context, listen: false);
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final theme = Theme.of(context);
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Configuración'),
-          content: SingleChildScrollView(
+        builder: (context, setState) => Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 360),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: theme.brightness == Brightness.light
+                    ? [
+                        Color(0xFF3B82F6).withOpacity(0.08),
+                        Color(0xFF60A5FA).withOpacity(0.05),
+                      ]
+                    : [
+                        AppTheme.primaryDark.withOpacity(0.1),
+                        AppTheme.primaryDark.withOpacity(0.05),
+                      ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // TEMA OSCURO
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.dark_mode_outlined),
-                  title: const Text('Tema Oscuro'),
-                  trailing: Switch(
-                    value: themeProvider.isDarkMode,
-                    onChanged: (v) async {
-                      await themeProvider.setDarkMode(v);
-                      setState(() {});
-                    },
-                  ),
-                ),
-                const Divider(),
-                // VIBRACIÓN
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.vibration),
-                  title: const Text('Vibración'),
-                  trailing: Switch(
-                    value: _notifVibration,
-                    onChanged: (v) {
-                      setState(() => _notifVibration = v);
-                    },
-                  ),
-                ),
-                const Divider(),
-                // SONIDO
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.volume_up_outlined),
-                  title: const Text('Sonido'),
-                  trailing: Switch(
-                    value: _notifSound,
-                    onChanged: (v) {
-                      setState(() => _notifSound = v);
-                    },
-                  ),
-                ),
-                const Divider(),
-                // TAMAÑO DE LETRA
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.format_size),
-                  title: const Text('Ajustar tamaño de letra'),
-                ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Column(
-                    children: [
-                      const Divider(),
-                      Row(
-                        children: [
-                          const Text('A-',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 12)),
-                          Expanded(
-                            child: Slider(
-                              min: 12.0,
-                              max: 28.0,
-                              divisions: 8,
-                              value: fontSizeProvider.fontSize,
-                              label: '${fontSizeProvider.fontSize.toInt()}',
-                              onChanged: (v) {
-                                fontSizeProvider.setEnabled(true);
-                                fontSizeProvider.setFontSize(v);
-                                setState(() {});
-                              },
-                            ),
-                          ),
-                          const Text('A+',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 12)),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.center,
-                        child: Text(
-                          'Tamaño: ${fontSizeProvider.fontSize.toInt()} ${fontSizeProvider.fontSize == 16.0 ? '(Recomendado)' : ''}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: fontSizeProvider.fontSize == 16.0
-                                ? Colors.green[600]
-                                : Colors.grey[600],
-                            fontWeight: fontSizeProvider.fontSize == 16.0
-                                ? FontWeight.bold
-                                : FontWeight.normal,
+                  padding: const EdgeInsets.all(20),
+                  child: Text(
+                    'Configuración',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.brightness == Brightness.light
+                          ? Color(0xFF3B82F6)
+                          : Colors.white,
+                    ),
+                  ),
+                ),
+                SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // TEMA OSCURO
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.dark_mode_outlined),
+                          title: const Text('Tema Oscuro'),
+                          trailing: Switch(
+                            value: themeProvider.isDarkMode,
+                            onChanged: (v) async {
+                              await themeProvider.setDarkMode(v);
+                              setState(() {});
+                            },
                           ),
                         ),
-                      ),
-                    ],
+                        const Divider(),
+                        // VIBRACIÓN
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.vibration),
+                          title: const Text('Vibración'),
+                          trailing: Switch(
+                            value: _notifVibration,
+                            onChanged: (v) {
+                              setState(() => _notifVibration = v);
+                            },
+                          ),
+                        ),
+                        const Divider(),
+                        // SONIDO
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.volume_up_outlined),
+                          title: const Text('Sonido'),
+                          trailing: Switch(
+                            value: _notifSound,
+                            onChanged: (v) {
+                              setState(() => _notifSound = v);
+                            },
+                          ),
+                        ),
+                        const Divider(),
+                        // TAMAÑO DE LETRA
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.format_size),
+                          title: const Text('Tamaño de letra'),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('A-',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12)),
+                                  Expanded(
+                                    child: Slider(
+                                      min: 12.0,
+                                      max: 28.0,
+                                      divisions: 8,
+                                      value: fontSizeProvider.fontSize,
+                                      label:
+                                          '${fontSizeProvider.fontSize.toInt()}',
+                                      onChanged: (v) {
+                                        fontSizeProvider.setEnabled(true);
+                                        fontSizeProvider.setFontSize(v);
+                                        setState(() {});
+                                      },
+                                    ),
+                                  ),
+                                  const Text('A+',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12)),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: fontSizeProvider.fontSize == 16.0
+                                      ? Colors.green.withOpacity(0.1)
+                                      : Colors.grey.withOpacity(0.05),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: fontSizeProvider.fontSize == 16.0
+                                        ? Colors.green[300]!
+                                        : Colors.grey[300]!,
+                                  ),
+                                ),
+                                child: Text(
+                                  'Tamaño actual: ${fontSizeProvider.fontSize.toInt()}px ${fontSizeProvider.fontSize == 16.0 ? '✓ Recomendado' : ''}',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: fontSizeProvider.fontSize == 16.0
+                                        ? Colors.green[700]
+                                        : Colors.grey[700],
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
                   ),
-                )
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.brightness == Brightness.light
+                          ? Color(0xFF3B82F6)
+                          : AppTheme.primaryDark,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(44),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      'Cerrar',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
-          actions: [
-            CustomTextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cerrar'),
-            ),
-          ],
         ),
       ),
     );
