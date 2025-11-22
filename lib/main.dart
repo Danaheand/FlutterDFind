@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'providers/font_size_provider.dart';
 import 'providers/recordatorio_provider.dart';
 import 'providers/theme_provider.dart';
+import 'providers/connectivity_provider.dart';
 import 'providers/pendientes_state_provider.dart';
 import 'screens/pendientes_screen.dart';
 import 'screens/recordatorios_screen.dart';
@@ -15,6 +16,7 @@ import 'services/notification_service.dart';
 import 'services/session_manager.dart';
 import 'services/trash_service.dart';
 import 'services/background_notification_service.dart';
+import 'widgets/no_internet_banner.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -41,7 +43,14 @@ class _MainScaffoldState extends State<MainScaffold> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_selectedIndex],
+      body: Column(
+        children: [
+          const NoInternetBanner(),
+          Expanded(
+            child: _screens[_selectedIndex],
+          ),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
@@ -105,6 +114,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider<ConnectivityProvider>(
+          create: (_) => ConnectivityProvider(),
+        ),
         ChangeNotifierProvider<FontSizeProvider>(
           create: (_) => FontSizeProvider(),
         ),
