@@ -558,251 +558,379 @@ Widget _buildAvatar() {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) => Dialog(
+            insetPadding: const EdgeInsets.symmetric(horizontal: 20),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Stack(
-                    alignment: Alignment.center,
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 420),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: Theme.of(context).brightness == Brightness.light
+                      ? [
+                          Colors.white,
+                          Colors.grey[50]!,
+                        ]
+                      : [
+                          AppTheme.cardDark,
+                          AppTheme.backgroundDark,
+                        ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(28),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      _buildDialogAvatarPreview(nameController.text, fontSizeProvider),
-                      Positioned(
-                        bottom: 12,
-                        right: 12,
-                        child: GestureDetector(
-                          onTap: () => _showAvatarSelector(context, setState),
-                          child: Container(
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(color: Colors.black26, blurRadius: 4),
-                              ],
-                            ),
-                            padding: const EdgeInsets.all(8),
-                            child: const Icon(
-                              Icons.brush,
-                              size: 28,
-                              color: Colors.blueAccent,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: nameController,
-                    textAlign: TextAlign.center,
-                    decoration: const InputDecoration(
-                      labelText: 'Nombre',
-                      border: OutlineInputBorder(),
-                    ),
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: fontSizeProvider.enabled
-                            ? fontSizeProvider.fontSize + 4
-                            : 18),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: emailController,
-                    textAlign: TextAlign.center,
-                    decoration: const InputDecoration(
-                      labelText: 'Correo Electrónico',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    style: TextStyle(
-                        fontSize: fontSizeProvider.enabled
-                            ? fontSizeProvider.fontSize
-                            : 14),
-                  ),
-                  const SizedBox(height: 12),
-                  // Mostrar información adicional del usuario
-                  if (_currentUser!.fechaCreacionIso.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
+                      Stack(
+                        alignment: Alignment.center,
                         children: [
-                          const Icon(Icons.calendar_today,
-                              size: 16, color: Colors.grey),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Miembro desde: ${_formatDate(_currentUser!.fechaCreacionIso)}',
-                              style: TextStyle(
-                                  fontSize: fontSizeProvider.enabled
-                                      ? fontSizeProvider.fontSize
-                                      : 14,
-                                  color: Colors.black87,
-                                  fontWeight: FontWeight.w500),
+                          _buildDialogAvatarPreview(nameController.text, fontSizeProvider),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: () => _showAvatarSelector(context, setState),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).brightness == Brightness.light
+                                      ? Color(0xFF3B82F6)
+                                      : AppTheme.primaryDark,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 8,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                                padding: const EdgeInsets.all(12),
+                                child: const Icon(
+                                  Icons.edit,
+                                  size: 24,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      CustomTextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancelar'),
+
+                      const SizedBox(height: 28),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Nombre',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).brightness == Brightness.light
+                                  ? const Color(0xFF94A3B8)
+                                  : Colors.grey[500],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: nameController,
+                            textAlign: TextAlign.center,
+                            onChanged: (val) => setState(() {}),
+                            decoration: InputDecoration(
+                              hintText: 'Tu nombre',
+                              hintStyle: TextStyle(
+                                color: Theme.of(context).brightness == Brightness.light
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
+                              ),
+                              filled: true,
+                              fillColor: Theme.of(context).brightness == Brightness.light
+                                  ? Colors.grey[50]
+                                  : AppTheme.cardDark,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).brightness == Brightness.light
+                                      ? const Color(0xFFE2E8F0)
+                                      : Colors.grey[700]!,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).brightness == Brightness.light
+                                      ? const Color(0xFFE2E8F0)
+                                      : Colors.grey[700]!,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).brightness == Brightness.light
+                                      ? const Color(0xFF3B82F6)
+                                      : AppTheme.primaryDark,
+                                  width: 2,
+                                ),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                            ),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: fontSizeProvider.enabled
+                                  ? fontSizeProvider.fontSize + 2
+                                  : 16,
+                              color: Theme.of(context).brightness == Brightness.light
+                                  ? const Color(0xFF1E293B)
+                                  : Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () async {
-                          final newName = nameController.text.trim();
-                          final newEmail = emailController.text.trim();
-
-                          if (_currentUser == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'No se pudo obtener la información del usuario.')),
-                            );
-                            return;
-                          }
-
-                          if (newName.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text('El nombre no puede estar vacío.')),
-                            );
-                            return;
-                          }
-
-                          if (newEmail.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text('El correo no puede estar vacío.')),
-                            );
-                            return;
-                          }
-
-                          // Si nada cambió, no hacer nada
-                          final nameChanged =
-                              newName != _currentUser!.nombreUsuario;
-                          final emailChanged = newEmail != _currentUser!.email;
-
-                          if (!nameChanged && !emailChanged) {
-                            Navigator.pop(context);
-                            return;
-                          }
-
-                          try {
-                            // Mostrar indicador de carga
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (context) => const Center(
-                                child: CircularProgressIndicator(),
+                      const SizedBox(height: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Correo Electrónico',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).brightness == Brightness.light
+                                  ? const Color(0xFF94A3B8)
+                                  : Colors.grey[500],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: emailController,
+                            textAlign: TextAlign.center,
+                            decoration: InputDecoration(
+                              hintText: 'tu@email.com',
+                              hintStyle: TextStyle(
+                                color: Theme.of(context).brightness == Brightness.light
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
                               ),
-                            );
-                            
-                            // Detectar si el avatar cambió
-                            final currentAvatarTipo = (_currentUser!.avatarTipo == 'preset')
-                                ? AvatarMode.preset
-                                : AvatarMode.initial;
-                            final currentAvatarClave = _currentUser!.avatarClave;
-                            
-                            final newAvatarTipo =
-                                _avatarMode == AvatarMode.preset ? 'preset' : 'initial';
-                            final newAvatarClave = _avatarMode == AvatarMode.preset
-                                ? (_selectedAvatarKey ?? 'avatar1')
-                                : _colorToHex(_initialColor);
-                            
-                            final avatarChanged = 
-                                currentAvatarTipo != _avatarMode ||
-                                currentAvatarClave != newAvatarClave;
+                              filled: true,
+                              fillColor: Theme.of(context).brightness == Brightness.light
+                                  ? Colors.grey[50]
+                                  : AppTheme.cardDark,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).brightness == Brightness.light
+                                      ? const Color(0xFFE2E8F0)
+                                      : Colors.grey[700]!,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).brightness == Brightness.light
+                                      ? const Color(0xFFE2E8F0)
+                                      : Colors.grey[700]!,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).brightness == Brightness.light
+                                      ? const Color(0xFF3B82F6)
+                                      : AppTheme.primaryDark,
+                                  width: 2,
+                                ),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                            ),
+                            keyboardType: TextInputType.emailAddress,
+                            style: TextStyle(
+                              fontSize: fontSizeProvider.enabled
+                                  ? fontSizeProvider.fontSize
+                                  : 14,
+                              color: Theme.of(context).brightness == Brightness.light
+                                  ? const Color(0xFF475569)
+                                  : Colors.grey[300],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(
+                              'Cancelar',
+                              style: TextStyle(
+                                color: Theme.of(context).brightness == Brightness.light
+                                    ? Colors.grey[600]
+                                    : Colors.grey[400],
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).brightness == Brightness.light
+                                  ? Color(0xFF3B82F6)
+                                  : AppTheme.primaryDark,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
+                            ),
+                            onPressed: () async {
+                              final newName = nameController.text.trim();
+                              final newEmail = emailController.text.trim();
 
-                            // Debug logs
-                            print('🎨 DEBUG AVATAR:');
-                            print('  currentAvatarTipo: $currentAvatarTipo');
-                            print('  _avatarMode: $_avatarMode');
-                            print('  currentAvatarClave: $currentAvatarClave');
-                            print('  newAvatarClave: $newAvatarClave');
-                            print('  _selectedAvatarKey: $_selectedAvatarKey');
-                            print('  _initialColor hex: ${_colorToHex(_initialColor)}');
-                            print('  avatarChanged: $avatarChanged');
-
-                            final updatedUser = await RemoteUserRepository
-                                .instance
-                                .updateProfileByEmail(
-                              correoActual: _currentUser!.email,
-                              nuevoNombre: nameChanged ? newName : null,
-                              nuevoCorreo: emailChanged ? newEmail : null,
-                              avatarTipo: avatarChanged ? newAvatarTipo : null,
-                              avatarClave: avatarChanged ? newAvatarClave : null,
-                            );
-
-                            if (mounted) Navigator.pop(context);
-
-                            setState(() {
-                              _currentUser = updatedUser;
-                              _userName = updatedUser.nombreUsuario;
-                              _userEmail = updatedUser.email; // Actualiza el correo
-
-                              _avatarMode = (updatedUser.avatarTipo == 'preset')
-                                  ? AvatarMode.preset
-                                  : AvatarMode.initial;
-
-                              if (_avatarMode == AvatarMode.preset) {
-                                _selectedAvatarKey = updatedUser.avatarClave;
-                              } else {
-                                if (updatedUser.avatarClave != null &&
-                                    updatedUser.avatarClave!.startsWith('#') &&
-                                    updatedUser.avatarClave!.length == 7) {
-                                  _initialColor = _colorFromHex(updatedUser.avatarClave!);
-                                } else {
-                                  _initialColor = const Color(0xFF42A5F5);
-                                }
+                              if (_currentUser == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'No se pudo obtener la información del usuario.')),
+                                );
+                                return;
                               }
-                            });
 
-                            await SessionManager.instance.setUser(updatedUser);
+                              if (newName.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content:
+                                          Text('El nombre no puede estar vacío.')),
+                                );
+                                return;
+                              }
 
-                            if (!mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content:
-                                    Text('Perfil actualizado correctamente'),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                            Navigator.pop(context);
-                          } catch (e) {
-                            if (mounted) Navigator.pop(context);
+                              if (newEmail.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content:
+                                          Text('El correo no puede estar vacío.')),
+                                );
+                                return;
+                              }
 
-                            print('Error actualizando perfil: $e');
-                            if (!mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content:
-                                    Text('Error al actualizar perfil: $e'),
-                                backgroundColor: Colors.red,
-                                duration: const Duration(seconds: 4),
-                              ),
-                            );
-                          }
-                        },
-                        child: const Text('Guardar'),
+                              // Si nada cambió, no hacer nada
+                              final nameChanged =
+                                  newName != _currentUser!.nombreUsuario;
+                              final emailChanged = newEmail != _currentUser!.email;
+
+                              if (!nameChanged && !emailChanged) {
+                                Navigator.pop(context);
+                                return;
+                              }
+
+                              try {
+                                // Mostrar indicador de carga
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (context) => const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                );
+                                
+                                // Detectar si el avatar cambió
+                                final currentAvatarTipo = (_currentUser!.avatarTipo == 'preset')
+                                    ? AvatarMode.preset
+                                    : AvatarMode.initial;
+                                final currentAvatarClave = _currentUser!.avatarClave;
+                                
+                                final newAvatarTipo =
+                                    _avatarMode == AvatarMode.preset ? 'preset' : 'initial';
+                                final newAvatarClave = _avatarMode == AvatarMode.preset
+                                    ? (_selectedAvatarKey ?? 'avatar1')
+                                    : _colorToHex(_initialColor);
+                                
+                                final avatarChanged = 
+                                    currentAvatarTipo != _avatarMode ||
+                                    currentAvatarClave != newAvatarClave;
+
+                                // Debug logs
+                                print('🎨 DEBUG AVATAR:');
+                                print('  currentAvatarTipo: $currentAvatarTipo');
+                                print('  _avatarMode: $_avatarMode');
+                                print('  currentAvatarClave: $currentAvatarClave');
+                                print('  newAvatarClave: $newAvatarClave');
+                                print('  _selectedAvatarKey: $_selectedAvatarKey');
+                                print('  _initialColor hex: ${_colorToHex(_initialColor)}');
+                                print('  avatarChanged: $avatarChanged');
+
+                                final updatedUser = await RemoteUserRepository
+                                    .instance
+                                    .updateProfileByEmail(
+                                  correoActual: _currentUser!.email,
+                                  nuevoNombre: nameChanged ? newName : null,
+                                  nuevoCorreo: emailChanged ? newEmail : null,
+                                  avatarTipo: avatarChanged ? newAvatarTipo : null,
+                                  avatarClave: avatarChanged ? newAvatarClave : null,
+                                );
+
+                                setState(() {
+                                  if (_avatarMode == AvatarMode.preset) {
+                                    _selectedAvatarKey = updatedUser.avatarClave;
+                                  } else {
+                                    if (updatedUser.avatarClave != null &&
+                                        updatedUser.avatarClave!.startsWith('#') &&
+                                        updatedUser.avatarClave!.length == 7) {
+                                      _initialColor = _colorFromHex(updatedUser.avatarClave!);
+                                    } else {
+                                      _initialColor = const Color(0xFF42A5F5);
+                                    }
+                                  }
+                                });
+
+                                await SessionManager.instance.setUser(updatedUser);
+
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content:
+                                        Text('Perfil actualizado correctamente'),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                                Navigator.pop(context);
+                              } catch (e) {
+                                if (mounted) Navigator.pop(context);
+
+                                print('Error actualizando perfil: $e');
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content:
+                                        Text('Error al actualizar perfil: $e'),
+                                    backgroundColor: Colors.red,
+                                    duration: const Duration(seconds: 4),
+                                  ),
+                                );
+                              }
+                            },
+                            child: const Text('Guardar'),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -949,28 +1077,6 @@ Widget _buildInitialCircle(
   }
 
 
-  String _formatDate(String isoDateString) {
-    try {
-      final date = DateTime.parse(isoDateString);
-      final months = [
-        'enero',
-        'febrero',
-        'marzo',
-        'abril',
-        'mayo',
-        'junio',
-        'julio',
-        'agosto',
-        'septiembre',
-        'octubre',
-        'noviembre',
-        'diciembre'
-      ];
-      return '${date.day} de ${months[date.month - 1]} de ${date.year}';
-    } catch (e) {
-      return isoDateString; // Si no se puede parsear, devolver la cadena original
-    }
-  }
   Color _colorFromHex(String hex) {
     final buffer = StringBuffer();
     if (hex.length == 7) buffer.write('ff'); // agrega alpha si es #RRGGBB
