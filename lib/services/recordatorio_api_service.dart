@@ -348,6 +348,68 @@ class RecordatorioApiService {
     }
   }
 
+  /// 6️⃣ POST - Restaurar un recordatorio desde la papelera
+  ///
+  /// Endpoint: POST /api/Recordatorios/restaurar-desde-papelera
+  ///
+  /// Uso:
+  /// - Cuando el usuario presiona "Restaurar" en un recordatorio de la papelera
+  /// - Restaura el recordatorio desde la papelera en el backend
+  ///
+  /// Retorna: true si se restauró correctamente
+  /// Lanza: RecordatorioException en caso de error
+  static Future<bool> restaurarRecordatorio(
+      String titulo, String correo) async {
+    try {
+      print('♻️ Restaurando recordatorio desde papelera: $titulo');
+
+      final url = '$baseUrl/Recordatorios/restaurar-desde-papelera';
+
+      print('🌐 URL: $url');
+      final requestBody =
+          jsonEncode({'titulo': titulo, 'correoUsuario': correo});
+      print('📦 Request body: $requestBody');
+
+      final response = await http
+          .post(Uri.parse(url), headers: _headers, body: requestBody)
+          .timeout(timeout);
+
+      print('📨 Status: ${response.statusCode}');
+      print('📄 Response: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        print('✅ Recordatorio restaurado exitosamente desde papelera');
+        return true;
+      } else if (response.statusCode == 404) {
+        print('❌ Recordatorio no encontrado en papelera: $titulo');
+        throw RecordatorioNotFoundException(titulo);
+      } else if (response.statusCode >= 500) {
+        throw RecordatorioServerException(
+          'Error del servidor al restaurar recordatorio',
+          response.statusCode,
+        );
+      } else {
+        String errorMessage = 'Error al restaurar recordatorio';
+        try {
+          final errorData = jsonDecode(response.body);
+          errorMessage = errorData['message'] ?? errorMessage;
+        } catch (_) {
+          errorMessage = 'Error ${response.statusCode}: ${response.body}';
+        }
+        throw RecordatorioClientException(errorMessage, response.statusCode);
+      }
+    } on RecordatorioException catch (e) {
+      print('❌ Error de recordatorio: $e');
+      rethrow;
+    } catch (e) {
+      print('❌ Error de red: $e');
+      throw RecordatorioNetworkException(
+        'Error de conexión al restaurar recordatorio: ${e.toString()}',
+        originalError: e,
+      );
+    }
+  }
+
   /// 🔧 Método auxiliar para probar la conexión con el servidor
   static Future<bool> testConnection() async {
     try {
