@@ -59,6 +59,7 @@ class SessionManager {
       print('🔄 Actualizando datos del usuario desde el servidor...');
       final updatedUser =
           await RemoteUserRepository.instance.getUserProfile(email: email);
+      print('✅ Datos obtenidos del servidor: ${updatedUser.toJson()}');
 
       // Actualizar con los datos más recientes
       _currentUser = updatedUser;
