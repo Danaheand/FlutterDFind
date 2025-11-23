@@ -50,14 +50,15 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
     titleController = TextEditingController(text: data.title);
     descriptionController = TextEditingController(text: data.description);
     locationController = TextEditingController(text: data.location ?? '');
-    
+
     // Si es repetitiva y no hay días seleccionados, marcar todos por defecto
-    if (data.repetitive && (data.selectedWeekdays == null || data.selectedWeekdays!.isEmpty)) {
+    if (data.repetitive &&
+        (data.selectedWeekdays == null || data.selectedWeekdays!.isEmpty)) {
       selectedWeekdays = [0, 1, 2, 3, 4, 5, 6]; // Marcar todos los días
     } else {
       selectedWeekdays = List<int>.from(data.selectedWeekdays ?? []);
     }
-    
+
     selectedDate = data.date;
     selectedPriority = data.priority;
     selectedColor = data.color;
@@ -223,7 +224,8 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
               child: Material(
                 color: Colors.transparent,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
                     color: AppTheme.primaryLight,
@@ -408,8 +410,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                         side: isEditing
-                            ? BorderSide(
-                                color: AppTheme.primaryLight, width: 3)
+                            ? BorderSide(color: AppTheme.primaryLight, width: 3)
                             : BorderSide.none,
                       ),
                       child: Container(
@@ -439,27 +440,27 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
                                 //           ? const Color(0xFF64748B)
                                 //           : Colors.grey[400],
                                 // ),
-                            const SizedBox(width: 6),
-                            Text(
-                              isCompleted
-                                  ? 'LISTO'
-                                  : (isEditing
-                                      ? 'TOCA PARA EDITAR'
-                                      : timeInfo['label']),
-                              style: TextStyle(
-                                fontSize: isEditing ? 13 : 12,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 1.2,
-                                color: isCompleted
-                                    ? Colors.black87
-                                    : (isEditing
-                                        ? AppTheme.primaryLight
-                                        : Theme.of(context).brightness ==
-                                                Brightness.light
-                                            ? const Color(0xFF64748B)
-                                            : Colors.grey[400]),
-                              ),
-                            ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  isCompleted
+                                      ? 'LISTO'
+                                      : (isEditing
+                                          ? 'TOCA PARA EDITAR'
+                                          : timeInfo['label']),
+                                  style: TextStyle(
+                                    fontSize: isEditing ? 13 : 12,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.2,
+                                    color: isCompleted
+                                        ? Colors.black87
+                                        : (isEditing
+                                            ? AppTheme.primaryLight
+                                            : Theme.of(context).brightness ==
+                                                    Brightness.light
+                                                ? const Color(0xFF64748B)
+                                                : Colors.grey[400]),
+                                  ),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 8),
@@ -473,7 +474,8 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
                                       ? AppTheme.primaryLight
                                       : (isEditing
                                           ? const Color(0xFF3B82F6)
-                                          : (Theme.of(context).brightness == Brightness.light
+                                          : (Theme.of(context).brightness ==
+                                                  Brightness.light
                                               ? Colors.black87
                                               : Colors.white)),
                                   height: 1.1,
@@ -1317,7 +1319,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
           Row(
             children: [
               Text(
-                '! Prioridad',
+                '!  Prioridad',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -1334,19 +1336,19 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
               _buildPriorityChip(
                 priority: AlertPriority.alta,
                 label: 'Alta',
-                color: const Color(0xFFEF4444),
+                color: defaultColorFor(AlertPriority.alta),
               ),
               const SizedBox(width: 8),
               _buildPriorityChip(
                 priority: AlertPriority.media,
                 label: 'Media',
-                color: const Color(0xFFF59E0B),
+                color: defaultColorFor(AlertPriority.media),
               ),
               const SizedBox(width: 8),
               _buildPriorityChip(
                 priority: AlertPriority.baja,
                 label: 'Baja',
-                color: const Color(0xFF6A4C93),
+                color: defaultColorFor(AlertPriority.baja),
               ),
             ],
           ),
@@ -1378,7 +1380,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
             vertical: 6,
           ),
           decoration: BoxDecoration(
-            color: _priorityColor.withOpacity(0.15),
+            color: defaultColorFor(selectedPriority).withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: _priorityColor.withOpacity(0.3),
@@ -1393,7 +1395,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: _priorityColor,
+                  color: defaultColorFor(selectedPriority),
                 ),
               ),
             ],

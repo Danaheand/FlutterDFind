@@ -237,17 +237,20 @@ class RecordatorioApiService {
   ///
   /// Retorna: true si se eliminó correctamente
   /// Lanza: RecordatorioException en caso de error
-  static Future<bool> eliminarRecordatorio(String titulo) async {
+  static Future<bool> eliminarRecordatorio(String titulo, String correo) async {
     try {
       print('🗑️ Eliminando recordatorio por título: $titulo');
 
       final tituloEncoded = Uri.encodeComponent(titulo);
-      final url = '$baseUrl/Recordatorios/titulo/$tituloEncoded';
+      final url = '$baseUrl/Recordatorios/mover-a-papelera';
 
       print('🌐 URL: $url');
-
-      final response =
-          await http.delete(Uri.parse(url), headers: _headers).timeout(timeout);
+      final requestBody =
+          jsonEncode({'titulo': titulo, "correoUsuario": correo});
+      print('📦 Request body: $requestBody');
+      final response = await http
+          .delete(Uri.parse(url), headers: _headers, body: requestBody)
+          .timeout(timeout);
 
       print('📨 Status: ${response.statusCode}');
       print('📄 Response: ${response.body}');
@@ -256,6 +259,7 @@ class RecordatorioApiService {
         print('✅ Recordatorio eliminado exitosamente');
         return true;
       } else if (response.statusCode == 404) {
+        print('❌ Recordatorio no encontrado para eliminar: $titulo ');
         throw RecordatorioNotFoundException(titulo);
       } else if (response.statusCode >= 500) {
         throw RecordatorioServerException(
@@ -272,7 +276,8 @@ class RecordatorioApiService {
         }
         throw RecordatorioClientException(errorMessage, response.statusCode);
       }
-    } on RecordatorioException {
+    } on RecordatorioException catch (e) {
+      print('❌ Error de recordatorio: $e');
       rethrow;
     } catch (e) {
       print('❌ Error de red: $e');

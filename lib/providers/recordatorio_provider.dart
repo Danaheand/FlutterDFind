@@ -201,9 +201,16 @@ class RecordatorioProvider extends ChangeNotifier {
     _error = null;
 
     try {
+      final email = SessionManager.instance.userEmail;
+
+      if (email == null || email.isEmpty) {
+        _error = 'No hay un usuario autenticado';
+        notifyListeners();
+        return;
+      }
       print('📱 Provider: Eliminando recordatorio "$titulo"');
 
-      await _repository.eliminarRecordatorio(titulo);
+      await _repository.eliminarRecordatorio(titulo, email);
 
       // Cancelar notificación del recordatorio eliminado
       await _notificationService.cancelNotificationForRecordatorio(titulo);

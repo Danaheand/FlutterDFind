@@ -85,7 +85,7 @@ class RecordatorioRepository {
   ///
   /// Retorna true si se eliminó correctamente
   /// Lanza RecordatorioException si hay un error
-  Future<bool> eliminarRecordatorio(String titulo) async {
+  Future<bool> eliminarRecordatorio(String titulo, String correo) async {
     try {
       if (titulo.isEmpty) {
         throw RecordatorioValidationException(
@@ -93,7 +93,7 @@ class RecordatorioRepository {
         );
       }
 
-      return await RecordatorioApiService.eliminarRecordatorio(titulo);
+      return await RecordatorioApiService.eliminarRecordatorio(titulo, correo);
     } catch (e) {
       print('❌ Error en repositorio al eliminar recordatorio: $e');
       rethrow;
