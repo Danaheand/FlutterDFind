@@ -159,6 +159,6 @@ class TimeUtils {
     final period = hour >= 12 ? 'PM' : 'AM';
     final hour12 = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
 
-    return '$hour12:$minute $period $weekday $day';
+    return '$hour12:$minute $period  |  $weekday $day';
   }
 }

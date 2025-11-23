@@ -126,7 +126,8 @@ class _AlertsScreenState extends State<AlertsScreen>
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
-                    color: backgroundColor ?? const Color.fromARGB(255, 98, 77, 129),
+                    color: backgroundColor ??
+                        const Color.fromARGB(255, 98, 77, 129),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.15),
@@ -435,7 +436,7 @@ class _AlertsScreenState extends State<AlertsScreen>
 
   Widget _buildPriorityFilters() {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -491,9 +492,8 @@ class _AlertsScreenState extends State<AlertsScreen>
               ),
               _buildPriorityChip(
                 label: 'Media',
-                isSelected:
-                    selectedPriorities.contains(AlertPriority.media) &&
-                        selectedPriorities.length == 1,
+                isSelected: selectedPriorities.contains(AlertPriority.media) &&
+                    selectedPriorities.length == 1,
                 color: Theme.of(context).brightness == Brightness.light
                     ? Colors.orange.shade400
                     : Colors.orange.shade300,
@@ -530,20 +530,20 @@ class _AlertsScreenState extends State<AlertsScreen>
     required VoidCallback onTap,
   }) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected 
-              ? color 
+          color: isSelected
+              ? color
               : (isDarkMode ? Colors.grey.shade700 : Colors.grey.shade200),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected 
-                ? color 
+            color: isSelected
+                ? color
                 : (isDarkMode ? Colors.grey.shade600 : Colors.grey.shade300),
             width: 2,
           ),
@@ -560,22 +560,24 @@ class _AlertsScreenState extends State<AlertsScreen>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              isSelected ? Icons.check_circle : Icons.circle_outlined,
-              size: 18,
-              color: isSelected 
-                  ? Colors.white 
-                  : (isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600),
-            ),
-            const SizedBox(width: 6),
+            // Icon(
+            //   isSelected ? Icons.check_circle : Icons.circle_outlined,
+            //   size: 18,
+            //   color: isSelected
+            //       ? Colors.white
+            //       : (isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600),
+            // ),
+            // const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: isSelected 
-                    ? Colors.white 
-                    : (isDarkMode ? Colors.grey.shade200 : Colors.grey.shade700),
+                color: isSelected
+                    ? Colors.white
+                    : (isDarkMode
+                        ? Colors.grey.shade200
+                        : Colors.grey.shade700),
               ),
             ),
           ],
@@ -1235,7 +1237,8 @@ class _AlertsScreenState extends State<AlertsScreen>
                                       ],
                                     ),
                                   )
-                                else if (_showTutorial && _slideAnimation != null)
+                                else if (_showTutorial &&
+                                    _slideAnimation != null)
                                   Column(
                                     children: [
                                       TutorialAlertCard(

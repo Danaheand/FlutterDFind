@@ -14,6 +14,19 @@ Color defaultColorFor(AlertPriority p) {
   }
 }
 
+String getPriorityText(AlertPriority p) {
+  switch (p) {
+    case AlertPriority.alta:
+      return 'Alta';
+    case AlertPriority.media:
+      return 'Media';
+    case AlertPriority.baja:
+      return 'Baja';
+    default:
+      return 'Desconocida';
+  }
+}
+
 String dateLabel(DateTime date) {
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);

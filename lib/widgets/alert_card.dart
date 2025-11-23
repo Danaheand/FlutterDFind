@@ -92,24 +92,50 @@ class AlertCard extends StatelessWidget {
                       // Título en negrita con icono de repetición
                       Row(
                         children: [
-                          Expanded(
-                            child: Consumer<FontSizeProvider>(
-                              builder: (context, fontSizeProvider, _) => Text(
-                                alert.title,
-                                style: TextStyle(
-                                  fontSize: fontSizeProvider.getScaledSize(18),
-                                  fontWeight: FontWeight.bold,
-                                  color: alert.active
-                                      ? (Theme.of(context).brightness == Brightness.light
-                                          ? Colors.black87
-                                          : Colors.white)
-                                      : Colors.grey,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+                          // Expanded(
+                          Consumer<FontSizeProvider>(
+                            builder: (context, fontSizeProvider, _) => Text(
+                              alert.title,
+                              style: TextStyle(
+                                fontSize: fontSizeProvider.getScaledSize(18),
+                                fontWeight: FontWeight.bold,
+                                // color
+
+                                color: alert.active
+                                    ? (Theme.of(context).brightness ==
+                                            Brightness.light
+                                        ? Colors.black87
+                                        : Colors.white)
+                                    : Colors.grey,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Container(
+                            margin: const EdgeInsets.only(left: 15, right: 10),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: defaultColorFor(alert.priority)
+                                  .withOpacity(0.2),
+                              // color: _color.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: defaultColorFor(alert.priority),
+                                width: 0.5,
+                              ),
+                            ),
+                            child: Text(
+                              getPriorityText(alert.priority),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: defaultColorFor(alert.priority),
                               ),
                             ),
                           ),
+
                           // Icono de repetición junto al título
                           if (alert.repetitive) ...[
                             const SizedBox(width: 8),
@@ -121,28 +147,10 @@ class AlertCard extends StatelessWidget {
                           ],
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       // Etiqueta de prioridad
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: _color.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                            color: _color.withOpacity(0.3),
-                            width: 0.5,
-                          ),
-                        ),
-                        child: Text(
-                          _getPriorityText(alert.priority),
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: _color,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
+
+                      // const SizedBox(height: 8),
                       // Fila horizontal: Ubicación + Hora
                       Row(
                         children: [
@@ -311,16 +319,6 @@ class AlertCard extends StatelessWidget {
   }
 
   /// Obtiene el texto de la prioridad
-  String _getPriorityText(AlertPriority priority) {
-    switch (priority) {
-      case AlertPriority.alta:
-        return 'Alta';
-      case AlertPriority.media:
-        return 'Media';
-      case AlertPriority.baja:
-        return 'Baja';
-    }
-  }
 
   /// Obtiene el color del badge de tiempo relativo según la urgencia
   Color _getTimeBadgeColor(DateTime targetDate) {
