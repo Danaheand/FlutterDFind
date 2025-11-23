@@ -6,7 +6,11 @@ class User {
   final String fechaCreacionIso;
   final String telefono;
   final String? avatarTipo;
-  final String? avatarClave; 
+  final String? avatarClave;
+  final bool modoOscuro;
+  final bool notificacionesSonido;
+  final bool notificacionesVibracion;
+  final int tamanoFuente;
 
   User({
     required this.idUsuario,
@@ -17,6 +21,10 @@ class User {
     this.telefono = '',
     this.avatarTipo,
     this.avatarClave,
+    this.modoOscuro = false,
+    this.notificacionesSonido = true,
+    this.notificacionesVibracion = true,
+    this.tamanoFuente = 0,
   });
 
   Map<String, dynamic> toJson() => {
@@ -28,6 +36,10 @@ class User {
         'telefono': telefono,
         'avatarTipo': avatarTipo,
         'avatarClave': avatarClave,
+        'modoOscuro': modoOscuro,
+        'notificacionesSonido': notificacionesSonido,
+        'notificacionesVibracion': notificacionesVibracion,
+        'tamanoFuente': tamanoFuente,
       };
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -39,8 +51,8 @@ class User {
       nombreUsuario:
           _parseStringSafely(json['nombre_usuario'] ?? json['nombreUsuario']),
       email: _parseStringSafely(json['email'] ?? json['correo']),
-      contrasenaHash: _parseStringSafely(
-          json['contrasena_hash'] ?? json['contrasenaHash']),
+      contrasenaHash:
+          _parseStringSafely(json['contrasena_hash'] ?? json['contrasenaHash']),
       fechaCreacionIso:
           _parseStringSafely(json['fecha_creacion'] ?? json['fechaCreacion']),
       telefono: _parseStringSafely(json['telefono']),
@@ -48,6 +60,13 @@ class User {
           json['avatar_tipo'] as String? ?? json['avatarTipo'] as String?,
       avatarClave:
           json['avatar_clave'] as String? ?? json['avatarClave'] as String?,
+      modoOscuro: _parseBoolSafely(json['modo_oscuro'] ?? json['modoOscuro']),
+      notificacionesSonido: _parseBoolSafely(
+          json['notificaciones_sonido'] ?? json['notificacionesSonido']),
+      notificacionesVibracion: _parseBoolSafely(
+          json['notificaciones_vibracion'] ?? json['notificacionesVibracion']),
+      tamanoFuente:
+          _parseIntSafely(json['tamano_fuente'] ?? json['tamanoFuente']),
     );
   }
 
@@ -66,6 +85,16 @@ class User {
     return value.toString();
   }
 
+  static bool _parseBoolSafely(dynamic value) {
+    if (value == null) return false;
+    if (value is bool) return value;
+    if (value is String) {
+      return value.toLowerCase() == 'true' || value == '1';
+    }
+    if (value is int) return value == 1;
+    return false;
+  }
+
   User copyWith({
     int? idUsuario,
     String? nombreUsuario,
@@ -75,6 +104,10 @@ class User {
     String? telefono,
     String? avatarTipo,
     String? avatarClave,
+    bool? modoOscuro,
+    bool? notificacionesSonido,
+    bool? notificacionesVibracion,
+    int? tamanoFuente,
   }) {
     return User(
       idUsuario: idUsuario ?? this.idUsuario,
@@ -85,6 +118,11 @@ class User {
       telefono: telefono ?? this.telefono,
       avatarTipo: avatarTipo ?? this.avatarTipo,
       avatarClave: avatarClave ?? this.avatarClave,
+      modoOscuro: modoOscuro ?? this.modoOscuro,
+      notificacionesSonido: notificacionesSonido ?? this.notificacionesSonido,
+      notificacionesVibracion:
+          notificacionesVibracion ?? this.notificacionesVibracion,
+      tamanoFuente: tamanoFuente ?? this.tamanoFuente,
     );
   }
 }

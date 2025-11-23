@@ -2,16 +2,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-
 import '../models/user.dart';
 
 class RemoteUserRepository {
-  final String _baseUrl = 'https://dfindapi-yfcq.onrender.com'; // o la que ya usas
+  final String _baseUrl =
+      'https://dfindapi-yfcq.onrender.com'; // o la que ya usas
 
   RemoteUserRepository._internal();
 
   static final RemoteUserRepository instance = RemoteUserRepository._internal();
-
 
   Uri _uri(String path) => Uri.parse('$_baseUrl$path');
 
@@ -96,10 +95,12 @@ class RemoteUserRepository {
       );
     }
   }
+
   Future<User> getUserProfile({
     required String email,
   }) async {
-    final url = _uri('/api/Auth/profile/by-email/$email');
+    // Usar query parameter según la API documentada
+    final url = _uri('/api/Users?correo=$email');
 
     print('GET $url');
 
@@ -129,14 +130,18 @@ class RemoteUserRepository {
     String? nuevoCorreo,
     String? avatarTipo,
     String? avatarClave,
+    bool? modoOscuro,
+    bool? notificacionesSonido,
+    bool? notificacionesVibracion,
+    int? tamanoFuente,
   }) async {
     final url = _uri('/api/Users/profile');
-    
-    // Construir body solo con los campos que se van a cambiar
+
+    // Construir body según la documentación de la API
     final body = <String, dynamic>{
-      'correo': correoActual, // Siempre necesario para identificar al usuario
+      'correo': correoActual, // Requerido para identificar al usuario
     };
-    
+
     // Agregar solo los campos que cambiarán
     if (nuevoNombre != null) body['nombreUsuario'] = nuevoNombre;
     if (nuevoCorreo != null) body['nuevoCorreo'] = nuevoCorreo;
@@ -148,6 +153,12 @@ class RemoteUserRepository {
       body['avatarClave'] = avatarClave;
       print('🎨 Avatar Clave a guardar: $avatarClave');
     }
+    if (modoOscuro != null) body['modoOscuro'] = modoOscuro;
+    if (notificacionesSonido != null)
+      body['notificacionesSonido'] = notificacionesSonido;
+    if (notificacionesVibracion != null)
+      body['notificacionesVibracion'] = notificacionesVibracion;
+    if (tamanoFuente != null) body['tamanoFuente'] = tamanoFuente;
 
     print('PUT $url');
     print('Body: ${jsonEncode(body)}');
@@ -171,10 +182,10 @@ class RemoteUserRepository {
         // Status 204: obtener el usuario con el correo actualizado
         // Si cambió el correo, usar el nuevo. Si no, usar el actual
         final emailActualizado = nuevoCorreo ?? correoActual;
-        
+
         // Esperar un poco antes de hacer el GET para que el servidor procese el cambio
         await Future.delayed(const Duration(milliseconds: 500));
-        
+
         print('🎨 Obteniendo usuario actualizado con email: $emailActualizado');
         return getUserProfile(email: emailActualizado);
       }

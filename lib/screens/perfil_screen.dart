@@ -19,10 +19,10 @@ class ProfileScreen extends StatefulWidget {
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
-
 }
 
-class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateMixin {
+class _ProfileScreenState extends State<ProfileScreen>
+    with TickerProviderStateMixin {
   bool _showLogoutDialog = false;
   bool _notifSound = true;
   bool _notifVibration = true;
@@ -162,7 +162,8 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
                               gradient: LinearGradient(
-                                colors: Theme.of(context).brightness == Brightness.light
+                                colors: Theme.of(context).brightness ==
+                                        Brightness.light
                                     ? [
                                         Colors.white,
                                         Colors.grey[50]!,
@@ -563,9 +564,16 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () async {
+                      await _saveConfigurationSettings(
+                        themeProvider.isDarkMode,
+                        fontSizeProvider.fontSize.toInt(),
+                      );
+                      if (!mounted) return;
+                      Navigator.pop(context);
+                    },
                     child: const Text(
-                      'Cerrar',
+                      'Guardar y Cerrar',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -597,68 +605,68 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
     if (!mounted) return;
     Navigator.of(context).pushReplacementNamed('/login');
   }
-Widget _buildAvatar() {
-  final nameInitial = _userName.isNotEmpty ? _userName[0].toUpperCase() : '?';
 
-  Widget avatarChild;
-  if (_avatarMode == AvatarMode.preset && _selectedAvatarKey != null) {
-    avatarChild = CircleAvatar(
-      radius: 70,
-      backgroundImage:
-          AssetImage('assets/avatars/${_selectedAvatarKey!}.png'),
-      backgroundColor: Colors.transparent,
-    );
-  } else {
-    avatarChild = CircleAvatar(
-      radius: 70,
-      backgroundColor: _initialColor,
-      child: Text(
-        nameInitial,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          fontSize: 72,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
+  Widget _buildAvatar() {
+    final nameInitial = _userName.isNotEmpty ? _userName[0].toUpperCase() : '?';
+
+    Widget avatarChild;
+    if (_avatarMode == AvatarMode.preset && _selectedAvatarKey != null) {
+      avatarChild = CircleAvatar(
+        radius: 70,
+        backgroundImage:
+            AssetImage('assets/avatars/${_selectedAvatarKey!}.png'),
+        backgroundColor: Colors.transparent,
+      );
+    } else {
+      avatarChild = CircleAvatar(
+        radius: 70,
+        backgroundColor: _initialColor,
+        child: Text(
+          nameInitial,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 72,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: _showProfileModal,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 140,
+            height: 140,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 4),
+              boxShadow: const [
+                BoxShadow(color: Colors.black12, blurRadius: 8),
+              ],
+            ),
+            child: ClipOval(child: avatarChild),
+          ),
+          Positioned(
+            bottom: 8,
+            right: 8,
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
+              ),
+              padding: const EdgeInsets.all(4),
+              child: const Icon(Icons.edit, size: 20, color: Color(0xFF6A4C93)),
+            ),
+          ),
+        ],
       ),
     );
   }
-
-  return GestureDetector(
-    onTap: _showProfileModal,
-    child: Stack(
-      alignment: Alignment.center,
-      children: [
-        Container(
-          width: 140,
-          height: 140,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 4),
-            boxShadow: const [
-              BoxShadow(color: Colors.black12, blurRadius: 8),
-            ],
-          ),
-          child: ClipOval(child: avatarChild),
-        ),
-        Positioned(
-          bottom: 8,
-          right: 8,
-          child: Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
-            ),
-            padding: const EdgeInsets.all(4),
-            child: const Icon(Icons.edit, size: 20, color: Color(0xFF6A4C93)),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
 
   void _showProfileModal() async {
     if (_currentUser == null) {
@@ -711,15 +719,18 @@ Widget _buildAvatar() {
                       Stack(
                         alignment: Alignment.center,
                         children: [
-                          _buildDialogAvatarPreview(nameController.text, fontSizeProvider),
+                          _buildDialogAvatarPreview(
+                              nameController.text, fontSizeProvider),
                           Positioned(
                             bottom: 0,
                             right: 0,
                             child: GestureDetector(
-                              onTap: () => _showAvatarSelector(context, setState),
+                              onTap: () =>
+                                  _showAvatarSelector(context, setState),
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).brightness == Brightness.light
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.light
                                       ? AppTheme.primaryLight
                                       : AppTheme.primaryDark,
                                   shape: BoxShape.circle,
@@ -742,7 +753,6 @@ Widget _buildAvatar() {
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 28),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -752,7 +762,8 @@ Widget _buildAvatar() {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: Theme.of(context).brightness == Brightness.light
+                              color: Theme.of(context).brightness ==
+                                      Brightness.light
                                   ? const Color(0xFF94A3B8)
                                   : Colors.grey[500],
                             ),
@@ -765,18 +776,21 @@ Widget _buildAvatar() {
                             decoration: InputDecoration(
                               hintText: 'Tu nombre',
                               hintStyle: TextStyle(
-                                color: Theme.of(context).brightness == Brightness.light
+                                color: Theme.of(context).brightness ==
+                                        Brightness.light
                                     ? Colors.grey[400]
                                     : Colors.grey[600],
                               ),
                               filled: true,
-                              fillColor: Theme.of(context).brightness == Brightness.light
+                              fillColor: Theme.of(context).brightness ==
+                                      Brightness.light
                                   ? Colors.grey[50]
                                   : AppTheme.cardDark,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: Theme.of(context).brightness == Brightness.light
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.light
                                       ? const Color(0xFFE2E8F0)
                                       : Colors.grey[700]!,
                                 ),
@@ -784,7 +798,8 @@ Widget _buildAvatar() {
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: Theme.of(context).brightness == Brightness.light
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.light
                                       ? const Color(0xFFE2E8F0)
                                       : Colors.grey[700]!,
                                 ),
@@ -792,7 +807,8 @@ Widget _buildAvatar() {
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: Theme.of(context).brightness == Brightness.light
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.light
                                       ? AppTheme.primaryLight
                                       : AppTheme.primaryDark,
                                   width: 2,
@@ -808,7 +824,8 @@ Widget _buildAvatar() {
                               fontSize: fontSizeProvider.enabled
                                   ? fontSizeProvider.fontSize + 2
                                   : 16,
-                              color: Theme.of(context).brightness == Brightness.light
+                              color: Theme.of(context).brightness ==
+                                      Brightness.light
                                   ? const Color(0xFF1E293B)
                                   : Colors.white,
                             ),
@@ -824,7 +841,8 @@ Widget _buildAvatar() {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: Theme.of(context).brightness == Brightness.light
+                              color: Theme.of(context).brightness ==
+                                      Brightness.light
                                   ? const Color(0xFF94A3B8)
                                   : Colors.grey[500],
                             ),
@@ -836,18 +854,21 @@ Widget _buildAvatar() {
                             decoration: InputDecoration(
                               hintText: 'tu@email.com',
                               hintStyle: TextStyle(
-                                color: Theme.of(context).brightness == Brightness.light
+                                color: Theme.of(context).brightness ==
+                                        Brightness.light
                                     ? Colors.grey[400]
                                     : Colors.grey[600],
                               ),
                               filled: true,
-                              fillColor: Theme.of(context).brightness == Brightness.light
+                              fillColor: Theme.of(context).brightness ==
+                                      Brightness.light
                                   ? Colors.grey[50]
                                   : AppTheme.cardDark,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: Theme.of(context).brightness == Brightness.light
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.light
                                       ? const Color(0xFFE2E8F0)
                                       : Colors.grey[700]!,
                                 ),
@@ -855,7 +876,8 @@ Widget _buildAvatar() {
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: Theme.of(context).brightness == Brightness.light
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.light
                                       ? const Color(0xFFE2E8F0)
                                       : Colors.grey[700]!,
                                 ),
@@ -863,7 +885,8 @@ Widget _buildAvatar() {
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                  color: Theme.of(context).brightness == Brightness.light
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.light
                                       ? AppTheme.primaryLight
                                       : AppTheme.primaryDark,
                                   width: 2,
@@ -879,7 +902,8 @@ Widget _buildAvatar() {
                               fontSize: fontSizeProvider.enabled
                                   ? fontSizeProvider.fontSize
                                   : 14,
-                              color: Theme.of(context).brightness == Brightness.light
+                              color: Theme.of(context).brightness ==
+                                      Brightness.light
                                   ? const Color(0xFF475569)
                                   : Colors.grey[300],
                             ),
@@ -895,7 +919,8 @@ Widget _buildAvatar() {
                             child: Text(
                               'Cancelar',
                               style: TextStyle(
-                                color: Theme.of(context).brightness == Brightness.light
+                                color: Theme.of(context).brightness ==
+                                        Brightness.light
                                     ? Colors.grey[600]
                                     : Colors.grey[400],
                                 fontSize: 14,
@@ -906,7 +931,8 @@ Widget _buildAvatar() {
                           const SizedBox(width: 12),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).brightness == Brightness.light
+                              backgroundColor: Theme.of(context).brightness ==
+                                      Brightness.light
                                   ? AppTheme.primaryLight
                                   : AppTheme.primaryDark,
                               foregroundColor: Colors.white,
@@ -935,8 +961,8 @@ Widget _buildAvatar() {
                               if (newName.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                      content:
-                                          Text('El nombre no puede estar vacío.')),
+                                      content: Text(
+                                          'El nombre no puede estar vacío.')),
                                 );
                                 return;
                               }
@@ -944,8 +970,8 @@ Widget _buildAvatar() {
                               if (newEmail.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                      content:
-                                          Text('El correo no puede estar vacío.')),
+                                      content: Text(
+                                          'El correo no puede estar vacío.')),
                                 );
                                 return;
                               }
@@ -953,9 +979,33 @@ Widget _buildAvatar() {
                               // Si nada cambió, no hacer nada
                               final nameChanged =
                                   newName != _currentUser!.nombreUsuario;
-                              final emailChanged = newEmail != _currentUser!.email;
+                              final emailChanged =
+                                  newEmail != _currentUser!.email;
 
-                              if (!nameChanged && !emailChanged) {
+                              // Detectar si el avatar cambió
+                              final currentAvatarTipo =
+                                  (_currentUser!.avatarTipo == 'preset')
+                                      ? AvatarMode.preset
+                                      : AvatarMode.initial;
+                              final currentAvatarClave =
+                                  _currentUser!.avatarClave;
+
+                              final newAvatarTipo =
+                                  _avatarMode == AvatarMode.preset
+                                      ? 'preset'
+                                      : 'initial';
+                              final newAvatarClave =
+                                  _avatarMode == AvatarMode.preset
+                                      ? (_selectedAvatarKey ?? 'avatar1')
+                                      : _colorToHex(_initialColor);
+
+                              final avatarChanged =
+                                  currentAvatarTipo != _avatarMode ||
+                                      currentAvatarClave != newAvatarClave;
+
+                              if (!nameChanged &&
+                                  !emailChanged &&
+                                  !avatarChanged) {
                                 Navigator.pop(context);
                                 return;
                               }
@@ -969,31 +1019,19 @@ Widget _buildAvatar() {
                                     child: CircularProgressIndicator(),
                                   ),
                                 );
-                                
-                                // Detectar si el avatar cambió
-                                final currentAvatarTipo = (_currentUser!.avatarTipo == 'preset')
-                                    ? AvatarMode.preset
-                                    : AvatarMode.initial;
-                                final currentAvatarClave = _currentUser!.avatarClave;
-                                
-                                final newAvatarTipo =
-                                    _avatarMode == AvatarMode.preset ? 'preset' : 'initial';
-                                final newAvatarClave = _avatarMode == AvatarMode.preset
-                                    ? (_selectedAvatarKey ?? 'avatar1')
-                                    : _colorToHex(_initialColor);
-                                
-                                final avatarChanged = 
-                                    currentAvatarTipo != _avatarMode ||
-                                    currentAvatarClave != newAvatarClave;
 
                                 // Debug logs
                                 print('🎨 DEBUG AVATAR:');
-                                print('  currentAvatarTipo: $currentAvatarTipo');
+                                print(
+                                    '  currentAvatarTipo: $currentAvatarTipo');
                                 print('  _avatarMode: $_avatarMode');
-                                print('  currentAvatarClave: $currentAvatarClave');
+                                print(
+                                    '  currentAvatarClave: $currentAvatarClave');
                                 print('  newAvatarClave: $newAvatarClave');
-                                print('  _selectedAvatarKey: $_selectedAvatarKey');
-                                print('  _initialColor hex: ${_colorToHex(_initialColor)}');
+                                print(
+                                    '  _selectedAvatarKey: $_selectedAvatarKey');
+                                print(
+                                    '  _initialColor hex: ${_colorToHex(_initialColor)}');
                                 print('  avatarChanged: $avatarChanged');
 
                                 final updatedUser = await RemoteUserRepository
@@ -1002,37 +1040,37 @@ Widget _buildAvatar() {
                                   correoActual: _currentUser!.email,
                                   nuevoNombre: nameChanged ? newName : null,
                                   nuevoCorreo: emailChanged ? newEmail : null,
-                                  avatarTipo: avatarChanged ? newAvatarTipo : null,
-                                  avatarClave: avatarChanged ? newAvatarClave : null,
+                                  avatarTipo:
+                                      avatarChanged ? newAvatarTipo : null,
+                                  avatarClave:
+                                      avatarChanged ? newAvatarClave : null,
                                 );
 
-                                setState(() {
-                                  if (_avatarMode == AvatarMode.preset) {
-                                    _selectedAvatarKey = updatedUser.avatarClave;
-                                  } else {
-                                    if (updatedUser.avatarClave != null &&
-                                        updatedUser.avatarClave!.startsWith('#') &&
-                                        updatedUser.avatarClave!.length == 7) {
-                                      _initialColor = _colorFromHex(updatedUser.avatarClave!);
-                                    } else {
-                                      _initialColor = const Color(0xFF6A4C93);
-                                    }
-                                  }
-                                });
+                                await SessionManager.instance
+                                    .setUser(updatedUser);
 
-                                await SessionManager.instance.setUser(updatedUser);
+                                if (!mounted) return;
+
+                                // Cerrar loading
+                                Navigator.pop(context);
+
+                                // Cerrar el modal de edición de perfil
+                                Navigator.pop(context);
+
+                                // Recargar completamente el perfil desde el servidor
+                                await _loadCurrentUser();
 
                                 if (!mounted) return;
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content:
-                                        const Text('Perfil actualizado correctamente'),
+                                    content: const Text(
+                                        'Perfil actualizado correctamente'),
                                     backgroundColor: AppTheme.primaryLight,
                                   ),
                                 );
-                                Navigator.pop(context);
                               } catch (e) {
-                                if (mounted) Navigator.pop(context);
+                                if (mounted)
+                                  Navigator.pop(context); // Cerrar loading
 
                                 print('Error actualizando perfil: $e');
                                 if (!mounted) return;
@@ -1060,50 +1098,49 @@ Widget _buildAvatar() {
       },
     );
   }
-  Widget _buildDialogAvatarPreview(
-    String currentName, FontSizeProvider fontSizeProvider) {
-  final initial =
-      currentName.isNotEmpty ? currentName[0].toUpperCase() : '?';
 
-  if (_avatarMode == AvatarMode.preset && _selectedAvatarKey != null) {
-    return ClipOval(
-      child: Image.asset(
-        'assets/avatars/${_selectedAvatarKey!}.png',
-        width: 160,
-        height: 160,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) =>
-            _buildInitialCircle(initial, fontSizeProvider),
+  Widget _buildDialogAvatarPreview(
+      String currentName, FontSizeProvider fontSizeProvider) {
+    final initial = currentName.isNotEmpty ? currentName[0].toUpperCase() : '?';
+
+    if (_avatarMode == AvatarMode.preset && _selectedAvatarKey != null) {
+      return ClipOval(
+        child: Image.asset(
+          'assets/avatars/${_selectedAvatarKey!}.png',
+          width: 160,
+          height: 160,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) =>
+              _buildInitialCircle(initial, fontSizeProvider),
+        ),
+      );
+    }
+
+    return _buildInitialCircle(initial, fontSizeProvider);
+  }
+
+  Widget _buildInitialCircle(
+      String initial, FontSizeProvider fontSizeProvider) {
+    return Container(
+      width: 160,
+      height: 160,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: _initialColor,
+      ),
+      child: Center(
+        child: Text(
+          initial,
+          style: TextStyle(
+            fontSize:
+                fontSizeProvider.enabled ? fontSizeProvider.fontSize * 3 : 60,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }
-
-  return _buildInitialCircle(initial, fontSizeProvider);
-}
-
-Widget _buildInitialCircle(
-    String initial, FontSizeProvider fontSizeProvider) {
-  return Container(
-    width: 160,
-    height: 160,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      color: _initialColor,
-    ),
-    child: Center(
-      child: Text(
-        initial,
-        style: TextStyle(
-          fontSize:
-              fontSizeProvider.enabled ? fontSizeProvider.fontSize * 3 : 60,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-    ),
-  );
-}
-
 
   Widget _buildCard({required Widget child, EdgeInsets? margin}) => Container(
         margin:
@@ -1145,11 +1182,34 @@ Widget _buildInitialCircle(
       if (user != null) {
         print('Usuario obtenido: ${user.nombreUsuario} (${user.email})');
         print('Fecha de creación: ${user.fechaCreacionIso}');
+        print(
+            '🎨 DEBUG AVATAR al cargar: ${user.avatarTipo} - ${user.avatarClave}');
+
+        // Sincronizar providers con valores del usuario
+        final themeProvider =
+            Provider.of<ThemeProvider>(context, listen: false);
+        final fontSizeProvider =
+            Provider.of<FontSizeProvider>(context, listen: false);
+
+        // Aplicar tema oscuro desde el usuario
+        if (themeProvider.isDarkMode != user.modoOscuro) {
+          await themeProvider.setDarkMode(user.modoOscuro);
+        }
+
+        // Aplicar tamaño de fuente desde el usuario
+        if (user.tamanoFuente > 0) {
+          fontSizeProvider.setEnabled(true);
+          fontSizeProvider.setFontSize(user.tamanoFuente.toDouble());
+        }
 
         setState(() {
           _currentUser = user;
           _userName = user.nombreUsuario;
           _userEmail = user.email;
+
+          // Cargar configuraciones de notificaciones
+          _notifSound = user.notificacionesSonido;
+          _notifVibration = user.notificacionesVibracion;
 
           // 👇 NUEVO: cargar avatar desde el usuario
           _avatarMode = (user.avatarTipo == 'preset')
@@ -1168,7 +1228,7 @@ Widget _buildInitialCircle(
             }
           }
         });
-        } else {
+      } else {
         print('No hay usuario en sesión');
         // No hay usuario guardado, redirigir al login
         if (mounted) {
@@ -1198,7 +1258,6 @@ Widget _buildInitialCircle(
     }
   }
 
-
   Color _colorFromHex(String hex) {
     final buffer = StringBuffer();
     if (hex.length == 7) buffer.write('ff'); // agrega alpha si es #RRGGBB
@@ -1211,6 +1270,73 @@ Widget _buildInitialCircle(
     return '#${value.substring(2)}'; // rrggbb
   }
 
+  Future<void> _saveConfigurationSettings(
+    bool modoOscuro,
+    int tamanoFuente,
+  ) async {
+    if (_currentUser == null) return;
+
+    try {
+      // Mostrar indicador de carga
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Verificar si algo cambió
+      final configChanged = _currentUser!.notificacionesSonido != _notifSound ||
+          _currentUser!.notificacionesVibracion != _notifVibration ||
+          _currentUser!.modoOscuro != modoOscuro ||
+          _currentUser!.tamanoFuente != tamanoFuente;
+
+      if (!configChanged) {
+        Navigator.pop(context); // Cerrar loading
+        return;
+      }
+
+      // Actualizar configuraciones en el servidor
+      final updatedUser =
+          await RemoteUserRepository.instance.updateProfileByEmail(
+        correoActual: _currentUser!.email,
+        modoOscuro: modoOscuro,
+        notificacionesSonido: _notifSound,
+        notificacionesVibracion: _notifVibration,
+        tamanoFuente: tamanoFuente,
+      );
+
+      // Actualizar usuario en SessionManager
+      await SessionManager.instance.setUser(updatedUser);
+
+      setState(() {
+        _currentUser = updatedUser;
+      });
+
+      if (!mounted) return;
+      Navigator.pop(context); // Cerrar loading
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Configuración guardada correctamente'),
+          backgroundColor: AppTheme.primaryLight,
+        ),
+      );
+    } catch (e) {
+      if (mounted) Navigator.pop(context); // Cerrar loading
+
+      print('Error guardando configuración: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al guardar configuración: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
+  }
 
   @override
   @override
@@ -1319,7 +1445,8 @@ Widget _buildInitialCircle(
               ),
               // Contenido - formularios y opciones
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
                 child: Column(
                   children: [
                     // CONFIGURACIONES DE LA APLICACIÓN
@@ -1351,14 +1478,12 @@ Widget _buildInitialCircle(
                     // CERRAR SESIÓN
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            theme.brightness == Brightness.light
-                                ? Colors.white
-                                : AppTheme.cardDark,
-                        foregroundColor:
-                            theme.brightness == Brightness.light
-                                ? Colors.red
-                                : AppTheme.errorDark,
+                        backgroundColor: theme.brightness == Brightness.light
+                            ? Colors.white
+                            : AppTheme.cardDark,
+                        foregroundColor: theme.brightness == Brightness.light
+                            ? Colors.red
+                            : AppTheme.errorDark,
                         side: BorderSide(
                             color: theme.brightness == Brightness.light
                                 ? Colors.redAccent
@@ -1429,229 +1554,254 @@ Widget _buildInitialCircle(
       ],
     );
   }
-  
-  void _showAvatarSelector(BuildContext context, void Function(void Function()) setStateDialog) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    builder: (ctx) {
-      final presetKeys = ['avatar1', 'avatar2', 'avatar3', 'avatar4', 'avatar5'];
-      final colorOptions = <Color>[
-        const Color(0xFF6A4C93),
-        const Color(0xFFFFA726),
-        const Color(0xFFFFEB3B),
-        const Color(0xFF66BB6A),
-        const Color(0xFF6A4C93),
-        const Color(0xFFAB47BC),
-        const Color(0xFF8D6E63),
-        const Color(0xFF607D8B),
-      ];
 
-      return StatefulBuilder(
-        builder: (context, setStateModal) {
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Personaliza tu Perfil',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ChoiceChip(
-                          label: const Text('Elige tu Avatar'),
-                          selected: _avatarMode == AvatarMode.preset,
-                          onSelected: (_) {
-                            setStateModal(() {
-                              _avatarMode = AvatarMode.preset;
-                            });
-                            setStateDialog(() {
-                              _avatarMode = AvatarMode.preset;
-                            });
-                          },
+  void _showAvatarSelector(
+      BuildContext context, void Function(void Function()) setStateDialog) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        final presetKeys = [
+          'avatar1',
+          'avatar2',
+          'avatar3',
+          'avatar4',
+          'avatar5'
+        ];
+        final colorOptions = <Color>[
+          const Color(0xFF6A4C93),
+          const Color(0xFFFFA726),
+          const Color(0xFFFFEB3B),
+          const Color(0xFF66BB6A),
+          const Color(0xFF6A4C93),
+          const Color(0xFFAB47BC),
+          const Color(0xFF8D6E63),
+          const Color(0xFF607D8B),
+        ];
+
+        return StatefulBuilder(
+          builder: (context, setStateModal) {
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ChoiceChip(
-                          label: const Text('Elige el color de tu Inicial'),
-                          selected: _avatarMode == AvatarMode.initial,
-                          onSelected: (_) {
-                            setStateModal(() {
-                              _avatarMode = AvatarMode.initial;
-                            });
-                            setStateDialog(() {
-                              _avatarMode = AvatarMode.initial;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  if (_avatarMode == AvatarMode.preset) ...[
-                    Text('Avatars Disponibles:',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            )),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 16,
-                      runSpacing: 16,
-                      children: presetKeys.map((key) {
-                        final selected = _selectedAvatarKey == key;
-                        return GestureDetector(
-                          onTap: () {
-                            setStateDialog(() {
-                              _selectedAvatarKey = key;
-                            });
-                            setStateModal(() {
-                              _selectedAvatarKey = key;
-                            });
-                            Navigator.pop(ctx);
-                          },
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: selected ? AppTheme.primaryLight : Colors.grey.shade300,
-                                    width: 3,
-                                  ),
-                                  boxShadow: selected
-                                      ? [
-                                          BoxShadow(
-                                            color: AppTheme.primaryLight.withOpacity(0.4),
-                                            blurRadius: 8,
-                                            spreadRadius: 2,
-                                          ),
-                                        ]
-                                      : [],
-                                ),
-                                child: CircleAvatar(
-                                  radius: 36,
-                                  backgroundImage: AssetImage('assets/avatars/$key.png'),
-                                  backgroundColor: Colors.grey.shade200,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                _getAvatarName(key),
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
                     ),
-                  ] else ...[
-                    Text('Colores disponibles:',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            )),
                     const SizedBox(height: 16),
-                    GridView.count(
-                      crossAxisCount: 8,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      children: colorOptions.map((c) {
-                        final selected = _initialColor.value == c.value;
-                        return GestureDetector(
-                          onTap: () {
-                            setStateDialog(() {
-                              _initialColor = c;
-                            });
-                            setStateModal(() {
-                              _initialColor = c;
-                            });
-                            Navigator.pop(ctx);
-                          },
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Container(
-                                width: 50,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: c,
-                                  boxShadow: selected
-                                      ? [
-                                          BoxShadow(
-                                            color: c.withOpacity(0.6),
-                                            blurRadius: 6,
-                                            spreadRadius: 1,
-                                          ),
-                                        ]
-                                      : [],
+                    Text(
+                      'Personaliza tu Perfil',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Text('Elige tu Avatar'),
+                            selected: _avatarMode == AvatarMode.preset,
+                            onSelected: (_) {
+                              setStateModal(() {
+                                _avatarMode = AvatarMode.preset;
+                              });
+                              setStateDialog(() {
+                                _avatarMode = AvatarMode.preset;
+                              });
+                              setState(() {
+                                _avatarMode = AvatarMode.preset;
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Text('Elige el color de tu Inicial'),
+                            selected: _avatarMode == AvatarMode.initial,
+                            onSelected: (_) {
+                              setStateModal(() {
+                                _avatarMode = AvatarMode.initial;
+                              });
+                              setStateDialog(() {
+                                _avatarMode = AvatarMode.initial;
+                              });
+                              setState(() {
+                                _avatarMode = AvatarMode.initial;
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    if (_avatarMode == AvatarMode.preset) ...[
+                      Text('Avatars Disponibles:',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 16,
+                        runSpacing: 16,
+                        children: presetKeys.map((key) {
+                          final selected = _selectedAvatarKey == key;
+                          return GestureDetector(
+                            onTap: () {
+                              setStateModal(() {
+                                _selectedAvatarKey = key;
+                              });
+                              setStateDialog(() {
+                                _selectedAvatarKey = key;
+                              });
+                              setState(() {
+                                _selectedAvatarKey = key;
+                              });
+                              Navigator.pop(ctx);
+                            },
+                            child: Column(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: selected
+                                          ? AppTheme.primaryLight
+                                          : Colors.grey.shade300,
+                                      width: 3,
+                                    ),
+                                    boxShadow: selected
+                                        ? [
+                                            BoxShadow(
+                                              color: AppTheme.primaryLight
+                                                  .withOpacity(0.4),
+                                              blurRadius: 8,
+                                              spreadRadius: 2,
+                                            ),
+                                          ]
+                                        : [],
+                                  ),
+                                  child: CircleAvatar(
+                                    radius: 36,
+                                    backgroundImage:
+                                        AssetImage('assets/avatars/$key.png'),
+                                    backgroundColor: Colors.grey.shade200,
+                                  ),
                                 ),
-                              ),
-                              if (selected)
+                                const SizedBox(height: 8),
+                                Text(
+                                  _getAvatarName(key),
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ] else ...[
+                      Text('Colores disponibles:',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                      const SizedBox(height: 16),
+                      GridView.count(
+                        crossAxisCount: 8,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        children: colorOptions.map((c) {
+                          final selected = _initialColor.value == c.value;
+                          return GestureDetector(
+                            onTap: () {
+                              setStateModal(() {
+                                _initialColor = c;
+                              });
+                              setStateDialog(() {
+                                _initialColor = c;
+                              });
+                              setState(() {
+                                _initialColor = c;
+                              });
+                              Navigator.pop(ctx);
+                            },
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
                                 Container(
                                   width: 50,
                                   height: 50,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 2.5,
-                                    ),
-                                  ),
-                                  child: const Icon(
-                                    Icons.check,
-                                    color: Colors.white,
-                                    size: 20,
+                                    color: c,
+                                    boxShadow: selected
+                                        ? [
+                                            BoxShadow(
+                                              color: c.withOpacity(0.6),
+                                              blurRadius: 6,
+                                              spreadRadius: 1,
+                                            ),
+                                          ]
+                                        : [],
                                   ),
                                 ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
+                                if (selected)
+                                  Container(
+                                    width: 50,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 2.5,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.check,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                    const SizedBox(height: 20),
                   ],
-                  const SizedBox(height: 20),
-                ],
+                ),
               ),
-            ),
-          );
-        },
-      );
-    },
-  );
-}
+            );
+          },
+        );
+      },
+    );
+  }
 
-String _getAvatarName(String key) {
-  final names = {
-    'avatar1': 'Luli Panda',
-    'avatar2': 'Rulo Oru',
-    'avatar3': 'Papir Tapi',
-    'avatar4': 'Morsa Chorsa',
-    'avatar5': 'Zebra Debra',
-  };
-  return names[key] ?? key;
-}
+  String _getAvatarName(String key) {
+    final names = {
+      'avatar1': 'Luli Panda',
+      'avatar2': 'Rulo Oru',
+      'avatar3': 'Papir Tapi',
+      'avatar4': 'Morsa Chorsa',
+      'avatar5': 'Zebra Debra',
+    };
+    return names[key] ?? key;
+  }
 }
