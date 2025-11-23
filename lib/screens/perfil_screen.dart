@@ -276,14 +276,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           }
                                         }
 
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                              content: Text(
-                                                  '✨ ${item.name} restaurado')),
-                                        );
+                                        // ScaffoldMessenger.of(context)
+                                        //     .showSnackBar(
+                                        //   SnackBar(
+                                        //       content: Text(
+                                        //           '✨ ${item.name} restaurado')),
+                                        // );
                                         Navigator.pop(context);
-                                        _showTrashDialog();
+                                        // _showTrashDialog();
                                         _showCuteMessage(
                                           'Recordatorio restaurado',
                                           Icons.restore_rounded,

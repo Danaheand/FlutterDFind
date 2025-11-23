@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
+import '../repository/remote_user_repository.dart';
 
 /// Gestor centralizado de sesión del usuario
 ///
@@ -49,10 +50,37 @@ class SessionManager {
   /// Nombre del usuario
   String? get userName => _currentUser?.nombreUsuario;
 
+  /// Actualizar datos del usuario desde el servidor
+  ///
+  /// Hace una llamada a la API para obtener los datos más recientes
+  /// y los guarda en memoria y SharedPreferences
+  Future<void> _updateFromServer(String email) async {
+    try {
+      print('🔄 Actualizando datos del usuario desde el servidor...');
+      final updatedUser =
+          await RemoteUserRepository.instance.getUserProfile(email: email);
+
+      // Actualizar con los datos más recientes
+      _currentUser = updatedUser;
+      _userEmail = updatedUser.email;
+
+      // Guardar en SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('current_user', jsonEncode(updatedUser.toJson()));
+
+      print('✅ Datos actualizados desde el servidor');
+    } catch (e) {
+      print('⚠️ No se pudo actualizar desde el servidor: $e');
+      rethrow;
+    }
+  }
+
   /// Inicializar la sesión al iniciar la app
   ///
   /// Debe llamarse en `main()` o al inicio de la app para
-  /// restaurar la sesión desde SharedPreferences.
+  /// restaurar la sesión desde SharedPreferences y actualizar
+  /// los datos desde el servidor si hay conexión.
+  ///
   Future<void> initialize() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -62,7 +90,18 @@ class SessionManager {
         final json = jsonDecode(userData);
         _currentUser = User.fromJson(json);
         _userEmail = _currentUser?.email;
-        print('✅ Sesión restaurada: $_userEmail');
+        print('✅ Sesión restaurada desde caché: $_userEmail');
+
+        // Intentar actualizar datos desde el servidor
+        if (_userEmail != null) {
+          try {
+            await _updateFromServer(_userEmail!);
+          } catch (e) {
+            print(
+                '⚠️ No se pudo actualizar desde el servidor (usando caché): $e');
+            // Continuar con los datos en caché si falla la actualización
+          }
+        }
       } else {
         print('ℹ️ No hay sesión guardada');
       }
@@ -87,6 +126,17 @@ class SessionManager {
       await prefs.setString('current_user', jsonEncode(userData));
 
       print('✅ Sesión establecida: $_userEmail');
+
+      // Actualizar datos desde el servidor
+      if (_userEmail != null) {
+        try {
+          await _updateFromServer(_userEmail!);
+        } catch (e) {
+          print(
+              '⚠️ No se pudo actualizar desde el servidor después del login: $e');
+          // Continuar con los datos del login si falla la actualización
+        }
+      }
     } catch (e) {
       print('❌ Error al establecer sesión: $e');
       rethrow;
