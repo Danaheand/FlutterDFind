@@ -340,15 +340,8 @@ class _AlertsScreenState extends State<AlertsScreen>
             a.date.isBefore(tomorrow) &&
             selectedPriorities.contains(a.priority))
         .toList()
-      ..sort((a, b) {
-        // Ordenar por prioridad (alta, media, baja)
-        final priorityOrder = {'alta': 0, 'media': 1, 'baja': 2};
-        final priorityCompare = priorityOrder[a.priority.name]!
-            .compareTo(priorityOrder[b.priority.name]!);
-        if (priorityCompare != 0) return priorityCompare;
-        // Si tienen la misma prioridad, ordenar por fecha
-        return a.date.compareTo(b.date);
-      });
+      ..sort(
+          (a, b) => a.date.compareTo(b.date)); // Ordenar solo por fecha y hora
   }
 
   List<AlertData> _getManana(List<AlertData> alerts) {
@@ -364,15 +357,8 @@ class _AlertsScreenState extends State<AlertsScreen>
             a.date.isBefore(dayAfterTomorrow) &&
             selectedPriorities.contains(a.priority))
         .toList()
-      ..sort((a, b) {
-        // Ordenar por prioridad (alta, media, baja)
-        final priorityOrder = {'alta': 0, 'media': 1, 'baja': 2};
-        final priorityCompare = priorityOrder[a.priority.name]!
-            .compareTo(priorityOrder[b.priority.name]!);
-        if (priorityCompare != 0) return priorityCompare;
-        // Si tienen la misma prioridad, ordenar por fecha
-        return a.date.compareTo(b.date);
-      });
+      ..sort(
+          (a, b) => a.date.compareTo(b.date)); // Ordenar solo por fecha y hora
   }
 
   List<AlertData> _getProximas(List<AlertData> alerts) {
@@ -386,15 +372,8 @@ class _AlertsScreenState extends State<AlertsScreen>
             a.date.isAfter(dayAfterTomorrow) &&
             selectedPriorities.contains(a.priority))
         .toList()
-      ..sort((a, b) {
-        // Ordenar por prioridad (alta, media, baja)
-        final priorityOrder = {'alta': 0, 'media': 1, 'baja': 2};
-        final priorityCompare = priorityOrder[a.priority.name]!
-            .compareTo(priorityOrder[b.priority.name]!);
-        if (priorityCompare != 0) return priorityCompare;
-        // Si tienen la misma prioridad, ordenar por fecha
-        return a.date.compareTo(b.date);
-      });
+      ..sort(
+          (a, b) => a.date.compareTo(b.date)); // Ordenar solo por fecha y hora
   }
 
   List<AlertData> _getVencidas(List<AlertData> alerts) {
