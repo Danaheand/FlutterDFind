@@ -19,6 +19,7 @@ import 'services/session_manager.dart';
 import 'services/trash_service.dart';
 import 'services/background_notification_service.dart';
 import 'widgets/no_internet_banner.dart';
+import 'widgets/web_notification_overlay.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -165,7 +166,9 @@ class MyApp extends StatelessWidget {
             ],
             initialRoute: initialRoute,
             routes: {
-              '/main': (context) => const MainScaffold(),
+              '/main': (context) => WebNotificationOverlay(
+                    child: const MainScaffold(),
+                  ),
               '/login': (context) => const AppLoginScreen(),
               '/register': (context) => const RegisterScreen(),
               '/alerts': (context) => const AlertsScreen(),

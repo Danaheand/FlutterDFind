@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -13,6 +14,12 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   Future<void> initialize() async {
+    // No inicializar en web
+    if (kIsWeb) {
+      print('⚠️ NotificationService deshabilitado en web');
+      return;
+    }
+
     try {
       tz.initializeTimeZones();
 
@@ -30,30 +37,31 @@ class NotificationService {
         iOS: iosSettings,
       );
 
-      await _notifications.initialize(settings);
+      await _notifications.initialize(
+        settings,
+        onDidReceiveNotificationResponse: _handleNotificationTap,
+      );
       await _requestPermissions();
+      print('✅ NotificationService inicializado en móvil');
     } catch (e) {
       print('Error al inicializar notificaciones: $e');
-      // No hacer throw para permitir que la app continúe en web
     }
+  }
+
+  void _handleNotificationTap(NotificationResponse response) {
+    print('📲 Notificación tocada: ${response.payload}');
+    // Aquí puedes manejar qué hacer cuando el usuario toca la notificación
   }
 
   Future<void> _requestPermissions() async {
     try {
       // Solicitar permiso de notificaciones
       final notificationStatus = await Permission.notification.request();
-      print('Permiso de notificaciones: $notificationStatus');
+      print('📱 Permiso de notificaciones: $notificationStatus');
 
       // Para Android 13+
-      if (await Permission.scheduleExactAlarm.isDenied) {
-        final alarmStatus = await Permission.scheduleExactAlarm.request();
-        print('Permiso de alarma exacta: $alarmStatus');
-      }
-
-      // Para Android 12+
-      if (await Permission.scheduleExactAlarm.isDenied) {
-        await Permission.scheduleExactAlarm.request();
-      }
+      final alarmStatus = await Permission.scheduleExactAlarm.request();
+      print('⏰ Permiso de alarma exacta: $alarmStatus');
     } catch (e) {
       print('Error al solicitar permisos: $e');
     }
@@ -66,6 +74,8 @@ class NotificationService {
     required DateTime scheduledDate,
     String? payload,
   }) async {
+    if (kIsWeb) return;
+
     try {
       print('📅 Programando notificación ID:$id para: $scheduledDate');
       print('   Título: $title');
@@ -73,22 +83,26 @@ class NotificationService {
 
       final AndroidNotificationDetails androidDetails =
           AndroidNotificationDetails(
-        'alarm_channel',
-        'Alarmas',
-        channelDescription: 'Notificaciones de alarmas importantes',
+        'alarm_channel_high',
+        'Alarmas Importantes',
+        channelDescription:
+            'Notificaciones de alarmas con sonido y vibración',
         importance: Importance.max,
-        priority: Priority.high,
+        priority: Priority.max,
         playSound: true,
         enableVibration: true,
-        vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
-        fullScreenIntent: true, // Mostrar en pantalla completa
+        vibrationPattern: Int64List.fromList([0, 500, 250, 500, 250, 500]),
+        fullScreenIntent: true,
         category: AndroidNotificationCategory.alarm,
+        autoCancel: false,
+        timeoutAfter: 300000, // 5 minutos
       );
 
       const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
         presentSound: true,
+        sound: 'default',
         interruptionLevel: InterruptionLevel.critical,
       );
 
@@ -97,11 +111,14 @@ class NotificationService {
         iOS: iosDetails,
       );
 
+      // Convertir a zona horaria local
+      final tzDateTime = tz.TZDateTime.from(scheduledDate, tz.local);
+
       await _notifications.zonedSchedule(
         id,
         title,
         body,
-        tz.TZDateTime.from(scheduledDate, tz.local),
+        tzDateTime,
         notificationDetails,
         payload: payload,
         uiLocalNotificationDateInterpretation:
@@ -110,6 +127,10 @@ class NotificationService {
       );
 
       print('✅ Notificación ID:$id programada exitosamente');
+      
+      // Log de notificaciones pendientes
+      final pending = await _notifications.pendingNotificationRequests();
+      print('📋 Total de notificaciones pendientes: ${pending.length}');
     } catch (e) {
       print('❌ Error programando notificación ID:$id: $e');
       rethrow;
@@ -124,6 +145,8 @@ class NotificationService {
     required List<int> weekdays, // [1,2,3,4,5,6,7] para Lun-Dom
     String? payload,
   }) async {
+    if (kIsWeb) return;
+
     try {
       for (int i = 0; i < weekdays.length; i++) {
         final weekday = weekdays[i];
@@ -133,22 +156,25 @@ class NotificationService {
         DateTime nextDate = _getNextWeekday(scheduledDate, weekday);
 
         final androidDetails = AndroidNotificationDetails(
-          'alarm_channel',
-          'Alarmas',
-          channelDescription: 'Notificaciones de alarmas importantes',
+          'alarm_channel_high',
+          'Alarmas Importantes',
+          channelDescription:
+              'Notificaciones de alarmas con sonido y vibración',
           importance: Importance.max,
-          priority: Priority.high,
+          priority: Priority.max,
           playSound: true,
           enableVibration: true,
-          vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
+          vibrationPattern: Int64List.fromList([0, 500, 250, 500, 250, 500]),
           fullScreenIntent: true,
           category: AndroidNotificationCategory.alarm,
+          autoCancel: false,
         );
 
         const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
           presentAlert: true,
           presentBadge: true,
           presentSound: true,
+          sound: 'default',
           interruptionLevel: InterruptionLevel.critical,
         );
 
@@ -157,17 +183,21 @@ class NotificationService {
           iOS: iosDetails,
         );
 
+        final tzDateTime = tz.TZDateTime.from(nextDate, tz.local);
+
         await _notifications.zonedSchedule(
           notificationId,
           title,
           '$body (${_getWeekdayName(weekday)})',
-          tz.TZDateTime.from(nextDate, tz.local),
+          tzDateTime,
           notificationDetails,
           payload: payload,
           uiLocalNotificationDateInterpretation:
               UILocalNotificationDateInterpretation.absoluteTime,
           matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
         );
+
+        print('✅ Notificación repetitiva ID:$notificationId programada');
       }
     } catch (e) {
       print('Error programando notificaciones repetitivas: $e');
@@ -177,8 +207,7 @@ class NotificationService {
   DateTime _getNextWeekday(DateTime from, int weekday) {
     int daysToAdd = (weekday - from.weekday) % 7;
     if (daysToAdd == 0 && from.isBefore(DateTime.now())) {
-      daysToAdd =
-          7; // Si es el mismo día pero ya pasó, programar para la próxima semana
+      daysToAdd = 7;
     }
     return DateTime(from.year, from.month, from.day, from.hour, from.minute)
         .add(Duration(days: daysToAdd));
@@ -199,19 +228,25 @@ class NotificationService {
   }
 
   Future<void> cancelNotification(int id) async {
+    if (kIsWeb) return;
     await _notifications.cancel(id);
+    print('✅ Notificación ID:$id cancelada');
   }
 
   Future<void> cancelAllNotifications() async {
+    if (kIsWeb) return;
     await _notifications.cancelAll();
+    print('✅ Todas las notificaciones canceladas');
   }
 
   Future<List<PendingNotificationRequest>> getPendingNotifications() async {
+    if (kIsWeb) return [];
     return await _notifications.pendingNotificationRequests();
   }
 
   Future<void> testNotification() async {
-    // Prueba inmediata de notificación (en 3 segundos)
+    if (kIsWeb) return;
+
     try {
       final now = DateTime.now().add(const Duration(seconds: 3));
 
@@ -220,7 +255,8 @@ class NotificationService {
         'Prueba',
         channelDescription: 'Notificación de prueba',
         importance: Importance.max,
-        priority: Priority.high,
+        priority: Priority.max,
+        enableVibration: true,
       );
 
       const iosDetails = DarwinNotificationDetails(
