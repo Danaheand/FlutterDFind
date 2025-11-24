@@ -670,10 +670,10 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   void _showProfileModal() async {
     if (_currentUser == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content:
-                Text('Error: No se pudo cargar la información del usuario')),
+      _showCuteMessage(
+        'Error: No se pudo cargar la información del usuario',
+        Icons.error_rounded,
+        backgroundColor: const Color(0xFF6A4C93),
       );
       return;
     }
@@ -1061,12 +1061,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 await _loadCurrentUser();
 
                                 if (!mounted) return;
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Text(
-                                        'Perfil actualizado correctamente'),
-                                    backgroundColor: AppTheme.primaryLight,
-                                  ),
+                                _showCuteMessage(
+                                  'Perfil actualizado correctamente',
+                                  Icons.check_circle_rounded,
+                                  backgroundColor: const Color(0xFF6A4C93),
                                 );
                               } catch (e) {
                                 if (mounted)
@@ -1239,11 +1237,10 @@ class _ProfileScreenState extends State<ProfileScreen>
     } catch (e) {
       print('Error general cargando usuario: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error cargando perfil. Volviendo al login.'),
-            backgroundColor: Colors.red,
-          ),
+        _showCuteMessage(
+          'Error cargando perfil. Volviendo al login.',
+          Icons.error_rounded,
+          backgroundColor: const Color(0xFF6A4C93),
         );
         // En caso de error general, ir al login
         Navigator.of(context).pushReplacementNamed('/login');
@@ -1317,23 +1314,20 @@ class _ProfileScreenState extends State<ProfileScreen>
       if (!mounted) return;
       Navigator.pop(context); // Cerrar loading
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Configuración guardada correctamente'),
-          backgroundColor: AppTheme.primaryLight,
-        ),
+      _showCuteMessage(
+        'Configuración guardada correctamente',
+        Icons.check_circle_rounded,
+        backgroundColor: const Color(0xFF6A4C93),
       );
     } catch (e) {
       if (mounted) Navigator.pop(context); // Cerrar loading
 
       print('Error guardando configuración: $e');
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al guardar configuración: $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 4),
-        ),
+      _showCuteMessage(
+        'Error al guardar configuración: $e',
+        Icons.error_rounded,
+        backgroundColor: const Color(0xFF6A4C93),
       );
     }
   }
