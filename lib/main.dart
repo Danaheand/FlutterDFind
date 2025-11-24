@@ -133,6 +133,10 @@ class MyApp extends StatelessWidget {
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {
+          // Determinar la pantalla inicial según si hay sesión activa
+          final initialRoute =
+              SessionManager.instance.isLoggedIn ? '/main' : '/login';
+
           return MaterialApp(
             title: 'DFind',
             theme: AppTheme.lightTheme,
@@ -150,7 +154,7 @@ class MyApp extends StatelessWidget {
               Locale('es', 'ES'), // Español
               Locale('en', 'US'), // Inglés (fallback)
             ],
-            home: const AppLoginScreen(),
+            initialRoute: initialRoute,
             routes: {
               '/main': (context) => const MainScaffold(),
               '/login': (context) => const AppLoginScreen(),
