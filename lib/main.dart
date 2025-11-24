@@ -6,6 +6,7 @@ import 'providers/recordatorio_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/connectivity_provider.dart';
 import 'providers/pendientes_state_provider.dart';
+import 'providers/tips_provider.dart';
 import 'screens/pendientes_screen.dart';
 import 'screens/recordatorios_screen.dart';
 import 'screens/perfil_screen.dart';
@@ -130,12 +131,20 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<PendientesStateProvider>(
           create: (_) => PendientesStateProvider(),
         ),
+        ChangeNotifierProvider<TipsProvider>(
+          create: (_) => TipsProvider(),
+        ),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {
           // Determinar la pantalla inicial según si hay sesión activa
           final initialRoute =
               SessionManager.instance.isLoggedIn ? '/main' : '/login';
+
+          // Inicializar TipsProvider
+          Future.delayed(Duration.zero, () {
+            Provider.of<TipsProvider>(context, listen: false).initialize();
+          });
 
           return MaterialApp(
             title: 'DFind',

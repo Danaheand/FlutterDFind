@@ -18,7 +18,7 @@ class CustomPaletteViewer extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(right: 16.0),
               child: Text(
-                isDark ? "Modo Oscuro 🌙" : "Modo Claro ☀️",
+                isDark ? "Modo Oscuro " : "Modo Claro ",
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),

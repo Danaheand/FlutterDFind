@@ -5,6 +5,7 @@ import '../models/recordatorio.dart';
 import '../providers/font_size_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/recordatorio_provider.dart';
+import '../providers/tips_provider.dart';
 import '../services/trash_service.dart';
 import '../services/session_manager.dart';
 import '../widgets/custom_text_button.dart';
@@ -26,6 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   bool _showLogoutDialog = false;
   bool _notifSound = true;
   bool _notifVibration = true;
+  bool _showTips = true;
   String _userName = '';
   String _userEmail = '';
   User? _currentUser;
@@ -478,6 +480,24 @@ class _ProfileScreenState extends State<ProfileScreen>
                           ),
                         ),
                         const Divider(),
+                        // TIPS - sin subtitle
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.lightbulb_outline),
+                          title: const Text('Mostrar Tips'),
+                          trailing: Switch(
+                            value: _showTips,
+                            onChanged: (v) {
+                              print('💡 Switch Tips cambiado a: $v');
+                              setState(() => _showTips = v);
+                              // Actualizar el provider inmediatamente
+                              final tipsProvider = Provider.of<TipsProvider>(context, listen: false);
+                              tipsProvider.setShowTips(v);
+                              print('💡 TipsProvider actualizado a: $v');
+                            },
+                          ),
+                        ),
+                        const Divider(),
                         // TAMAÑO DE LETRA
                         ListTile(
                           contentPadding: EdgeInsets.zero,
@@ -553,32 +573,57 @@ class _ProfileScreenState extends State<ProfileScreen>
                 ),
                 Padding(
                   padding: const EdgeInsets.all(16),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.brightness == Brightness.light
-                          ? AppTheme.primaryLight
-                          : AppTheme.primaryDark,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size.fromHeight(44),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade400,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text(
+                            'Cerrar',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    onPressed: () async {
-                      await _saveConfigurationSettings(
-                        themeProvider.isDarkMode,
-                        fontSizeProvider.fontSize.toInt(),
-                      );
-                      if (!mounted) return;
-                      Navigator.pop(context);
-                    },
-                    child: const Text(
-                      'Guardar y Cerrar',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.brightness == Brightness.light
+                                ? AppTheme.primaryLight
+                                : AppTheme.primaryDark,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () async {
+                            await _saveConfigurationSettings(
+                              themeProvider.isDarkMode,
+                              fontSizeProvider.fontSize.toInt(),
+                            );
+                            if (!mounted) return;
+                            Navigator.pop(context);
+                          },
+                          child: const Text(
+                            'Guardar',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ],
@@ -1158,6 +1203,21 @@ class _ProfileScreenState extends State<ProfileScreen>
   void initState() {
     super.initState();
     _trashService = TrashService.getInstance();
+    // Cargar el valor guardado del TipsProvider
+    Future.delayed(Duration.zero, () async {
+      final tipsProvider = Provider.of<TipsProvider>(context, listen: false);
+      // Si aún no está inicializado, inicializarlo
+      if (!tipsProvider.isInitialized) {
+        await tipsProvider.initialize();
+      }
+      // Actualizar el valor local
+      if (mounted) {
+        setState(() {
+          _showTips = tipsProvider.showTips;
+          print('💡 Perfil initState: _showTips = $_showTips');
+        });
+      }
+    });
     _loadCurrentUser();
     _initializeTrash();
   }
@@ -1208,6 +1268,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           // Cargar configuraciones de notificaciones
           _notifSound = user.notificacionesSonido;
           _notifVibration = user.notificacionesVibracion;
+          _showTips = true; // Por defecto mostramos los tips
 
           // 👇 NUEVO: cargar avatar desde el usuario
           _avatarMode = (user.avatarTipo == 'preset')

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/font_size_provider.dart';
+import '../../providers/tips_provider.dart';
 import '../../theme/app_theme.dart';
 
 class TipsSection extends StatefulWidget {
@@ -17,6 +18,22 @@ class _TipsSectionState extends State<TipsSection> {
 
   @override
   Widget build(BuildContext context) {
+    // Leer el provider sin Consumer para verificar el estado
+    final tipsProvider = Provider.of<TipsProvider>(context, listen: true);
+    
+    print('🔍 TipsSection - showTips: ${tipsProvider.showTips}');
+    
+    // Si los tips están deshabilitados, no mostrar nada
+    if (!tipsProvider.showTips) {
+      print('❌ Tips deshabilitados - retornando SizedBox.shrink()');
+      return const SizedBox.shrink();
+    }
+    
+    print('✅ Tips habilitados - mostrando contenido');
+    return _buildTipsContent();
+  }
+
+  Widget _buildTipsContent() {
     final bool isLight = Theme.of(context).brightness == Brightness.light;
 
     final tips = [
@@ -42,6 +59,10 @@ class _TipsSectionState extends State<TipsSection> {
       ),
     ];
 
+    return _buildContainer(isLight, tips);
+  }
+
+  Widget _buildContainer(bool isLight, List<TipItem> tips) {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
