@@ -78,7 +78,8 @@ class BackgroundNotificationService {
 
       print('✅ $notificationsProgrammed notificaciones programadas');
     } catch (e) {
-      print('❌ Error al verificar notificaciones: $e');
+      // Log silencioso del error - el servicio continúa funcionando
+      print('⚠️ Error en verificación de notificaciones: ${e.toString().split('\n').first}');
     }
   }
 
@@ -89,8 +90,9 @@ class BackgroundNotificationService {
       await _scheduleNotificationForRecordatorio(recordatorio);
       print('✅ Notificación programada para "${recordatorio.titulo}"');
     } catch (e) {
-      print(
-          '❌ Error al programar notificación para "${recordatorio.titulo}": $e');
+      // Log silencioso del error - no mostrar al usuario
+      print('⚠️ No se pudo programar notificación para "${recordatorio.titulo}": ${e.toString().split('\n').first}');
+      // El recordatorio se guarda correctamente aunque falle la notificación
     }
   }
 

@@ -176,10 +176,10 @@ class _AlertsScreenState extends State<AlertsScreen>
   }
 
   Future<void> _checkAndShowTutorial() async {
-    print('🔵🔵🔵Verificando si se debe mostrar tutorial de deslizamiento...');
+    print('Verificando si se debe mostrar tutorial de deslizamiento...');
     final prefs = await SharedPreferences.getInstance();
     final hasSeenTutorial = prefs.getBool('has_seen_swipe_tutorial') ?? false;
-    print('🔵🔵🔵Usuario ha visto tutorial antes: $hasSeenTutorial');
+    print('suario ha visto tutorial antes: $hasSeenTutorial');
 
     if (!hasSeenTutorial) {
       // Esperar un momento para que se carguen las alertas
@@ -320,10 +320,10 @@ class _AlertsScreenState extends State<AlertsScreen>
   }
 
   List<AlertData> _getAlerts(RecordatorioProvider provider) {
-    print('🔵 Obteniendo recordatorios desde el provider...');
+    print(' Obteniendo recordatorios desde el provider...');
     final recordatorios =
         provider.recordatorios.map(_recordatorioToAlertData).toList();
-    print('🟣 Total recordatorios cargados: ${recordatorios.length}');
+    print(' Total recordatorios cargados: ${recordatorios.length}');
     return recordatorios;
   }
 
@@ -731,19 +731,19 @@ class _AlertsScreenState extends State<AlertsScreen>
     final alertCard = AlertCard(
       alert: a,
       onLongPress: () {
-        print('🟢 onLongPress activado - Alerta: ${a.title}');
-        print('🟢 Estado actual - selectionMode: $selectionMode');
+        print('onLongPress activado - Alerta: ${a.title}');
+        print('Estado actual - selectionMode: $selectionMode');
         setState(() {
           selectionMode = true;
           selectedAlerts.add(a.id);
           print(
-              '🟢 Nuevo estado - selectionMode: $selectionMode, selectedAlerts: $selectedAlerts');
+              ' Nuevo estado - selectionMode: $selectionMode, selectedAlerts: $selectedAlerts');
         });
       },
       onTap: () {
         print(
-            '🔵 onTap - selectionMode: $selectionMode, showSelection: $showSelection');
-        print('🔵 Alert: ${a.title}');
+            'onTap - selectionMode: $selectionMode, showSelection: $showSelection');
+        print('Alert: ${a.title}');
         if (showSelection && selectionMode) {
           setState(() {
             if (selectedAlerts.contains(a.id)) {

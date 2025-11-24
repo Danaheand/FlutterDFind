@@ -539,12 +539,12 @@ class AlertEditDialogState extends State<AlertEditDialog> {
                   print('   - ID: ${notif.id}, Título: ${notif.title}');
                 }
               } catch (e) {
-                // Si hay error con las notificaciones, mostrar mensaje
+                // Si hay error con las notificaciones, no mostrar mensaje de error
+                // El recordatorio se creará exitosamente, solo la notificación falló
                 if (mounted) {
-                  print('❌ Error al programar alarma: $e');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error al programar alarma: $e')),
-                  );
+                  print('⚠️ Error al programar alarma (no crítico): $e');
+                  // No mostrar notificación de error para no confundir al usuario
+                  // El recordatorio se guarda correctamente de todas formas
                 }
               }
             } else {
