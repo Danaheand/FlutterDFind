@@ -41,7 +41,7 @@ class AlertTabBar extends StatelessWidget {
                   ),
                   child: Center(
                     child: Text(
-                      'Programado',
+                      'Programados',
                       style: TextStyle(
                         fontSize: fontSizeProvider.fontSize,
                         fontWeight: FontWeight.w600,
@@ -74,7 +74,7 @@ class AlertTabBar extends StatelessWidget {
                   ),
                   child: Center(
                     child: Text(
-                      'Historial',
+                      'Completados',
                       style: TextStyle(
                         fontSize: fontSizeProvider.fontSize,
                         fontWeight: FontWeight.w600,
