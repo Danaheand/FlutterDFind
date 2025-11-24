@@ -426,7 +426,8 @@ class _InventoryScreenState extends State<InventoryScreen>
   }
 
   void _showPlaceCompletedMessage(String place) {
-    _showCuteMessage('Compras en $place terminadas', Icons.shopping_bag_rounded);
+    _showCuteMessage(
+        'Compras en $place terminadas', Icons.shopping_bag_rounded);
   }
 
   // ================================================================
@@ -467,7 +468,7 @@ class _InventoryScreenState extends State<InventoryScreen>
     }
 
     final categoriesCount = _selectedPlaces.length;
-    
+
     setState(() {
       _selectionMode = false;
       _selectedPlaces.clear();
@@ -475,7 +476,9 @@ class _InventoryScreenState extends State<InventoryScreen>
 
     if (mounted) {
       _showCuteMessage(
-        categoriesCount == 1 ? 'Categoría eliminada' : '$categoriesCount categorías eliminadas',
+        categoriesCount == 1
+            ? 'Categoría eliminada'
+            : '$categoriesCount categorías eliminadas',
         Icons.delete_outline,
       );
     }
@@ -489,12 +492,13 @@ class _InventoryScreenState extends State<InventoryScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pendientes'),
+        title: const Text('Pendiente'),
         automaticallyImplyLeading: false,
         actions: [
           // Botón de selección
           IconButton(
-            icon: Icon(_selectionMode ? Icons.close : Icons.check_box_outline_blank),
+            icon: Icon(
+                _selectionMode ? Icons.close : Icons.check_box_outline_blank),
             tooltip: _selectionMode ? 'Cancelar selección' : 'Seleccionar',
             onPressed: () {
               setState(() {

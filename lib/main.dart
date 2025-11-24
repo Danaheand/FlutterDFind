@@ -70,7 +70,7 @@ class _MainScaffoldState extends State<MainScaffold> {
             label: 'Recordatorios',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
+            icon: Icon(Icons.check_box),
             label: 'Pendientes',
           ),
           BottomNavigationBarItem(
