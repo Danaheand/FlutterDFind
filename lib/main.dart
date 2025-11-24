@@ -95,6 +95,11 @@ void main() async {
   print('🗑️ Inicializando TrashService...');
   await TrashService.getInstance().loadTrashItems();
 
+  // Inicializar ThemeProvider para cargar tema guardado
+  print('🎨 Inicializando ThemeProvider...');
+  final themeProvider = ThemeProvider();
+  await themeProvider.initialize();
+
   // Solo inicializar notificaciones en dispositivos móviles (no en web)
   try {
     print('🔔 Inicializando NotificationService...');
