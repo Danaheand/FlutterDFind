@@ -15,10 +15,16 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
+
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
+
+  final _nameFieldKey = GlobalKey<FormFieldState>();
+  final _emailFieldKey = GlobalKey<FormFieldState>();
+  final _passFieldKey = GlobalKey<FormFieldState>();
+  final _confirmFieldKey = GlobalKey<FormFieldState>();
 
   bool _obscure = true;
   bool _obscureConfirm = true;
@@ -44,7 +50,7 @@ class _RegisterScreenState extends State<RegisterScreen>
 
     late OverlayEntry entry;
     final controller = AnimationController(
-      vsync: this as TickerProvider,
+      vsync: this,
       duration: const Duration(milliseconds: 320),
     );
     final animation = CurvedAnimation(
@@ -73,7 +79,8 @@ class _RegisterScreenState extends State<RegisterScreen>
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
-                    color: backgroundColor ?? const Color.fromARGB(255, 98, 77, 129),
+                    color: backgroundColor ??
+                        const Color.fromARGB(255, 98, 77, 129),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.15),
@@ -152,11 +159,136 @@ class _RegisterScreenState extends State<RegisterScreen>
     return null;
   }
 
+  String _normalizeBackendMessage(
+    dynamic raw, {
+    String fallback = 'Ocurrió un error, intenta nuevamente.',
+  }) {
+    if (raw == null) return fallback;
+
+    if (raw is Map) {
+      final m = raw as Map;
+
+      final directKeys = [
+        'mensaje',
+        'message',
+        'error',
+        'detail',
+        'detalle',
+        'title',
+      ];
+      for (final k in directKeys) {
+        final v = m[k];
+        if (v != null && v.toString().trim().isNotEmpty) {
+          raw = v;
+          break;
+        }
+      }
+
+      if (raw is Map) {
+        final data = raw;
+        for (final k in directKeys) {
+          final v = data[k];
+          if (v != null && v.toString().trim().isNotEmpty) {
+            raw = v;
+            break;
+          }
+        }
+      }
+
+      if (raw is Map && m['data'] is Map) {
+        final data = m['data'] as Map;
+        for (final k in directKeys) {
+          final v = data[k];
+          if (v != null && v.toString().trim().isNotEmpty) {
+            raw = v;
+            break;
+          }
+        }
+      }
+    }
+
+    var text = raw.toString().trim();
+    if (text.isEmpty) return fallback;
+
+    final match = RegExp(r'"mensaje"\s*:\s*"([^"]+)"').firstMatch(text);
+    if (match != null) {
+      text = match.group(1)!;
+    }
+
+    final lower = text.toLowerCase();
+
+    final hasCorreoOrEmail =
+        lower.contains('correo') || lower.contains('email');
+    final hasDuplicateWord = lower.contains('registrad') ||
+        lower.contains('ya existe') ||
+        lower.contains('ya esta en uso') ||
+        lower.contains('ya está en uso') ||
+        lower.contains('en uso') ||
+        lower.contains('ya fue utilizado') ||
+        lower.contains('ya fue usado') ||
+        lower.contains('ya se encuentra');
+
+    if (hasCorreoOrEmail && hasDuplicateWord) {
+      return 'El correo ya está registrado.';
+    }
+
+    if ((lower.contains('codigo') || lower.contains('código')) &&
+        (lower.contains('inválido') ||
+            lower.contains('invalido') ||
+            lower.contains('expirado'))) {
+      return 'Código inválido o expirado.';
+    }
+
+    return text;
+  }
+
   Future<void> _submit() async {
     if (!mounted) return;
 
-    final valid = _formKey.currentState?.validate() ?? false;
-    if (!valid) return;
+    final nameError = _validateName(_nameCtrl.text);
+    if (nameError != null) {
+      _nameFieldKey.currentState?.validate();
+      _showCuteMessage(
+        nameError,
+        Icons.warning_rounded,
+        backgroundColor: const Color(0xFF6A4C93),
+      );
+      return;
+    }
+
+    final emailError = _validateEmail(_emailCtrl.text);
+    if (emailError != null) {
+      _emailFieldKey.currentState?.validate();
+      _showCuteMessage(
+        emailError,
+        Icons.warning_rounded,
+        backgroundColor: const Color(0xFF6A4C93),
+      );
+      return;
+    }
+
+    final passError = _validatePassword(_passCtrl.text);
+    if (passError != null) {
+      _passFieldKey.currentState?.validate();
+      _showCuteMessage(
+        passError,
+        Icons.warning_rounded,
+        backgroundColor: const Color(0xFF6A4C93),
+      );
+      return;
+    }
+
+    final confirmError = _validateConfirm(_confirmCtrl.text);
+    if (confirmError != null) {
+      _confirmFieldKey.currentState?.validate();
+      _showCuteMessage(
+        confirmError,
+        Icons.warning_rounded,
+        backgroundColor: const Color(0xFF6A4C93),
+      );
+      return;
+    }
+
     if (!_agreeTerms) {
       _showCuteMessage(
         'Debes aceptar los Términos y la Política de Privacidad',
@@ -166,108 +298,128 @@ class _RegisterScreenState extends State<RegisterScreen>
       return;
     }
 
+    final email = _emailCtrl.text.trim();
+
     setState(() => _isLoading = true);
 
     try {
-      final hasConnection = await ApiService.testConnection();
-      if (!hasConnection) {
-        throw Exception(
-          'No se puede conectar al servidor. Verifica tu conexión a internet.',
+      final sendResult =
+          await ApiService.enviarCodigoVerificacion(correo: email);
+
+      if (!mounted) return;
+
+      if (sendResult['success'] == true) {
+        _showCuteMessage(
+          'Te enviamos un código a $email',
+          Icons.check_circle_rounded,
+          backgroundColor: const Color(0xFF6A4C93),
         );
+      } else {
+        final errorText = _normalizeBackendMessage(
+          sendResult,
+          fallback: 'Hubo un problema al enviar el código, intenta nuevamente.',
+        );
+        _showCuteMessage(
+          errorText,
+          Icons.warning_rounded,
+          backgroundColor: const Color(0xFF6A4C93),
+        );
+        return;
+      }
+
+      final verified = await showDialog<bool>(
+        context: context,
+        barrierDismissible: true,
+        builder: (ctx) => VerifyEmailScreen(
+          correo: email,
+          alreadySent: true,
+          asDialog: true,
+          onVerified: () {
+            Navigator.of(ctx).pop(true);
+          },
+        ),
+      );
+
+      if (verified != true) {
+        if (!mounted) return;
+        _showCuteMessage(
+          'Debes verificar tu correo para completar el registro.',
+          Icons.warning_rounded,
+          backgroundColor: const Color(0xFF6A4C93),
+        );
+        return;
       }
 
       final result = await ApiService.registerUser(
         nombreUsuario: _nameCtrl.text.trim(),
-        correo: _emailCtrl.text.trim(),
+        correo: email,
         password: _passCtrl.text,
         aceptoTerminos: true,
         versionTerminos: "1.0",
         ipAceptacion: "192.168.1.1",
       );
 
-      final email = _emailCtrl.text.trim();
+      if (!mounted) return;
+
+      final normalizedMsg = _normalizeBackendMessage(
+        result,
+        fallback: '',
+      );
+      final lowerNorm = normalizedMsg.toLowerCase();
+
+      final hasCorreoOrEmail =
+          lowerNorm.contains('correo') || lowerNorm.contains('email');
+      final hasDuplicateWord = lowerNorm.contains('registrad') ||
+          lowerNorm.contains('ya existe') ||
+          lowerNorm.contains('en uso') ||
+          lowerNorm.contains('ya fue utilizado') ||
+          lowerNorm.contains('ya fue usado') ||
+          lowerNorm.contains('ya se encuentra');
+
+      final isDuplicateEmail = hasCorreoOrEmail && hasDuplicateWord;
+
+      if (isDuplicateEmail) {
+        _showCuteMessage(
+          'El correo ya está registrado.',
+          Icons.warning_rounded,
+          backgroundColor: const Color(0xFF6A4C93),
+        );
+        return;
+      }
 
       if (result['success'] == true) {
-        final data = result['data'];
-        bool backendAlreadySent = false;
-        try {
-          if (data is Map) {
-            final msg = ((data['mensaje'] ?? data['message'] ?? '') as String)
-                .toLowerCase();
-            if (msg.contains('envi') ||
-                msg.contains('codigo') ||
-                msg.contains('correo')) {
-              backendAlreadySent = true;
-            }
-          }
-        } catch (_) {
-          backendAlreadySent = false;
-        }
-
-        bool navigatedWithAlreadySent = false;
-
-        if (!backendAlreadySent) {
-          final sendResult =
-              await ApiService.enviarCodigoVerificacion(correo: email);
-
-          if (!mounted) return;
-
-          _showCuteMessage(
-            sendResult['success'] == true
-                ? 'Registro exitoso. Te enviamos un código a $email'
-                : 'Hubo un problema al enviar el código: ${sendResult['error']}',
-            sendResult['success'] == true
-                ? Icons.check_circle_rounded
-                : Icons.warning_rounded,
-            backgroundColor: const Color(0xFF6A4C93),
-          );
-
-          navigatedWithAlreadySent = sendResult['success'] == true;
-        } else {
-          if (!mounted) return;
-          _showCuteMessage(
-            'Registro exitoso. Te enviamos un código a $email',
-            Icons.check_circle_rounded,
-            backgroundColor: const Color(0xFF6A4C93),
-          );
-
-          navigatedWithAlreadySent = true;
-        }
-
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => VerifyEmailScreen(
-              correo: email,
-              alreadySent: navigatedWithAlreadySent,
-            ),
-          ),
-        );
-      } else {
-        if (!mounted) return;
-        
-        // Limpiar el mensaje de error
-        String errorMsg = '${result['error']}';
-        
-        // Si contiene "correo ya está registrado", simplificar el mensaje
-        if (errorMsg.toLowerCase().contains('correo') && 
-            errorMsg.toLowerCase().contains('registrado')) {
-          errorMsg = 'El correo ya está registrado.';
-        }
-        
         _showCuteMessage(
-          errorMsg,
-          Icons.error_rounded,
+          'Registro exitoso. Ahora puedes iniciar sesión.',
+          Icons.check_circle_rounded,
+          backgroundColor: const Color(0xFF6A4C93),
+        );
+        Navigator.of(context).pushReplacementNamed('/login');
+      } else {
+        final errorText = _normalizeBackendMessage(
+          result,
+          fallback: 'No se pudo completar el registro.',
+        );
+        _showCuteMessage(
+          errorText,
+          Icons.warning_rounded,
           backgroundColor: const Color(0xFF6A4C93),
         );
       }
     } catch (e) {
+      if (!mounted) return;
+      final errorText = _normalizeBackendMessage(
+        e.toString(),
+        fallback: 'Ocurrió un error al registrar. Intenta nuevamente.',
+      );
       _showCuteMessage(
-        '$e',
-        Icons.error_rounded,
+        errorText,
+        Icons.warning_rounded,
         backgroundColor: const Color(0xFF6A4C93),
       );
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -355,6 +507,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                   ),
                   child: Form(
                     key: _formKey,
+                    autovalidateMode: AutovalidateMode.disabled,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -400,6 +553,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                         ),
                         const SizedBox(height: 20),
                         TextFormField(
+                          key: _nameFieldKey,
                           controller: _nameCtrl,
                           decoration: InputDecoration(
                             labelText: 'Nombre',
@@ -420,9 +574,12 @@ class _RegisterScreenState extends State<RegisterScreen>
                             ),
                           ),
                           validator: _validateName,
+                          onChanged: (_) =>
+                              _nameFieldKey.currentState?.validate(),
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
+                          key: _emailFieldKey,
                           controller: _emailCtrl,
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
@@ -453,7 +610,10 @@ class _RegisterScreenState extends State<RegisterScreen>
                               ),
                             ),
                           ),
-                          onChanged: (_) => setState(() {}),
+                          onChanged: (_) {
+                            setState(() {});
+                            _emailFieldKey.currentState?.validate();
+                          },
                           validator: _validateEmail,
                         ),
                         const SizedBox(height: 12),
@@ -464,6 +624,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 TextFormField(
+                                  key: _passFieldKey,
                                   controller: _passCtrl,
                                   obscureText: _obscure,
                                   decoration: InputDecoration(
@@ -494,7 +655,10 @@ class _RegisterScreenState extends State<RegisterScreen>
                                     ),
                                   ),
                                   validator: _validatePassword,
-                                  onChanged: (_) => setState(() {}),
+                                  onChanged: (_) {
+                                    _passFieldKey.currentState?.validate();
+                                    setState(() {});
+                                  },
                                 ),
                                 const SizedBox(height: 12),
                                 _buildPasswordRequirements(val),
@@ -504,6 +668,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
+                          key: _confirmFieldKey,
                           controller: _confirmCtrl,
                           obscureText: _obscureConfirm,
                           decoration: InputDecoration(
@@ -536,6 +701,8 @@ class _RegisterScreenState extends State<RegisterScreen>
                             ),
                           ),
                           validator: _validateConfirm,
+                          onChanged: (_) =>
+                              _confirmFieldKey.currentState?.validate(),
                         ),
                         const SizedBox(height: 12),
                         Center(
@@ -605,7 +772,8 @@ class _RegisterScreenState extends State<RegisterScreen>
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _submit,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(255, 131, 106, 167),
+                              backgroundColor:
+                                  const Color.fromARGB(255, 131, 106, 167),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(18),
@@ -618,10 +786,11 @@ class _RegisterScreenState extends State<RegisterScreen>
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
                                       valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.white),
+                                        Colors.white,
+                                      ),
                                     ),
                                   )
-                                  : const Text(
+                                : const Text(
                                     'Crear cuenta',
                                     style: TextStyle(
                                       fontWeight: FontWeight.w700,

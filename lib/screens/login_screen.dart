@@ -41,8 +41,7 @@ class _LoginScreenState extends State<AppLoginScreen> {
       print('Probando conectividad...');
       final hasConnection = await ApiService.testConnection();
       if (!hasConnection) {
-        throw Exception(
-            'Verifica tu conexión a internet.');
+        throw Exception('Verifica tu conexión a internet.');
       }
 
       final email = _userCtrl.text.trim();
@@ -107,23 +106,42 @@ class _LoginScreenState extends State<AppLoginScreen> {
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(sendResult['success'] == true
-                            ? 'Enviamos un nuevo código a $email'
-                            : '${sendResult['error']}'),
+                        content: Text(
+                          sendResult['success'] == true
+                              ? 'Enviamos un nuevo código a $email'
+                              : '${sendResult['error']}',
+                        ),
                         backgroundColor: sendResult['success'] == true
                             ? Colors.green
                             : Colors.red,
                       ),
                     );
 
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => VerifyEmailScreen(
+                    if (sendResult['success'] == true) {
+                      final verified = await showDialog<bool>(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (dialogCtx) => VerifyEmailScreen(
                           correo: email,
-                          alreadySent: sendResult['success'] == true,
+                          alreadySent: true,
+                          asDialog: true,
+                          onVerified: () {
+                            Navigator.of(dialogCtx).pop(true);
+                          },
                         ),
-                      ),
-                    );
+                      );
+
+                      if (verified == true && mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Correo verificado. Intenta iniciar sesión de nuevo.',
+                            ),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      }
+                    }
                   },
                   child: const Text('Verificar ahora'),
                 ),
@@ -182,13 +200,14 @@ class _LoginScreenState extends State<AppLoginScreen> {
               ),
               child: Center(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                   child: Container(
                     constraints: const BoxConstraints(maxWidth: 480),
                     padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
                     decoration: BoxDecoration(
-                      color: theme.cardColor.withValues(
-                          alpha: isLight ? 0.98 : 0.92),
+                      color: theme.cardColor
+                          .withValues(alpha: isLight ? 0.98 : 0.92),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
@@ -207,7 +226,8 @@ class _LoginScreenState extends State<AppLoginScreen> {
                             height: 56,
                             width: 56,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF6A4C93).withValues(alpha: 0.12),
+                              color: const Color(0xFF6A4C93)
+                                  .withValues(alpha: 0.12),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -261,7 +281,8 @@ class _LoginScreenState extends State<AppLoginScreen> {
                             obscureText: _obscure,
                             decoration: InputDecoration(
                               labelText: 'Contraseña',
-                              prefixIcon: const Icon(Icons.lock_outline_rounded),
+                              prefixIcon:
+                                  const Icon(Icons.lock_outline_rounded),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscure
@@ -346,8 +367,9 @@ class _LoginScreenState extends State<AppLoginScreen> {
                                       width: 22,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(
-                                            Colors.white),
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Colors.white),
                                       ),
                                     )
                                   : const Text(
@@ -371,7 +393,8 @@ class _LoginScreenState extends State<AppLoginScreen> {
                                 color: const Color.fromARGB(255, 255, 255, 255),
                                 child: InkWell(
                                   onTap: () {
-                                    Navigator.of(context).pushNamed('/register');
+                                    Navigator.of(context)
+                                        .pushNamed('/register');
                                   },
                                   borderRadius: BorderRadius.circular(999),
                                   child: Padding(
