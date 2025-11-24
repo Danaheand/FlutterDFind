@@ -399,234 +399,247 @@ class _ProfileScreenState extends State<ProfileScreen>
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => Dialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 40),
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 360),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: theme.brightness == Brightness.light
-                    ? [
-                        AppTheme.primaryLight.withOpacity(0.08),
-                        AppTheme.primaryLight.withOpacity(0.05),
-                      ]
-                    : [
-                        AppTheme.primaryDark.withOpacity(0.1),
-                        AppTheme.primaryDark.withOpacity(0.05),
-                      ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+      builder: (context) => Consumer<FontSizeProvider>(
+        builder: (context, fontSizeProviderListener, _) => StatefulBuilder(
+          builder: (context, setState) => Dialog(
+            insetPadding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 360),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: theme.brightness == Brightness.light
+                      ? [
+                          AppTheme.primaryLight.withOpacity(0.08),
+                          AppTheme.primaryLight.withOpacity(0.05),
+                        ]
+                      : [
+                          AppTheme.primaryDark.withOpacity(0.1),
+                          AppTheme.primaryDark.withOpacity(0.05),
+                        ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Text(
-                    'Configuración',
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: theme.brightness == Brightness.light
-                          ? AppTheme.primaryLight
-                          : Colors.white,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Text(
+                      'Configuración',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: fontSizeProvider.fontSize,
+                        color: theme.brightness == Brightness.light
+                            ? AppTheme.primaryLight
+                            : Colors.white,
+                      ),
                     ),
                   ),
-                ),
-                SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // TEMA OSCURO
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.dark_mode_outlined),
-                          title: const Text('Tema Oscuro'),
-                          trailing: Switch(
-                            value: themeProvider.isDarkMode,
-                            onChanged: (v) async {
-                              await themeProvider.setDarkMode(v);
-                              setState(() {});
-                            },
+                  SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // TEMA OSCURO
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.dark_mode_outlined),
+                            title: Text('Tema Oscuro',
+                                style: TextStyle(
+                                    fontSize: fontSizeProvider.fontSize)),
+                            trailing: Switch(
+                              value: themeProvider.isDarkMode,
+                              onChanged: (v) async {
+                                await themeProvider.setDarkMode(v);
+                                setState(() {});
+                              },
+                            ),
                           ),
-                        ),
-                        const Divider(),
-                        // VIBRACIÓN
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.vibration),
-                          title: const Text('Vibración'),
-                          trailing: Switch(
-                            value: _notifVibration,
-                            onChanged: (v) {
-                              setState(() => _notifVibration = v);
-                            },
+                          const Divider(),
+                          // VIBRACIÓN
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.vibration),
+                            title: Text('Vibración',
+                                style: TextStyle(
+                                    fontSize: fontSizeProvider.fontSize)),
+                            trailing: Switch(
+                              value: _notifVibration,
+                              onChanged: (v) {
+                                setState(() => _notifVibration = v);
+                              },
+                            ),
                           ),
-                        ),
-                        const Divider(),
-                        // SONIDO
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.volume_up_outlined),
-                          title: const Text('Sonido'),
-                          trailing: Switch(
-                            value: _notifSound,
-                            onChanged: (v) {
-                              setState(() => _notifSound = v);
-                            },
+                          const Divider(),
+                          // SONIDO
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.volume_up_outlined),
+                            title: Text('Sonido',
+                                style: TextStyle(
+                                    fontSize: fontSizeProvider.fontSize)),
+                            trailing: Switch(
+                              value: _notifSound,
+                              onChanged: (v) {
+                                setState(() => _notifSound = v);
+                              },
+                            ),
                           ),
-                        ),
-                        const Divider(),
-                        // TIPS - sin subtitle
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.lightbulb_outline),
-                          title: const Text('Mostrar Tips'),
-                          trailing: Switch(
-                            value: _showTips,
-                            onChanged: (v) {
-                              print('💡 Switch Tips cambiado a: $v');
-                              setState(() => _showTips = v);
-                              // Actualizar el provider inmediatamente
-                              final tipsProvider = Provider.of<TipsProvider>(context, listen: false);
-                              tipsProvider.setShowTips(v);
-                              print('💡 TipsProvider actualizado a: $v');
-                            },
+                          const Divider(),
+                          // TIPS - sin subtitle
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.lightbulb_outline),
+                            title: Text('Mostrar Tips',
+                                style: TextStyle(
+                                    fontSize: fontSizeProvider.fontSize)),
+                            trailing: Switch(
+                              value: _showTips,
+                              onChanged: (v) {
+                                print('💡 Switch Tips cambiado a: $v');
+                                setState(() => _showTips = v);
+                                // Actualizar el provider inmediatamente
+                                final tipsProvider = Provider.of<TipsProvider>(context, listen: false);
+                                tipsProvider.setShowTips(v);
+                                print('💡 TipsProvider actualizado a: $v');
+                              },
+                            ),
                           ),
-                        ),
-                        const Divider(),
-                        // TAMAÑO DE LETRA
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.format_size),
-                          title: const Text('Tamaño de letra'),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text('A-',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12)),
-                                  Expanded(
-                                    child: Slider(
-                                      min: 12.0,
-                                      max: 28.0,
-                                      divisions: 8,
-                                      value: fontSizeProvider.fontSize,
-                                      label:
-                                          '${fontSizeProvider.fontSize.toInt()}',
-                                      onChanged: (v) {
-                                        fontSizeProvider.setEnabled(true);
-                                        fontSizeProvider.setFontSize(v);
-                                        setState(() {});
-                                      },
+                          const Divider(),
+                          // TAMAÑO DE LETRA
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.format_size),
+                            title: Text('Tamaño de letra',
+                                style: TextStyle(
+                                    fontSize: fontSizeProvider.fontSize)),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('A-',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12)),
+                                    Expanded(
+                                      child: Slider(
+                                        min: 12.0,
+                                        max: 28.0,
+                                        divisions: 8,
+                                        value: fontSizeProvider.fontSize,
+                                        label:
+                                            '${fontSizeProvider.fontSize.toInt()}',
+                                        onChanged: (v) {
+                                          fontSizeProvider.setEnabled(true);
+                                          fontSizeProvider.setFontSize(v);
+                                          setState(() {});
+                                        },
+                                      ),
+                                    ),
+                                    Text('A+',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12)),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: fontSizeProvider.fontSize == 16.0
+                                        ? AppTheme.primaryLight.withOpacity(0.1)
+                                        : Colors.grey.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: fontSizeProvider.fontSize == 16.0
+                                          ? AppTheme.primaryLight.withOpacity(0.3)
+                                          : Colors.grey[300]!,
                                     ),
                                   ),
-                                  const Text('A+',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12)),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: fontSizeProvider.fontSize == 16.0
-                                      ? AppTheme.primaryLight.withOpacity(0.1)
-                                      : Colors.grey.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: fontSizeProvider.fontSize == 16.0
-                                        ? AppTheme.primaryLight.withOpacity(0.3)
-                                        : Colors.grey[300]!,
+                                  child: Text(
+                                    'Tamaño actual: ${fontSizeProvider.fontSize.toInt()}px ${fontSizeProvider.fontSize == 16.0 ? '✓ Recomendado' : ''}',
+                                    style: TextStyle(
+                                      fontSize: fontSizeProvider.fontSize - 2,
+                                      color: fontSizeProvider.fontSize == 16.0
+                                          ? AppTheme.primaryLight
+                                          : Colors.grey[700],
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ),
-                                child: Text(
-                                  'Tamaño actual: ${fontSizeProvider.fontSize.toInt()}px ${fontSizeProvider.fontSize == 16.0 ? '✓ Recomendado' : ''}',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: fontSizeProvider.fontSize == 16.0
-                                        ? AppTheme.primaryLight
-                                        : Colors.grey[700],
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey.shade400,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            ],
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(
+                              'Cerrar',
+                              style: TextStyle(
+                                fontSize: fontSizeProvider.fontSize - 2,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
-                        )
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.brightness == Brightness.light
+                                  ? AppTheme.primaryLight
+                                  : AppTheme.primaryDark,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () async {
+                              await _saveConfigurationSettings(
+                                themeProvider.isDarkMode,
+                                fontSizeProvider.fontSize.toInt(),
+                              );
+                              if (!mounted) return;
+                              Navigator.pop(context);
+                            },
+                            child: Text(
+                              'Guardar',
+                              style: TextStyle(
+                                fontSize: fontSizeProvider.fontSize - 2,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey.shade400,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text(
-                            'Cerrar',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.brightness == Brightness.light
-                                ? AppTheme.primaryLight
-                                : AppTheme.primaryDark,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: () async {
-                            await _saveConfigurationSettings(
-                              themeProvider.isDarkMode,
-                              fontSizeProvider.fontSize.toInt(),
-                            );
-                            if (!mounted) return;
-                            Navigator.pop(context);
-                          },
-                          child: const Text(
-                            'Guardar',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -1507,26 +1520,38 @@ class _ProfileScreenState extends State<ProfileScreen>
                     // CONFIGURACIONES DE LA APLICACIÓN
                     _buildCard(
                       margin: EdgeInsets.zero,
-                      child: ListTile(
-                        leading: const Icon(Icons.settings_outlined),
-                        title: const Text('Configuración'),
-                        subtitle: const Text('Tema, vibración y sonido'),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                        onTap: _showAppSettingsDialog,
+                      child: Consumer<FontSizeProvider>(
+                        builder: (context, fontSizeProvider, _) => ListTile(
+                          leading: const Icon(Icons.settings_outlined),
+                          title: Text('Configuración',
+                              style: TextStyle(
+                                  fontSize: fontSizeProvider.fontSize)),
+                          subtitle: Text('Tema, vibración y sonido',
+                              style: TextStyle(
+                                  fontSize: fontSizeProvider.fontSize - 3)),
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: _showAppSettingsDialog,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     // PAPELERA DE RECICLAJE
                     _buildCard(
                       margin: EdgeInsets.zero,
-                      child: ListTile(
-                        leading: Icon(Icons.delete_outline,
-                            color: AppTheme.primaryLight),
-                        title: const Text('Papelera'),
-                        subtitle: Text(
-                            '${_trashService.getTrashItems().length} elementos eliminados'),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                        onTap: _showTrashDialog,
+                      child: Consumer<FontSizeProvider>(
+                        builder: (context, fontSizeProvider, _) => ListTile(
+                          leading: Icon(Icons.delete_outline,
+                              color: AppTheme.primaryLight),
+                          title: Text('Papelera',
+                              style: TextStyle(
+                                  fontSize: fontSizeProvider.fontSize)),
+                          subtitle: Text(
+                              '${_trashService.getTrashItems().length} elementos eliminados',
+                              style: TextStyle(
+                                  fontSize: fontSizeProvider.fontSize - 3)),
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: _showTrashDialog,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),

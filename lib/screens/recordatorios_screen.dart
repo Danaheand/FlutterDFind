@@ -15,6 +15,7 @@ import '../services/session_manager.dart';
 import '../services/trash_service.dart';
 import '../widgets/custom_text_button.dart';
 import '../providers/recordatorio_provider.dart';
+import '../providers/font_size_provider.dart';
 import '../models/recordatorio.dart';
 import '../models/recordatorio_exception.dart';
 import '../models/trash_item.dart';
@@ -446,14 +447,16 @@ class _AlertsScreenState extends State<AlertsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Prioridad:',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).brightness == Brightness.light
-                  ? Colors.grey.shade700
-                  : Colors.grey.shade300,
+          Consumer<FontSizeProvider>(
+            builder: (context, fontSizeProvider, _) => Text(
+              'Prioridad:',
+              style: TextStyle(
+                fontSize: fontSizeProvider.fontSize,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).brightness == Brightness.light
+                    ? Colors.grey.shade700
+                    : Colors.grey.shade300,
+              ),
             ),
           ),
           const SizedBox(height: 12),

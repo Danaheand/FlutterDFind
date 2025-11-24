@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:Dfind/models/alert_data.dart';
 import 'package:Dfind/theme/app_theme.dart';
+import 'package:Dfind/providers/font_size_provider.dart';
 
 /// Widget que muestra una sección colapsable con un contador de elementos
 class CollapsibleSection extends StatefulWidget {
@@ -83,89 +85,91 @@ class _CollapsibleSectionState extends State<CollapsibleSection> {
       return const SizedBox.shrink();
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        InkWell(
-          onTap: () {
-            setState(() {
-              _isExpanded = !_isExpanded;
-            });
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: _getHeaderColor(context),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                if (widget.icon != null) ...[
-                  Icon(
-                    widget.icon,
-                    size: 20,
-                    color: _getTextColor(context),
+    return Consumer<FontSizeProvider>(
+      builder: (context, fontSizeProvider, _) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: _getHeaderColor(context),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  if (widget.icon != null) ...[
+                    Icon(
+                      widget.icon,
+                      size: 20,
+                      color: _getTextColor(context),
+                    ),
+                    const SizedBox(width: 12),
+                  ],
+                  Expanded(
+                    child: Text(
+                      widget.title,
+                      style: TextStyle(
+                        fontSize: fontSizeProvider.fontSize,
+                        fontWeight: FontWeight.bold,
+                        color: _getTextColor(context),
+                      ),
+                    ),
+                  ),
+                  // Badge con contador
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? Colors.white
+                          : Colors.grey.shade700,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      '${widget.count}',
+                      style: TextStyle(
+                        fontSize: fontSizeProvider.fontSize - 2,
+                        fontWeight: FontWeight.bold,
+                        color: _getTextColor(context),
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 12),
+                  // Icono de expandir/colapsar
+                  Icon(
+                    _isExpanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    size: 24,
+                    color: _getTextColor(context),
+                  ),
                 ],
-                Expanded(
-                  child: Text(
-                    widget.title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: _getTextColor(context),
-                    ),
-                  ),
-                ),
-                // Badge con contador
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).brightness == Brightness.light
-                        ? Colors.white
-                        : Colors.grey.shade700,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    '${widget.count}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: _getTextColor(context),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // Icono de expandir/colapsar
-                Icon(
-                  _isExpanded
-                      ? Icons.keyboard_arrow_up
-                      : Icons.keyboard_arrow_down,
-                  size: 24,
-                  color: _getTextColor(context),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-        // Contenido colapsable
-        if (_isExpanded) ...[
-          ...widget.children,
-          const SizedBox(height: 8),
+          // Contenido colapsable
+          if (_isExpanded) ...[
+            ...widget.children,
+            const SizedBox(height: 8),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
@@ -194,106 +198,108 @@ class _ExpiredAlertsBannerState extends State<ExpiredAlertsBanner> {
       return const SizedBox.shrink();
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        InkWell(
-          onTap: () {
-            setState(() {
-              _isExpanded = !_isExpanded;
-            });
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppTheme.primaryLight,
-                  AppTheme.primaryDark,
+    return Consumer<FontSizeProvider>(
+      builder: (context, fontSizeProvider, _) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.primaryLight,
+                    AppTheme.primaryDark,
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color.fromARGB(255, 111, 102, 124).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
                 ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
               ),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color.fromARGB(255, 111, 102, 124).withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                // Icono de advertencia
-                const Icon(
-                  Icons.warning_rounded,
-                  size: 24,
-                  color: Colors.white,
-                ),
-                const SizedBox(width: 12),
-                // Texto
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Alertas Vencidas',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        '${widget.expiredAlerts.length} recordatorio${widget.expiredAlerts.length > 1 ? 's' : ''} pendiente${widget.expiredAlerts.length > 1 ? 's' : ''}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Badge con contador
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  // Icono de advertencia
+                  const Icon(
+                    Icons.warning_rounded,
+                    size: 24,
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(
-                    '${widget.expiredAlerts.length}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryLight,
+                  const SizedBox(width: 12),
+                  // Texto
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Alertas Vencidas',
+                          style: TextStyle(
+                            fontSize: fontSizeProvider.fontSize,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          '${widget.expiredAlerts.length} recordatorio${widget.expiredAlerts.length > 1 ? 's' : ''} pendiente${widget.expiredAlerts.length > 1 ? 's' : ''}',
+                          style: TextStyle(
+                            fontSize: fontSizeProvider.fontSize - 3,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                // Icono de expandir/colapsar
-                Icon(
-                  _isExpanded
-                      ? Icons.keyboard_arrow_up
-                      : Icons.keyboard_arrow_down,
-                  size: 28,
-                  color: Colors.white,
-                ),
-              ],
+                  // Badge con contador
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${widget.expiredAlerts.length}',
+                      style: TextStyle(
+                        fontSize: fontSizeProvider.fontSize - 1,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryLight,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Icono de expandir/colapsar
+                  Icon(
+                    _isExpanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    size: 28,
+                    color: Colors.white,
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        // Contenido colapsable
-        if (_isExpanded) ...[
-          ...widget.children,
-          const SizedBox(height: 8),
+          // Contenido colapsable
+          if (_isExpanded) ...[
+            ...widget.children,
+            const SizedBox(height: 8),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
