@@ -473,7 +473,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
                                   color: isCompleted
                                       ? AppTheme.primaryLight
                                       : (isEditing
-                                          ? const Color(0xFF3B82F6)
+                                          ? AppTheme.primaryLight
                                           : (Theme.of(context).brightness ==
                                                   Brightness.light
                                               ? Colors.black87
@@ -490,7 +490,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
                                   Icons.access_time,
                                   size: 14,
                                   color: isEditing
-                                      ? const Color(0xFF3B82F6)
+                                      ? AppTheme.primaryLight
                                       : Theme.of(context).brightness ==
                                               Brightness.light
                                           ? const Color(0xFF94A3B8)
@@ -502,7 +502,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: isEditing
-                                        ? const Color(0xFF3B82F6)
+                                        ? AppTheme.primaryLight
                                         : Theme.of(context).brightness ==
                                                 Brightness.light
                                             ? const Color(0xFF64748B)
@@ -1093,28 +1093,54 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
   }
 
   Future<void> _showDateTimePicker() async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // Si la fecha seleccionada es anterior a hoy, usar hoy como inicial
+    final initialDate = selectedDate.isBefore(today) ? now : selectedDate;
+
     final date = await showDatePicker(
       context: context,
-      initialDate: selectedDate,
-      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      initialDate: initialDate,
+      firstDate: today, // Desde hoy en adelante
       lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
     );
 
     if (date != null && mounted) {
+      // Verificar si la fecha seleccionada es hoy
+      final isToday = date.year == now.year &&
+          date.month == now.month &&
+          date.day == now.day;
+
       final time = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.fromDateTime(selectedDate),
       );
 
       if (time != null && mounted) {
-        setState(() {
-          selectedDate = DateTime(
-            date.year,
-            date.month,
-            date.day,
-            time.hour,
-            time.minute,
+        final selectedDateTime = DateTime(
+          date.year,
+          date.month,
+          date.day,
+          time.hour,
+          time.minute,
+        );
+
+        // Si es hoy y la hora seleccionada es anterior a la actual, mostrar error
+        if (isToday && selectedDateTime.isBefore(now)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content:
+                  const Text('No puedes seleccionar una hora pasada para hoy'),
+              backgroundColor: const Color(0xFFEF4444),
+              duration: const Duration(seconds: 2),
+            ),
           );
+          return;
+        }
+
+        setState(() {
+          selectedDate = selectedDateTime;
         });
       }
     }

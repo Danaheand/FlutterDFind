@@ -147,11 +147,11 @@ class RemoteUserRepository {
     if (nuevoCorreo != null) body['nuevoCorreo'] = nuevoCorreo;
     if (avatarTipo != null) {
       body['avatarTipo'] = avatarTipo;
-      print('🎨 Avatar Tipo a guardar: $avatarTipo');
+      print('Avatar Tipo a guardar: $avatarTipo');
     }
     if (avatarClave != null) {
       body['avatarClave'] = avatarClave;
-      print('🎨 Avatar Clave a guardar: $avatarClave');
+      print('Avatar Clave a guardar: $avatarClave');
     }
     if (modoOscuro != null) body['modoOscuro'] = modoOscuro;
     if (notificacionesSonido != null)
@@ -176,7 +176,7 @@ class RemoteUserRepository {
       // Si el servidor devuelve JSON, parsearlo. Si no (204), hacer GET para obtener el usuario actualizado
       if (response.body.isNotEmpty) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
-        print('🎨 Usuario actualizado desde response: $data');
+        print('Usuario actualizado desde response: $data');
         return User.fromJson(data);
       } else {
         // Status 204: obtener el usuario con el correo actualizado
@@ -186,7 +186,7 @@ class RemoteUserRepository {
         // Esperar un poco antes de hacer el GET para que el servidor procese el cambio
         await Future.delayed(const Duration(milliseconds: 500));
 
-        print('🎨 Obteniendo usuario actualizado con email: $emailActualizado');
+        print(' Obteniendo usuario actualizado con email: $emailActualizado');
         return getUserProfile(email: emailActualizado);
       }
     } else {
