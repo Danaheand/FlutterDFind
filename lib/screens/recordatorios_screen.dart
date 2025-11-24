@@ -1136,12 +1136,12 @@ class _AlertsScreenState extends State<AlertsScreen>
                   selectionMode ? Icons.close : Icons.check_box_outline_blank),
               tooltip: selectionMode ? 'Cancelar selección' : 'Seleccionar',
               onPressed: () {
-                print('🔴 Botón selección presionado');
-                print('🔴 Estado antes - selectionMode: $selectionMode');
+                print(' Botón selección presionado');
+                print(' Estado antes - selectionMode: $selectionMode');
                 setState(() {
                   selectionMode = !selectionMode;
                   if (!selectionMode) selectedAlerts.clear();
-                  print('🔴 Estado después - selectionMode: $selectionMode');
+                  print('Estado después - selectionMode: $selectionMode');
                 });
               },
             ),

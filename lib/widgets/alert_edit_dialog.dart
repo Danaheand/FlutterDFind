@@ -253,7 +253,7 @@ class AlertEditDialogState extends State<AlertEditDialog> {
                               : DateTime.now(),
                           firstDate: DateTime.now(),
                           lastDate: DateTime(2100),
-                          helpText: 'Selecciona la fecha de la alerta',
+                          helpText: 'Selecciona la Fecha del Recordatorio',
                           cancelText: 'Cancelar',
                           confirmText: 'Aceptar',
                         );
@@ -299,7 +299,7 @@ class AlertEditDialogState extends State<AlertEditDialog> {
                           initialTime: date != null
                               ? TimeOfDay.fromDateTime(date!)
                               : TimeOfDay.now(),
-                          helpText: 'Selecciona la hora de la alerta',
+                          helpText: 'Selecciona la hora del Recordatorio',
                           cancelText: 'Cancelar',
                           confirmText: 'Aceptar',
                         );

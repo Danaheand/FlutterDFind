@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'providers/font_size_provider.dart';
 import 'providers/recordatorio_provider.dart';
@@ -138,6 +139,17 @@ class MyApp extends StatelessWidget {
             darkTheme: AppTheme.darkTheme,
             themeMode:
                 themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            // Configuración de localización para español
+            locale: const Locale('es', 'ES'),
+            localizationsDelegates: [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('es', 'ES'), // Español
+              Locale('en', 'US'), // Inglés (fallback)
+            ],
             home: const AppLoginScreen(),
             routes: {
               '/main': (context) => const MainScaffold(),
