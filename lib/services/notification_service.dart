@@ -30,6 +30,9 @@ class NotificationService {
         requestAlertPermission: true,
         requestBadgePermission: true,
         requestSoundPermission: true,
+        defaultPresentAlert: true,
+        defaultPresentBadge: true,
+        defaultPresentSound: true,
       );
 
       const InitializationSettings settings = InitializationSettings(
@@ -86,16 +89,19 @@ class NotificationService {
         'alarm_channel_high',
         'Alarmas Importantes',
         channelDescription:
-            'Notificaciones de alarmas con sonido y vibración',
+            'Notificaciones de alarmas con sonido y vibración fuerte',
         importance: Importance.max,
         priority: Priority.max,
         playSound: true,
         enableVibration: true,
-        vibrationPattern: Int64List.fromList([0, 500, 250, 500, 250, 500]),
+        vibrationPattern: Int64List.fromList([0, 500, 250, 500, 250, 500, 250, 1000]),
         fullScreenIntent: true,
         category: AndroidNotificationCategory.alarm,
         autoCancel: false,
         timeoutAfter: 300000, // 5 minutos
+        setAsGroupSummary: false,
+        groupKey: 'alarm_notifications',
+        tag: 'ALARM',
       );
 
       const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
@@ -159,15 +165,17 @@ class NotificationService {
           'alarm_channel_high',
           'Alarmas Importantes',
           channelDescription:
-              'Notificaciones de alarmas con sonido y vibración',
+              'Notificaciones de alarmas con sonido y vibración fuerte',
           importance: Importance.max,
           priority: Priority.max,
           playSound: true,
           enableVibration: true,
-          vibrationPattern: Int64List.fromList([0, 500, 250, 500, 250, 500]),
+          vibrationPattern: Int64List.fromList([0, 500, 250, 500, 250, 500, 250, 1000]),
           fullScreenIntent: true,
           category: AndroidNotificationCategory.alarm,
           autoCancel: false,
+          groupKey: 'alarm_notifications',
+          tag: 'ALARM',
         );
 
         const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
@@ -250,13 +258,17 @@ class NotificationService {
     try {
       final now = DateTime.now().add(const Duration(seconds: 3));
 
-      const androidDetails = AndroidNotificationDetails(
+      final androidDetails = AndroidNotificationDetails(
         'test_channel',
         'Prueba',
         channelDescription: 'Notificación de prueba',
         importance: Importance.max,
         priority: Priority.max,
         enableVibration: true,
+        vibrationPattern: Int64List.fromList([0, 500, 250, 500]),
+        playSound: true,
+        fullScreenIntent: true,
+        category: AndroidNotificationCategory.alarm,
       );
 
       const iosDetails = DarwinNotificationDetails(
@@ -265,7 +277,7 @@ class NotificationService {
         presentSound: true,
       );
 
-      const notificationDetails = NotificationDetails(
+      final notificationDetails = NotificationDetails(
         android: androidDetails,
         iOS: iosDetails,
       );
