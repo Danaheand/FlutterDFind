@@ -60,7 +60,8 @@ class _ForgotPasswordRequestScreenState
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
-                    color: backgroundColor ?? const Color.fromARGB(255, 98, 77, 129),
+                    color: backgroundColor ??
+                        const Color.fromARGB(255, 98, 77, 129),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.15),
@@ -359,7 +360,7 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
 
   String? _validatePassword(String? v) {
     if (v == null || v.isEmpty) return 'Ingrese una contraseña';
-    if (v.length < 8) return 'Mínimo 8 caracteres';
+    if (v.length < 8) return '';
     if (!_hasLower(v)) return 'Debe incluir minúscula';
     if (!_hasUpper(v)) return 'Debe incluir mayúscula';
     if (!_hasDigit(v)) return 'Debe incluir un número';
@@ -736,7 +737,8 @@ class _ForgotPasswordCodeScreenState extends State<ForgotPasswordCodeScreen> {
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _submit,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(255, 141, 111, 184),
+                          backgroundColor:
+                              const Color.fromARGB(255, 141, 111, 184),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(18),
