@@ -121,271 +121,269 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   void _showTrashDialog() {
-    // Obtener elementos de papelera del servicio
-    final trashItems = _trashService.getTrashItems();
-
     showDialog(
       context: context,
-      builder: (context) => Consumer<FontSizeProvider>(
-        builder: (context, fontSizeProvider, _) => AlertDialog(
-          title: Text('Papelera de Reciclaje',
-              style: TextStyle(
-                  fontSize: fontSizeProvider.getScaledSize(20),
-                  fontWeight: FontWeight.bold)),
-          content: SizedBox(
-            width: double.maxFinite,
-            height: 400,
-            child: trashItems.isEmpty
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.delete_outline,
-                          size: 64, color: AppTheme.primaryLight),
-                      const SizedBox(height: 12),
-                      Text('No hay elementos eliminados',
-                          style: TextStyle(
-                              fontSize: fontSizeProvider.getScaledSize(14),
-                              color: AppTheme.getTextSecondary(context))),
-                    ],
-                  )
-                : SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Mostrar todos los items de la papelera
-                        ...trashItems.map((item) {
-                          // Determinar ícono según tipo
-                          final icon = item.originalType == 'alert'
-                              ? Icons.notifications
-                              : Icons.shopping_cart;
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => Consumer<FontSizeProvider>(
+          builder: (context, fontSizeProvider, _) {
+            // Obtener elementos de papelera del servicio DENTRO del builder
+            final trashItems = _trashService.getTrashItems();
 
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              gradient: LinearGradient(
-                                colors: Theme.of(context).brightness ==
-                                        Brightness.light
-                                    ? [
-                                        Colors.white,
-                                        Colors.grey[50]!,
-                                      ]
-                                    : [
-                                        AppTheme.cardDark,
-                                        AppTheme.cardDark.withOpacity(0.8),
-                                      ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.08),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: ListTile(
-                              leading: Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  color: AppTheme.primaryLight.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(icon, color: AppTheme.primaryLight),
-                              ),
-                              title: Text(item.name,
-                                  style: TextStyle(
-                                      fontSize:
-                                          fontSizeProvider.getScaledSize(16),
-                                      fontWeight: FontWeight.w600,
-                                      color: Theme.of(context).brightness ==
-                                              Brightness.light
-                                          ? Colors.black87
-                                          : Colors.white)),
-                              subtitle: Text(
-                                '${item.placeName} • ${item.deletedAt.day}/${item.deletedAt.month}/${item.deletedAt.year}',
-                                style: TextStyle(
-                                    fontSize:
-                                        fontSizeProvider.getScaledSize(12),
-                                    color: AppTheme.getTextSecondary(context)),
-                              ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: Icon(Icons.restore,
-                                        color: AppTheme.primaryLight),
-                                    tooltip: 'Restaurar',
-                                    splashRadius: 24,
-                                    onPressed: () async {
-                                      try {
-                                        await _trashService
-                                            .restoreItem(item.id);
-
-                                        // Si es un recordatorio, restaurarlo al proveedor
-                                        if (item.originalType == 'alert') {
-                                          try {
-                                            final alertData = _trashService
-                                                .trashItemToAlertData(item);
-                                            final provider = context
-                                                .read<RecordatorioProvider>();
-
-                                            // Obtener el idUsuario actual
-                                            final userId =
-                                                SessionManager.instance.userId;
-                                            if (userId != null) {
-                                              // Crear un Recordatorio a partir de AlertData
-                                              final recordatorio = Recordatorio(
-                                                idUsuario: userId,
-                                                titulo: alertData.title,
-                                                descripcion:
-                                                    alertData.description,
-                                                fechaHora: alertData.date,
-                                                prioridad:
-                                                    alertData.priority.name,
-                                                ubicacion: alertData.location,
-                                                objeto: alertData.object,
-                                                esRepetitivo:
-                                                    alertData.repetitive,
-                                                frecuenciaRepeticion:
-                                                    alertData.repeatFrequency,
-                                                activo: alertData.active,
-                                                rutaImagen: alertData.imagePath,
-                                              );
-
-                                              // Crear el recordatorio en el servidor
-                                              await provider.crearRecordatorio(
-                                                recordatorio,
-                                                autoReload: true,
-                                              );
-                                            }
-                                          } catch (e) {
-                                            print(
-                                                'Error restaurando recordatorio: $e');
-                                          }
-                                        }
-
-                                        // Si es un item de compra, restaurar al InventoryScreen
-                                        if (item.originalType ==
-                                            'shopping_item') {
-                                          if (InventoryScreen
-                                                  .addFromAlertGlobal !=
-                                              null) {
-                                            InventoryScreen
-                                                .addFromAlertGlobal!(item.name);
-                                          }
-                                        }
-
-                                        // ScaffoldMessenger.of(context)
-                                        //     .showSnackBar(
-                                        //   SnackBar(
-                                        //       content: Text(
-                                        //           '✨ ${item.name} restaurado')),
-                                        // );
-                                        Navigator.pop(context);
-                                        // _showTrashDialog();
-                                        _showCuteMessage(
-                                          'Recordatorio restaurado',
-                                          Icons.restore_rounded,
-                                        );
-                                      } catch (e) {
-                                        _showCuteMessage(
-                                          'Error al restaurar',
-                                          Icons.error_rounded,
-                                          backgroundColor: Colors.red.shade600,
-                                        );
-                                      }
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_forever,
-                                        color: Colors.red),
-                                    tooltip: 'Eliminar permanentemente',
-                                    splashRadius: 24,
-                                    onPressed: () async {
-                                      await _trashService
-                                          .deleteItemPermanently(item.id);
-                                      Navigator.pop(context);
-                                      _showTrashDialog();
-                                      _showCuteMessage(
-                                        'Recordatorio eliminado',
-                                        Icons.delete_rounded,
-                                        backgroundColor: Colors.red.shade600,
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-          ),
-          actions: [
-            if (trashItems.isNotEmpty)
-              CustomTextButton(
-                onPressed: () async {
-                  final confirmed = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => Consumer<FontSizeProvider>(
-                      builder: (context, fontSizeProvider, _) => AlertDialog(
-                        title: Text('Vaciar Papelera',
-                            style: TextStyle(
-                                fontSize: fontSizeProvider.getScaledSize(18),
-                                fontWeight: FontWeight.bold)),
-                        content: Text(
-                            '¿Eliminar todos los elementos permanentemente?',
-                            style: TextStyle(
-                                fontSize: fontSizeProvider.getScaledSize(14))),
-                        actions: [
-                          CustomTextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Cancelar'),
-                          ),
-                          CustomTextButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            child: const Text('Eliminar Todo',
-                                style: TextStyle(color: Colors.red)),
-                          ),
+            return AlertDialog(
+              title: Text('Papelera de Reciclaje',
+                  style: TextStyle(
+                      fontSize: fontSizeProvider.getScaledSize(20),
+                      fontWeight: FontWeight.bold)),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 400,
+                child: trashItems.isEmpty
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.delete_outline,
+                              size: 64, color: AppTheme.primaryLight),
+                          const SizedBox(height: 12),
+                          Text('No hay elementos eliminados',
+                              style: TextStyle(
+                                  fontSize: fontSizeProvider.getScaledSize(14),
+                                  color: AppTheme.getTextSecondary(context))),
                         ],
+                      )
+                    : SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Mostrar todos los items de la papelera
+                            ...trashItems.map((item) {
+                              // Determinar ícono según tipo
+                              final icon = item.originalType == 'alert'
+                                  ? Icons.notifications
+                                  : Icons.shopping_cart;
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  gradient: LinearGradient(
+                                    colors: Theme.of(context).brightness ==
+                                            Brightness.light
+                                        ? [
+                                            Colors.white,
+                                            Colors.grey[50]!,
+                                          ]
+                                        : [
+                                            AppTheme.cardDark,
+                                            AppTheme.cardDark.withOpacity(0.8),
+                                          ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.08),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: ListTile(
+                                  leading: Container(
+                                    width: 44,
+                                    height: 44,
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.primaryLight.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(icon, color: AppTheme.primaryLight),
+                                  ),
+                                  title: Text(item.name,
+                                      style: TextStyle(
+                                          fontSize:
+                                              fontSizeProvider.getScaledSize(16),
+                                          fontWeight: FontWeight.w600,
+                                          color: Theme.of(context).brightness ==
+                                                  Brightness.light
+                                              ? Colors.black87
+                                              : Colors.white)),
+                                  subtitle: Text(
+                                    '${item.placeName} • ${item.deletedAt.day}/${item.deletedAt.month}/${item.deletedAt.year}',
+                                    style: TextStyle(
+                                        fontSize:
+                                            fontSizeProvider.getScaledSize(12),
+                                        color: AppTheme.getTextSecondary(context)),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(Icons.restore,
+                                            color: AppTheme.primaryLight),
+                                        tooltip: 'Restaurar',
+                                        splashRadius: 24,
+                                        onPressed: () async {
+                                          try {
+                                            await _trashService
+                                                .restoreItem(item.id);
+
+                                            // Si es un recordatorio, restaurarlo al proveedor
+                                            if (item.originalType == 'alert') {
+                                              try {
+                                                final alertData = _trashService
+                                                    .trashItemToAlertData(item);
+                                                final provider = context
+                                                    .read<RecordatorioProvider>();
+
+                                                // Obtener el idUsuario actual
+                                                final userId =
+                                                    SessionManager.instance.userId;
+                                                if (userId != null) {
+                                                  // Crear un Recordatorio a partir de AlertData
+                                                  final recordatorio = Recordatorio(
+                                                    idUsuario: userId,
+                                                    titulo: alertData.title,
+                                                    descripcion:
+                                                        alertData.description,
+                                                    fechaHora: alertData.date,
+                                                    prioridad:
+                                                        alertData.priority.name,
+                                                    ubicacion: alertData.location,
+                                                    objeto: alertData.object,
+                                                    esRepetitivo:
+                                                        alertData.repetitive,
+                                                    frecuenciaRepeticion:
+                                                        alertData.repeatFrequency,
+                                                    activo: alertData.active,
+                                                    rutaImagen: alertData.imagePath,
+                                                  );
+
+                                                  // Crear el recordatorio en el servidor
+                                                  await provider.crearRecordatorio(
+                                                    recordatorio,
+                                                    autoReload: true,
+                                                  );
+                                                }
+                                              } catch (e) {
+                                                print(
+                                                    'Error restaurando recordatorio: $e');
+                                              }
+                                            }
+
+                                            // Si es un item de compra, restaurar al InventoryScreen
+                                            if (item.originalType ==
+                                                'shopping_item') {
+                                              if (InventoryScreen
+                                                      .addFromAlertGlobal !=
+                                                  null) {
+                                                InventoryScreen
+                                                    .addFromAlertGlobal!(item.name);
+                                              }
+                                            }
+
+                                            // Actualizar el diálogo
+                                            setState(() {});
+                                            _showCuteMessage(
+                                              'Recordatorio restaurado',
+                                              Icons.restore_rounded,
+                                            );
+                                          } catch (e) {
+                                            _showCuteMessage(
+                                              'Error al restaurar',
+                                              Icons.error_rounded,
+                                              backgroundColor: Colors.red.shade600,
+                                            );
+                                          }
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete_forever,
+                                            color: Colors.red),
+                                        tooltip: 'Eliminar permanentemente',
+                                        splashRadius: 24,
+                                        onPressed: () async {
+                                          await _trashService
+                                              .deleteItemPermanently(item.id);
+                                          // Actualizar el diálogo inmediatamente
+                                          setState(() {});
+                                          _showCuteMessage(
+                                            'Recordatorio eliminado',
+                                            Icons.delete_rounded,
+                                            backgroundColor: Colors.red.shade600,
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-
-                  if (confirmed != true) return;
-
-                  try {
-                    await _trashService.emptyTrash();
-                    if (mounted) {
-                      Navigator.pop(context);
-                      _showCuteMessage(
-                        'Papelera vaciada',
-                        Icons.delete_sweep_rounded,
-                      );
-                    }
-                  } catch (e) {
-                    if (mounted) {
-                      _showCuteMessage(
-                        'Error al vaciar papelera',
-                        Icons.error_rounded,
-                        backgroundColor: Colors.red.shade600,
-                      );
-                    }
-                  }
-                },
-                child: Text('Vaciar Papelera',
-                    style: TextStyle(
-                        fontSize: fontSizeProvider.getScaledSize(14))),
               ),
-            CustomTextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cerrar'),
-            ),
-          ],
+              actions: [
+                if (trashItems.isNotEmpty)
+                  CustomTextButton(
+                    onPressed: () async {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => Consumer<FontSizeProvider>(
+                          builder: (context, fontSizeProvider, _) => AlertDialog(
+                            title: Text('Vaciar Papelera',
+                                style: TextStyle(
+                                    fontSize: fontSizeProvider.getScaledSize(18),
+                                    fontWeight: FontWeight.bold)),
+                            content: Text(
+                                '¿Eliminar todos los elementos permanentemente?',
+                                style: TextStyle(
+                                    fontSize: fontSizeProvider.getScaledSize(14))),
+                            actions: [
+                              CustomTextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Cancelar'),
+                              ),
+                              CustomTextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text('Eliminar Todo',
+                                    style: TextStyle(color: Colors.red)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+
+                      if (confirmed != true) return;
+
+                      try {
+                        await _trashService.emptyTrash();
+                        if (mounted) {
+                          Navigator.pop(context);
+                          _showCuteMessage(
+                            'Papelera vaciada',
+                            Icons.delete_sweep_rounded,
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          _showCuteMessage(
+                            'Error al vaciar papelera',
+                            Icons.error_rounded,
+                            backgroundColor: Colors.red.shade600,
+                          );
+                        }
+                      }
+                    },
+                    child: Text('Vaciar Papelera',
+                        style: TextStyle(
+                            fontSize: fontSizeProvider.getScaledSize(14))),
+                  ),
+                CustomTextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cerrar'),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
