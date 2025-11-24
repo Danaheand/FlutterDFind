@@ -25,8 +25,8 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen>
     with TickerProviderStateMixin {
   bool _showLogoutDialog = false;
-  bool _notifSound = true;
-  bool _notifVibration = true;
+  // bool _notifSound = true;
+  // bool _notifVibration = true;
   bool _showTips = true;
   String _userName = '';
   String _userEmail = '';
@@ -458,36 +458,36 @@ class _ProfileScreenState extends State<ProfileScreen>
                             ),
                           ),
                           const Divider(),
-                          // VIBRACIÓN
-                          ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            leading: const Icon(Icons.vibration),
-                            title: Text('Vibración',
-                                style: TextStyle(
-                                    fontSize: fontSizeProvider.fontSize)),
-                            trailing: Switch(
-                              value: _notifVibration,
-                              onChanged: (v) {
-                                setState(() => _notifVibration = v);
-                              },
-                            ),
-                          ),
-                          const Divider(),
-                          // SONIDO
-                          ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            leading: const Icon(Icons.volume_up_outlined),
-                            title: Text('Sonido',
-                                style: TextStyle(
-                                    fontSize: fontSizeProvider.fontSize)),
-                            trailing: Switch(
-                              value: _notifSound,
-                              onChanged: (v) {
-                                setState(() => _notifSound = v);
-                              },
-                            ),
-                          ),
-                          const Divider(),
+                          // // VIBRACIÓN
+                          // ListTile(
+                          //   contentPadding: EdgeInsets.zero,
+                          //   leading: const Icon(Icons.vibration),
+                          //   title: Text('Vibración',
+                          //       style: TextStyle(
+                          //           fontSize: fontSizeProvider.fontSize)),
+                          //   trailing: Switch(
+                          //     value: _notifVibration,
+                          //     onChanged: (v) {
+                          //       setState(() => _notifVibration = v);
+                          //     },
+                          //   ),
+                          // ),
+                          // const Divider(),
+                          // // SONIDO
+                          // ListTile(
+                          //   contentPadding: EdgeInsets.zero,
+                          //   leading: const Icon(Icons.volume_up_outlined),
+                          //   title: Text('Sonido',
+                          //       style: TextStyle(
+                          //           fontSize: fontSizeProvider.fontSize)),
+                          //   trailing: Switch(
+                          //     value: _notifSound,
+                          //     onChanged: (v) {
+                          //       setState(() => _notifSound = v);
+                          //     },
+                          //   ),
+                          // ),
+                          // const Divider(),
                           // TIPS - sin subtitle
                           ListTile(
                             contentPadding: EdgeInsets.zero,
@@ -1279,8 +1279,8 @@ class _ProfileScreenState extends State<ProfileScreen>
           _userEmail = user.email;
 
           // Cargar configuraciones de notificaciones
-          _notifSound = user.notificacionesSonido;
-          _notifVibration = user.notificacionesVibracion;
+          // _notifSound = user.notificacionesSonido;
+          // _notifVibration = user.notificacionesVibracion;
           _showTips = true; // Por defecto mostramos los tips
 
           // 👇 NUEVO: cargar avatar desde el usuario
@@ -1358,9 +1358,9 @@ class _ProfileScreenState extends State<ProfileScreen>
       );
 
       // Verificar si algo cambió
-      final configChanged = _currentUser!.notificacionesSonido != _notifSound ||
-          _currentUser!.notificacionesVibracion != _notifVibration ||
-          _currentUser!.modoOscuro != modoOscuro ||
+      final configChanged = _currentUser!.modoOscuro != modoOscuro ||
+          // _currentUser!.notificacionesSonido != _notifSound ||
+          // _currentUser!.notificacionesVibracion != _notifVibration ||
           _currentUser!.tamanoFuente != tamanoFuente;
 
       if (!configChanged) {
@@ -1373,8 +1373,10 @@ class _ProfileScreenState extends State<ProfileScreen>
           await RemoteUserRepository.instance.updateProfileByEmail(
         correoActual: _currentUser!.email,
         modoOscuro: modoOscuro,
-        notificacionesSonido: _notifSound,
-        notificacionesVibracion: _notifVibration,
+        // notificacionesSonido: _notifSound,
+        // notificacionesVibracion: _notifVibration,
+        notificacionesSonido: false,
+        notificacionesVibracion: false,
         tamanoFuente: tamanoFuente,
       );
 
