@@ -127,13 +127,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
 
       if (mounted) {
         Navigator.pop(context); // Cerrar loading
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Cambios guardados exitosamente'),
-            backgroundColor: AppTheme.primaryLight,
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        _showCustomNotification('Cambios guardados exitosamente', Icons.check_circle);
 
         // Actualizar los datos locales
         setState(() {
