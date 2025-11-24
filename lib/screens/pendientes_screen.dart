@@ -492,7 +492,7 @@ class _InventoryScreenState extends State<InventoryScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pendiente'),
+        title: const Text('Pendientes'),
         automaticallyImplyLeading: false,
         actions: [
           // Botón de selección

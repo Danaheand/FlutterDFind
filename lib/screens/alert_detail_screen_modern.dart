@@ -127,7 +127,8 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
 
       if (mounted) {
         Navigator.pop(context); // Cerrar loading
-        _showCustomNotification('Cambios guardados exitosamente', Icons.check_circle);
+        _showCustomNotification(
+            'Cambios guardados exitosamente', Icons.check_circle);
 
         // Actualizar los datos locales
         setState(() {
@@ -176,15 +177,60 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
     }
   }
 
-  void _toggleComplete() {
-    setState(() {
-      isCompleted = !isCompleted;
-    });
+  Future<void> _toggleComplete() async {
+    final userEmail = SessionManager.instance.userEmail;
+    if (userEmail == null) return;
 
-    if (isCompleted) {
-      _showCustomNotification('Completado', Icons.check_circle);
-    } else {
-      _showCustomNotification('Recordatorio activado', Icons.restore);
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      final provider = context.read<RecordatorioProvider>();
+      await provider.toggleActivoRecordatorio(data.title);
+
+      if (mounted) {
+        Navigator.pop(context); // Cerrar loading
+
+        setState(() {
+          data = AlertData(
+            id: data.id,
+            title: data.title,
+            description: data.description,
+            date: data.date,
+            priority: data.priority,
+            location: data.location,
+            object: data.object,
+            repetitive: data.repetitive,
+            repeatFrequency: data.repeatFrequency,
+            active: !data.active,
+            completed: data.active,
+            color: data.color,
+            imagePath: data.imagePath,
+            selectedWeekdays: data.selectedWeekdays,
+            createdAt: data.createdAt,
+            updatedAt: data.updatedAt,
+          );
+          isCompleted = !data.active;
+        });
+
+        _showCustomNotification(
+          data.active ? 'Recordatorio activado' : 'Recordatorio completado',
+          data.active ? Icons.play_circle_rounded : Icons.pause_circle_rounded,
+        );
+      }
+    } on RecordatorioException catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Cerrar loading en caso de error
+        _showCustomNotification(
+          'Error: ${e.message}',
+          Icons.error_rounded,
+        );
+      }
     }
   }
 
@@ -662,7 +708,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
                           Text(
                             isEditing
                                 ? 'Guardar'
-                                : (isCompleted ? 'Completado' : 'Completar'),
+                                : (isCompleted ? 'Desactivar' : 'Completar'),
                             style: TextStyle(
                               color: AppTheme.successLight,
                               fontSize: 16,

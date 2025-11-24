@@ -613,7 +613,7 @@ class _AlertsScreenState extends State<AlertsScreen>
 
       if (mounted) {
         _showCuteMessage(
-          alert.active ? 'Recordatorio pausado' : 'Recordatorio activado',
+          alert.active ? 'Recordatorio completado' : 'Recordatorio activado',
           alert.active ? Icons.pause_circle_rounded : Icons.play_circle_rounded,
           backgroundColor:
               alert.active ? Colors.orange.shade600 : AppTheme.primaryLight,
