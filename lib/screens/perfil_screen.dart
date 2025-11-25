@@ -12,6 +12,8 @@ import '../widgets/custom_text_button.dart';
 import '../theme/app_theme.dart';
 import 'pendientes_screen.dart';
 import '../repository/remote_user_repository.dart';
+import '../services/api_service.dart';
+import 'verify_email_screen.dart';
 
 enum AvatarMode { preset, initial }
 
@@ -165,8 +167,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   const SizedBox(height: 12),
                                   Text('No hay elementos eliminados',
                                       style: TextStyle(
-                                          fontSize: fontSizeProvider.getScaledSize(14),
-                                          color: AppTheme.getTextSecondary(context))),
+                                          fontSize: fontSizeProvider
+                                              .getScaledSize(14),
+                                          color: AppTheme.getTextSecondary(
+                                              context))),
                                 ],
                               )
                             : SingleChildScrollView(
@@ -182,20 +186,24 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           : Icons.shopping_cart;
 
                                       return Container(
-                                        margin: const EdgeInsets.only(bottom: 12),
+                                        margin:
+                                            const EdgeInsets.only(bottom: 12),
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                           gradient: LinearGradient(
-                                            colors: Theme.of(context).brightness ==
-                                                    Brightness.light
-                                                ? [
-                                                    Colors.white,
-                                                    Colors.grey[50]!,
-                                                  ]
-                                                : [
-                                                    AppTheme.cardDark,
-                                                    AppTheme.cardDark.withOpacity(0.8),
-                                                  ],
+                                            colors:
+                                                Theme.of(context).brightness ==
+                                                        Brightness.light
+                                                    ? [
+                                                        Colors.white,
+                                                        Colors.grey[50]!,
+                                                      ]
+                                                    : [
+                                                        AppTheme.cardDark,
+                                                        AppTheme.cardDark
+                                                            .withOpacity(0.8),
+                                                      ],
                                             begin: Alignment.topLeft,
                                             end: Alignment.bottomRight,
                                           ),
@@ -205,7 +213,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           ),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.black.withOpacity(0.08),
+                                              color: Colors.black
+                                                  .withOpacity(0.08),
                                               blurRadius: 8,
                                               offset: const Offset(0, 2),
                                             ),
@@ -216,33 +225,40 @@ class _ProfileScreenState extends State<ProfileScreen>
                                             width: 44,
                                             height: 44,
                                             decoration: BoxDecoration(
-                                              color: AppTheme.primaryLight.withOpacity(0.2),
-                                              borderRadius: BorderRadius.circular(8),
+                                              color: AppTheme.primaryLight
+                                                  .withOpacity(0.2),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
                                             ),
-                                            child: Icon(icon, color: AppTheme.primaryLight),
+                                            child: Icon(icon,
+                                                color: AppTheme.primaryLight),
                                           ),
                                           title: Text(item.name,
                                               style: TextStyle(
-                                                  fontSize:
-                                                      fontSizeProvider.getScaledSize(16),
+                                                  fontSize: fontSizeProvider
+                                                      .getScaledSize(16),
                                                   fontWeight: FontWeight.w600,
-                                                  color: Theme.of(context).brightness ==
+                                                  color: Theme.of(context)
+                                                              .brightness ==
                                                           Brightness.light
                                                       ? Colors.black87
                                                       : Colors.white)),
                                           subtitle: Text(
                                             '${item.placeName} • ${item.deletedAt.day}/${item.deletedAt.month}/${item.deletedAt.year}',
                                             style: TextStyle(
-                                                fontSize:
-                                                    fontSizeProvider.getScaledSize(12),
-                                                color: AppTheme.getTextSecondary(context)),
+                                                fontSize: fontSizeProvider
+                                                    .getScaledSize(12),
+                                                color:
+                                                    AppTheme.getTextSecondary(
+                                                        context)),
                                           ),
                                           trailing: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               IconButton(
                                                 icon: Icon(Icons.restore,
-                                                    color: AppTheme.primaryLight),
+                                                    color:
+                                                        AppTheme.primaryLight),
                                                 tooltip: 'Restaurar',
                                                 splashRadius: 24,
                                                 onPressed: () async {
@@ -251,38 +267,56 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                         .restoreItem(item.id);
 
                                                     // Si es un recordatorio, restaurarlo al proveedor
-                                                    if (item.originalType == 'alert') {
+                                                    if (item.originalType ==
+                                                        'alert') {
                                                       try {
-                                                        final alertData = _trashService
-                                                            .trashItemToAlertData(item);
-                                                        final provider = context
-                                                            .read<RecordatorioProvider>();
+                                                        final alertData =
+                                                            _trashService
+                                                                .trashItemToAlertData(
+                                                                    item);
+                                                        final provider =
+                                                            context.read<
+                                                                RecordatorioProvider>();
 
                                                         // Obtener el idUsuario actual
                                                         final userId =
-                                                            SessionManager.instance.userId;
+                                                            SessionManager
+                                                                .instance
+                                                                .userId;
                                                         if (userId != null) {
                                                           // Crear un Recordatorio a partir de AlertData
-                                                          final recordatorio = Recordatorio(
+                                                          final recordatorio =
+                                                              Recordatorio(
                                                             idUsuario: userId,
-                                                            titulo: alertData.title,
+                                                            titulo:
+                                                                alertData.title,
                                                             descripcion:
-                                                                alertData.description,
-                                                            fechaHora: alertData.date,
-                                                            prioridad:
-                                                                alertData.priority.name,
-                                                            ubicacion: alertData.location,
-                                                            objeto: alertData.object,
+                                                                alertData
+                                                                    .description,
+                                                            fechaHora:
+                                                                alertData.date,
+                                                            prioridad: alertData
+                                                                .priority.name,
+                                                            ubicacion: alertData
+                                                                .location,
+                                                            objeto: alertData
+                                                                .object,
                                                             esRepetitivo:
-                                                                alertData.repetitive,
+                                                                alertData
+                                                                    .repetitive,
                                                             frecuenciaRepeticion:
-                                                                alertData.repeatFrequency,
-                                                            activo: alertData.active,
-                                                            rutaImagen: alertData.imagePath,
+                                                                alertData
+                                                                    .repeatFrequency,
+                                                            activo: alertData
+                                                                .active,
+                                                            rutaImagen:
+                                                                alertData
+                                                                    .imagePath,
                                                           );
 
                                                           // Crear el recordatorio en el servidor
-                                                          await provider.crearRecordatorio(
+                                                          await provider
+                                                              .crearRecordatorio(
                                                             recordatorio,
                                                             autoReload: true,
                                                           );
@@ -300,7 +334,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                               .addFromAlertGlobal !=
                                                           null) {
                                                         InventoryScreen
-                                                            .addFromAlertGlobal!(item.name);
+                                                                .addFromAlertGlobal!(
+                                                            item.name);
                                                       }
                                                     }
 
@@ -314,25 +349,30 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                     _showCuteMessage(
                                                       'Error al restaurar',
                                                       Icons.error_rounded,
-                                                      backgroundColor: Colors.red.shade600,
+                                                      backgroundColor:
+                                                          Colors.red.shade600,
                                                     );
                                                   }
                                                 },
                                               ),
                                               IconButton(
-                                                icon: const Icon(Icons.delete_forever,
+                                                icon: const Icon(
+                                                    Icons.delete_forever,
                                                     color: Colors.red),
-                                                tooltip: 'Eliminar permanentemente',
+                                                tooltip:
+                                                    'Eliminar permanentemente',
                                                 splashRadius: 24,
                                                 onPressed: () async {
                                                   await _trashService
-                                                      .deleteItemPermanently(item.id);
+                                                      .deleteItemPermanently(
+                                                          item.id);
                                                   // Actualizar el diálogo inmediatamente
                                                   setState(() {});
                                                   _showCuteMessage(
                                                     'Recordatorio eliminado',
                                                     Icons.delete_rounded,
-                                                    backgroundColor: Colors.red.shade600,
+                                                    backgroundColor:
+                                                        Colors.red.shade600,
                                                   );
                                                 },
                                               ),
@@ -358,25 +398,32 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 onPressed: () async {
                                   final confirmed = await showDialog<bool>(
                                     context: context,
-                                    builder: (context) => Consumer<FontSizeProvider>(
-                                      builder: (context, fontSizeProvider, _) => AlertDialog(
+                                    builder: (context) =>
+                                        Consumer<FontSizeProvider>(
+                                      builder: (context, fontSizeProvider, _) =>
+                                          AlertDialog(
                                         title: Text('Vaciar Papelera',
                                             style: TextStyle(
-                                                fontSize: fontSizeProvider.getScaledSize(18),
+                                                fontSize: fontSizeProvider
+                                                    .getScaledSize(18),
                                                 fontWeight: FontWeight.bold)),
                                         content: Text(
                                             '¿Eliminar todos los elementos permanentemente?',
                                             style: TextStyle(
-                                                fontSize: fontSizeProvider.getScaledSize(14))),
+                                                fontSize: fontSizeProvider
+                                                    .getScaledSize(14))),
                                         actions: [
                                           CustomTextButton(
-                                            onPressed: () => Navigator.pop(context, false),
+                                            onPressed: () =>
+                                                Navigator.pop(context, false),
                                             child: const Text('Cancelar'),
                                           ),
                                           CustomTextButton(
-                                            onPressed: () => Navigator.pop(context, true),
+                                            onPressed: () =>
+                                                Navigator.pop(context, true),
                                             child: const Text('Eliminar Todo',
-                                                style: TextStyle(color: Colors.red)),
+                                                style: TextStyle(
+                                                    color: Colors.red)),
                                           ),
                                         ],
                                       ),
@@ -407,7 +454,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 icon: const Icon(Icons.delete_sweep),
                                 label: Text('Vaciar Papelera',
                                     style: TextStyle(
-                                        fontSize: fontSizeProvider.getScaledSize(14))),
+                                        fontSize: fontSizeProvider
+                                            .getScaledSize(14))),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.red.shade600,
                                   foregroundColor: Colors.white,
@@ -420,7 +468,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                               onPressed: () => Navigator.pop(context),
                               child: Text('Cerrar',
                                   style: TextStyle(
-                                      fontSize: fontSizeProvider.getScaledSize(14))),
+                                      fontSize:
+                                          fontSizeProvider.getScaledSize(14))),
                             ),
                           ),
                         ],
@@ -546,7 +595,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 print('💡 Switch Tips cambiado a: $v');
                                 setState(() => _showTips = v);
                                 // Actualizar el provider inmediatamente
-                                final tipsProvider = Provider.of<TipsProvider>(context, listen: false);
+                                final tipsProvider = Provider.of<TipsProvider>(
+                                    context,
+                                    listen: false);
                                 tipsProvider.setShowTips(v);
                                 print('💡 TipsProvider actualizado a: $v');
                               },
@@ -605,7 +656,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
                                       color: fontSizeProvider.fontSize == 16.0
-                                          ? AppTheme.primaryLight.withOpacity(0.3)
+                                          ? AppTheme.primaryLight
+                                              .withOpacity(0.3)
                                           : Colors.grey[300]!,
                                     ),
                                   ),
@@ -655,9 +707,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                         Expanded(
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: theme.brightness == Brightness.light
-                                  ? AppTheme.primaryLight
-                                  : AppTheme.primaryDark,
+                              backgroundColor:
+                                  theme.brightness == Brightness.light
+                                      ? AppTheme.primaryLight
+                                      : AppTheme.primaryDark,
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -1055,8 +1108,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                               if (_currentUser == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                      content: Text(
-                                          'No se pudo obtener la información del usuario.')),
+                                    content: Text(
+                                        'No se pudo obtener la información del usuario.'),
+                                  ),
                                 );
                                 return;
                               }
@@ -1064,8 +1118,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                               if (newName.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                      content: Text(
-                                          'El nombre no puede estar vacío.')),
+                                    content:
+                                        Text('El nombre no puede estar vacío.'),
+                                  ),
                                 );
                                 return;
                               }
@@ -1073,19 +1128,17 @@ class _ProfileScreenState extends State<ProfileScreen>
                               if (newEmail.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                      content: Text(
-                                          'El correo no puede estar vacío.')),
+                                    content:
+                                        Text('El correo no puede estar vacío.'),
+                                  ),
                                 );
                                 return;
                               }
-
-                              // Si nada cambió, no hacer nada
                               final nameChanged =
                                   newName != _currentUser!.nombreUsuario;
                               final emailChanged =
                                   newEmail != _currentUser!.email;
 
-                              // Detectar si el avatar cambió
                               final currentAvatarTipo =
                                   (_currentUser!.avatarTipo == 'preset')
                                       ? AvatarMode.preset
@@ -1112,9 +1165,67 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 Navigator.pop(context);
                                 return;
                               }
+                              if (emailChanged) {
+                                try {
+                                  final sendResult =
+                                      await ApiService.enviarCodigoVerificacion(
+                                          correo: newEmail);
+
+                                  if (!mounted) return;
+
+                                  if (sendResult['success'] == true) {
+                                    _showCuteMessage(
+                                      'Te enviamos un código a $newEmail',
+                                      Icons.check_circle_rounded,
+                                      backgroundColor: const Color(0xFF6A4C93),
+                                    );
+                                  } else {
+                                    final msg = (sendResult['error'] ??
+                                            sendResult['message'] ??
+                                            'No se pudo enviar el código de verificación.')
+                                        .toString();
+                                    _showCuteMessage(
+                                      msg,
+                                      Icons.warning_rounded,
+                                      backgroundColor: const Color(0xFF6A4C93),
+                                    );
+                                    return;
+                                  }
+
+                                  final verified = await showDialog<bool>(
+                                    context: context,
+                                    barrierDismissible: true,
+                                    builder: (ctx) => VerifyEmailScreen(
+                                      correo: newEmail,
+                                      alreadySent: true,
+                                      asDialog: true,
+                                      onVerified: () {
+                                        Navigator.of(ctx).pop(true);
+                                      },
+                                    ),
+                                  );
+
+                                  if (verified != true) {
+                                    if (!mounted) return;
+                                    _showCuteMessage(
+                                      'Debes verificar tu nuevo correo para guardar los cambios.',
+                                      Icons.warning_rounded,
+                                      backgroundColor: const Color(0xFF6A4C93),
+                                    );
+                                    return;
+                                  }
+                                } catch (e) {
+                                  if (!mounted) return;
+                                  _showCuteMessage(
+                                    'No se pudo verificar el nuevo correo. Intenta nuevamente.',
+                                    Icons.warning_rounded,
+                                    backgroundColor: const Color(0xFF6A4C93),
+                                  );
+                                  return;
+                                }
+                              }
 
                               try {
-                                // Mostrar indicador de carga
                                 showDialog(
                                   context: context,
                                   barrierDismissible: false,
@@ -1123,8 +1234,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   ),
                                 );
 
-                                // Debug logs
-                                print('🎨 DEBUG AVATAR:');
+                                print(' DEBUG AVATAR:');
                                 print(
                                     '  currentAvatarTipo: $currentAvatarTipo');
                                 print('  _avatarMode: $_avatarMode');
@@ -1147,6 +1257,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       avatarChanged ? newAvatarTipo : null,
                                   avatarClave:
                                       avatarChanged ? newAvatarClave : null,
+                                  modoOscuro: null,
+                                  notificacionesSonido: null,
+                                  notificacionesVibracion: null,
+                                  tamanoFuente: null,
                                 );
 
                                 await SessionManager.instance
@@ -1154,13 +1268,9 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                                 if (!mounted) return;
 
-                                // Cerrar loading
+                                Navigator.pop(context);
                                 Navigator.pop(context);
 
-                                // Cerrar el modal de edición de perfil
-                                Navigator.pop(context);
-
-                                // Recargar completamente el perfil desde el servidor
                                 await _loadCurrentUser();
 
                                 if (!mounted) return;
@@ -1170,9 +1280,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   backgroundColor: const Color(0xFF6A4C93),
                                 );
                               } catch (e) {
-                                if (mounted)
-                                  Navigator.pop(context); // Cerrar loading
-
+                                if (mounted) Navigator.pop(context);
                                 print('Error actualizando perfil: $e');
                                 if (!mounted) return;
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -1576,7 +1684,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                           subtitle: Text('Tema, vibración y sonido',
                               style: TextStyle(
                                   fontSize: fontSizeProvider.fontSize - 3)),
-                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                          trailing:
+                              const Icon(Icons.arrow_forward_ios, size: 16),
                           onTap: _showAppSettingsDialog,
                         ),
                       ),
@@ -1596,7 +1705,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                               '${_trashService.getTrashItems().length} elementos eliminados',
                               style: TextStyle(
                                   fontSize: fontSizeProvider.fontSize - 3)),
-                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                          trailing:
+                              const Icon(Icons.arrow_forward_ios, size: 16),
                           onTap: _showTrashDialog,
                         ),
                       ),
@@ -1703,7 +1813,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           const Color(0xFFFFA726),
           const Color(0xFFFFEB3B),
           const Color(0xFF66BB6A),
-          const Color(0xFF6A4C93),
+          const Color(0xFFF481C4),
           const Color(0xFFAB47BC),
           const Color(0xFF8D6E63),
           const Color(0xFF607D8B),
