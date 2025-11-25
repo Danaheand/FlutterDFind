@@ -647,8 +647,10 @@ class _AlertsScreenState extends State<AlertsScreen>
           ),
           CustomTextButton(
             onPressed: () => Navigator.pop(context, true),
-            child:
-                const Text('Completar', style: TextStyle(color: Colors.green)),
+            child: const Text(
+              'Completar',
+              style: TextStyle(color: Colors.green),
+            ),
           ),
         ],
       ),
@@ -658,29 +660,9 @@ class _AlertsScreenState extends State<AlertsScreen>
 
     try {
       for (var alert in alertsToComplete) {
-        // Guardar datos completos del AlertData en la papelera
-        // final alertDataMap = {
-        //   'id': alert.id,
-        //   'title': alert.title,
-        //   'description': alert.description,
-        //   'date': alert.date.toIso8601String(),
-        //   'priority': alert.priority.name,
-        //   'location': alert.location,
-        //   'object': alert.object,
-        //   'repetitive': alert.repetitive,
-        //   'repeatFrequency': alert.repeatFrequency,
-        //   'active': alert.active,
-        //   'color': alert.color?.value,
-        //   'imagePath': alert.imagePath,
-        //   'selectedWeekdays': alert.selectedWeekdays,
-        //   'createdAt': alert.createdAt?.toIso8601String(),
-        //   'updatedAt': alert.updatedAt?.toIso8601String(),
-        //   'completed': true, // Marcar como completado
-        // };
-
-        // Completar en la API
+        // Solo marcar como completado (activo -> false) en la API/provider
         await provider.toggleActivoRecordatorio(alert.title);
-        AlertsScreen.onAlertDeleted?.call(alert);
+        // IMPORTANTE: ya no llamamos a onAlertDeleted aquí
       }
 
       setState(() {
