@@ -212,15 +212,15 @@ class _RecordatorioDialogState extends State<RecordatorioDialog> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: isSelected 
+                  color: isSelected
                       ? AppTheme.primaryLight
                       : (Theme.of(context).brightness == Brightness.light
                           ? const Color(0xFFE8DEF8)
                           : Colors.grey.shade700),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isSelected 
-                        ? AppTheme.primaryLight 
+                    color: isSelected
+                        ? AppTheme.primaryLight
                         : (Theme.of(context).brightness == Brightness.light
                             ? const Color(0xFFD4C5E2)
                             : Colors.grey.shade600),
@@ -231,8 +231,8 @@ class _RecordatorioDialogState extends State<RecordatorioDialog> {
                   child: Text(
                     day['name'] as String,
                     style: TextStyle(
-                      color: isSelected 
-                          ? Colors.white 
+                      color: isSelected
+                          ? Colors.white
                           : (Theme.of(context).brightness == Brightness.light
                               ? Colors.black87
                               : Colors.white),
@@ -515,7 +515,29 @@ class _RecordatorioDialogState extends State<RecordatorioDialog> {
         ElevatedButton.icon(
           onPressed: () async {
             final trimmedTitle = titleCtrl.text.trim();
-            if (trimmedTitle.isEmpty) return;
+            if (trimmedTitle.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('El título es obligatorio'),
+                  backgroundColor: Colors.red,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+              return;
+            }
+
+            // Validar que si es repetitivo, tenga al menos un día seleccionado
+            if (repetitive && selectedWeekdays.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                      'Debes seleccionar al menos un día para la repetición'),
+                  backgroundColor: Colors.red,
+                  duration: Duration(seconds: 3),
+                ),
+              );
+              return;
+            }
 
             final result = AlertData(
               id: widget.alert?.id ?? 'alert${Random().nextInt(100000)}',

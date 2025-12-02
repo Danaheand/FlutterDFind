@@ -1866,7 +1866,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         const SizedBox(width: 8),
                         Expanded(
                           child: ChoiceChip(
-                            label: const Text('Elige el color de tu Inicial'),
+                            label: const Text('Elige tu color'),
                             selected: _avatarMode == AvatarMode.initial,
                             onSelected: (_) {
                               setStateModal(() {

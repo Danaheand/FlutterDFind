@@ -140,14 +140,14 @@ class AlertEditDialogState extends State<AlertEditDialog> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: isSelected 
+                  color: isSelected
                       ? AppTheme.primaryLight
                       : (Theme.of(context).brightness == Brightness.light
                           ? const Color(0xFFE8DEF8)
                           : Colors.grey.shade700),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isSelected 
+                    color: isSelected
                         ? AppTheme.primaryLight
                         : (Theme.of(context).brightness == Brightness.light
                             ? const Color(0xFFD4C5E2)
@@ -159,8 +159,8 @@ class AlertEditDialogState extends State<AlertEditDialog> {
                   child: Text(
                     day['name'] as String,
                     style: TextStyle(
-                      color: isSelected 
-                          ? Colors.white 
+                      color: isSelected
+                          ? Colors.white
                           : (Theme.of(context).brightness == Brightness.light
                               ? Colors.black87
                               : Colors.white),
@@ -431,7 +431,9 @@ class AlertEditDialogState extends State<AlertEditDialog> {
                       ? 'Selecciona al menos un día'
                       : 'Se repetirá: ${_getSelectedDaysText()}',
                   style: TextStyle(
-                    color: selectedWeekdays.isEmpty ? Colors.red : AppTheme.primaryLight,
+                    color: selectedWeekdays.isEmpty
+                        ? Colors.red
+                        : AppTheme.primaryLight,
                     fontSize: 12,
                   ),
                 ),
@@ -462,6 +464,19 @@ class AlertEditDialogState extends State<AlertEditDialog> {
                 dateError = 'Selecciona una fecha';
                 timeError = 'Selecciona una hora';
               });
+              hasErrors = true;
+            }
+
+            // Validar que si es repetitivo, tenga al menos un día seleccionado
+            if (repetitive && selectedWeekdays.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                      'Debes seleccionar al menos un día para la repetición'),
+                  backgroundColor: Colors.red,
+                  duration: Duration(seconds: 3),
+                ),
+              );
               hasErrors = true;
             }
 

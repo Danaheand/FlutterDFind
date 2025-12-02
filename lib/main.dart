@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'providers/font_size_provider.dart';
@@ -171,9 +172,11 @@ class MyApp extends StatelessWidget {
             ],
             initialRoute: initialRoute,
             routes: {
-              '/main': (context) => WebNotificationOverlay(
-                    child: const MainScaffold(),
-                  ),
+              '/main': (context) => kIsWeb
+                  ? WebNotificationOverlay(
+                      child: const MainScaffold(),
+                    )
+                  : const MainScaffold(), // En móvil no usar el overlay
               '/login': (context) => const AppLoginScreen(),
               '/register': (context) => const RegisterScreen(),
               '/alerts': (context) => const AlertsScreen(),

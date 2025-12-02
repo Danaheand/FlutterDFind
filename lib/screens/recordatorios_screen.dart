@@ -965,6 +965,35 @@ class _AlertsScreenState extends State<AlertsScreen>
     }
   }
 
+  void _selectAll() {
+    final provider = context.read<RecordatorioProvider>();
+    final alerts = _getAlerts(provider);
+
+    // Obtener todas las alertas visibles según la pestaña actual
+    List<AlertData> visibleAlerts = [];
+
+    if (tabIndex == 0) {
+      // Pestaña de alertas activas
+      if (groupByPriority) {
+        visibleAlerts.addAll(_getAlta(alerts));
+        visibleAlerts.addAll(_getMedia(alerts));
+        visibleAlerts.addAll(_getBaja(alerts));
+      } else {
+        visibleAlerts.addAll(_getVencidas(alerts));
+        visibleAlerts.addAll(_getHoy(alerts));
+        visibleAlerts.addAll(_getManana(alerts));
+        visibleAlerts.addAll(_getProximas(alerts));
+      }
+    } else {
+      // Pestaña de historial
+      visibleAlerts = _getPasadas(alerts);
+    }
+
+    setState(() {
+      selectedAlerts = visibleAlerts.map((a) => a.id).toSet();
+    });
+  }
+
   void _deleteSelected() async {
     if (_userEmail == null || selectedAlerts.isEmpty) return;
 
@@ -1085,15 +1114,24 @@ class _AlertsScreenState extends State<AlertsScreen>
         actions: [
           // Botón para mostrar tutorial de deslizamiento
           // if (alerts.isNotEmpty && hoy.isNotEmpty)
-          IconButton(
-            icon: const Icon(Icons.help_outline),
-            tooltip: 'Ver tutorial de deslizamiento',
-            onPressed: () {
-              if (!_showTutorial) {
-                _startTutorialAnimation();
-              }
-            },
-          ),
+          if (!selectionMode)
+            IconButton(
+              icon: const Icon(Icons.help_outline),
+              tooltip: 'Ver tutorial de deslizamiento',
+              onPressed: () {
+                if (!_showTutorial) {
+                  _startTutorialAnimation();
+                }
+              },
+            ),
+          if (selectionMode)
+            TextButton.icon(
+              icon: Icon(Icons.select_all,
+                  color: AppTheme.getTextSecondary(context)),
+              label: Text('Seleccionar todo',
+                  style: TextStyle(color: AppTheme.getTextSecondary(context))),
+              onPressed: _selectAll,
+            ),
           if (alerts.isNotEmpty)
             IconButton(
               icon: Icon(
