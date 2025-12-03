@@ -434,6 +434,35 @@ class _InventoryScreenState extends State<InventoryScreen>
   //                     SELECCIÓN Y ELIMINACIÓN
   // ================================================================
 
+  void _activateSelectionMode() {
+    setState(() {
+      _selectionMode = true;
+    });
+    
+    // Mostrar mensaje
+    _showCuteMessage('Modo selección activado', Icons.check_box);
+  }
+
+  void _showFirstPlaceWithHighlight() {
+    if (_items.isEmpty) {
+      _showCuteMessage('Agrega pendientes primero', Icons.add);
+      return;
+    }
+
+    final grouped = _groupItemsByPlace(_items);
+    final places = grouped.keys.toList()..sort();
+    
+    if (places.isEmpty) return;
+
+    final firstPlace = places.first;
+    
+    // Expandir el primer lugar
+    final pendientesState = Provider.of<PendientesStateProvider>(context, listen: false);
+    pendientesState.setExpanded(firstPlace, true);
+
+    _showCuteMessage('Abre "$firstPlace" para ver cómo se organizan', Icons.store);
+  }
+
   Future<void> _deleteSelectedPlaces() async {
     if (_selectedPlaces.isEmpty) return;
 
@@ -605,7 +634,18 @@ class _InventoryScreenState extends State<InventoryScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const TipsSection(),
+          TipsSection(
+            onCreatePendiente: () {
+              showDialog(
+                context: context,
+                builder: (context) => ModalPendientes(
+                  onAdd: _addItemManually,
+                ),
+              );
+            },
+            onOrganizeByPlace: _showFirstPlaceWithHighlight,
+            onDeleteCategories: _activateSelectionMode,
+          ),
           const SizedBox(height: 16),
           _buildPendingSection(),
         ],
