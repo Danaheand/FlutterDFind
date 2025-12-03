@@ -286,6 +286,24 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 color: theme.colorScheme.onSurface.withOpacity(0.75),
               ),
             ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.mail_outline,
+                  size: 16,
+                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'Si no lo ves, revisa la carpeta de spam',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
