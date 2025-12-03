@@ -57,7 +57,7 @@ class _TipsSectionState extends State<TipsSection> {
         icon: Icons.store,
         title: 'Organiza por lugar',
         description: 'Los artículos se agrupan automáticamente por tienda',
-        color: isLight ? AppTheme.successLight : AppTheme.successDark,
+        color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
       ),
       TipItem(
         icon: Icons.check_box_outline_blank,
@@ -419,7 +419,7 @@ class _TipsSectionState extends State<TipsSection> {
                     padding: const EdgeInsets.only(left: 8),
                     child: Icon(
                       Icons.touch_app_rounded,
-                      color: tip.color.withOpacity(0.6),
+                      color: tip.color,
                       size: 18,
                     ),
                   ),
