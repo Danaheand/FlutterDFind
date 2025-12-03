@@ -88,6 +88,77 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
     return data.color ?? defaultColorFor(selectedPriority);
   }
 
+  void _showCuteMessage(String text, {Color? backgroundColor}) {
+    final overlay = Overlay.of(context);
+
+    late OverlayEntry entry;
+    final controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 320),
+    );
+    final animation = CurvedAnimation(
+      parent: controller,
+      curve: Curves.easeOutBack,
+      reverseCurve: Curves.easeIn,
+    );
+
+    entry = OverlayEntry(
+      builder: (ctx) {
+        return Positioned(
+          left: 16,
+          right: 16,
+          bottom: 80,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(-1.0, 0.0),
+              end: Offset.zero,
+            ).animate(animation),
+            child: FadeTransition(
+              opacity: animation,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    color: backgroundColor ??
+                        const Color.fromARGB(255, 98, 77, 129),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    text,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    overlay.insert(entry);
+    controller.forward();
+
+    Future.delayed(const Duration(milliseconds: 2500), () async {
+      try {
+        await controller.reverse();
+      } catch (_) {}
+      entry.remove();
+      controller.dispose();
+    });
+  }
+
   Future<void> _saveChanges() async {
     try {
       showDialog(
@@ -363,13 +434,7 @@ class _AlertDetailScreenModernState extends State<AlertDetailScreenModern>
       if (mounted) {
         Navigator.pop(context); // Cerrar loading
         Navigator.pop(context); // Volver atrás
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('🗑️ Alerta eliminada'),
-            backgroundColor: Color(0xFF64748B),
-            duration: Duration(seconds: 2),
-          ),
-        );
+        _showCuteMessage('Recordatorio eliminado');
       }
     } catch (e) {
       if (mounted) {
