@@ -185,15 +185,10 @@ class _AlertsScreenState extends State<AlertsScreen>
   }
 
   void _showFirstAlertWithHighlight() {
-    final provider = context.read<RecordatorioProvider>();
-    final alerts = _getAlerts(provider);
-    
-    if (alerts.isEmpty) {
-      _showCuteMessage('Agrega recordatorios primero', Icons.add_alert);
-      return;
-    }
-
-    _showCuteMessage('Toca en un recordatorio para verr su frecuencia', Icons.touch_app_rounded);
+    _showCuteMessage(
+      'Activa la repetición en un recordatorio para configurar la frecuencia',
+      Icons.repeat_rounded,
+    );
   }
 
   void _showPriorityFilter() {

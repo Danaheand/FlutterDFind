@@ -52,7 +52,7 @@ class _TipsRecordatoriosState extends State<TipsRecordatorios> {
       ),
       TipItem(
         icon: Icons.repeat_rounded,
-        title: 'frecuencia de recordatorios',
+        title: 'Frecuencia de Recordatorio',
         description: 'Configura alertas que se repitan en días específicos',
         color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
       ),
@@ -201,7 +201,7 @@ class _TipsRecordatoriosState extends State<TipsRecordatorios> {
     VoidCallback? callback;
     if (tip.title == 'Crear recordatorio') {
       callback = widget.onCreateRecordatorio;
-    } else if (tip.title == 'Recordatorios repetitivos') {
+    } else if (tip.title == 'Frecuencia de Recordatorio') {
       callback = widget.onRepetitiveRecordatorio;
     } else if (tip.title == 'Gestiona prioridades') {
       callback = widget.onManagePriorities;
