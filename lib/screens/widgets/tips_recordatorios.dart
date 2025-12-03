@@ -5,7 +5,16 @@ import '../../providers/tips_provider.dart';
 import '../../theme/app_theme.dart';
 
 class TipsRecordatorios extends StatefulWidget {
-  const TipsRecordatorios({super.key});
+  final VoidCallback? onCreateRecordatorio;
+  final VoidCallback? onRepetitiveRecordatorio;
+  final VoidCallback? onManagePriorities;
+
+  const TipsRecordatorios({
+    super.key,
+    this.onCreateRecordatorio,
+    this.onRepetitiveRecordatorio,
+    this.onManagePriorities,
+  });
 
   @override
   State<TipsRecordatorios> createState() => _TipsRecordatoriosState();
@@ -43,16 +52,16 @@ class _TipsRecordatoriosState extends State<TipsRecordatorios> {
       ),
       TipItem(
         icon: Icons.repeat_rounded,
-        title: 'Recordatorios repetitivos',
+        title: 'frecuencia de recordatorios',
         description: 'Configura alertas que se repitan en días específicos',
-        color: isLight ? AppTheme.successLight : AppTheme.successDark,
+        color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
       ),
       TipItem(
         icon: Icons.priority_high,
         title: 'Gestiona prioridades',
         description:
             'Asigna prioridades (Alta, Media, Baja) a tus recordatorios',
-        color: isLight ? AppTheme.warningLight : AppTheme.warningDark,
+        color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
       ),
     ];
 
@@ -188,62 +197,91 @@ class _TipsRecordatoriosState extends State<TipsRecordatorios> {
   Widget _buildTipCard(BuildContext context, TipItem tip) {
     final bool isLight = Theme.of(context).brightness == Brightness.light;
 
+    // Determinar callback según el título del tip
+    VoidCallback? callback;
+    if (tip.title == 'Crear recordatorio') {
+      callback = widget.onCreateRecordatorio;
+    } else if (tip.title == 'Recordatorios repetitivos') {
+      callback = widget.onRepetitiveRecordatorio;
+    } else if (tip.title == 'Gestiona prioridades') {
+      callback = widget.onManagePriorities;
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Icono con diseño más elegante
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: tip.color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: tip.color.withOpacity(0.2),
-                width: 1,
-              ),
-            ),
-            child: Icon(
-              tip.icon,
-              color: tip.color,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: callback,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Consumer<FontSizeProvider>(
-                  builder: (context, fontSizeProvider, _) => Text(
-                    tip.title,
-                    style: TextStyle(
-                      fontSize: fontSizeProvider.fontSize + 1,
-                      fontWeight: FontWeight.w700,
-                      color: isLight
-                          ? AppTheme.textPrimaryLight
-                          : AppTheme.textPrimaryDark,
-                      letterSpacing: 0.3,
+                // Icono con diseño más elegante
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: tip.color.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: tip.color.withOpacity(0.2),
+                      width: 1,
                     ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Consumer<FontSizeProvider>(
-                  builder: (context, fontSizeProvider, _) => Text(
-                    tip.description,
-                    style: TextStyle(
-                      fontSize: fontSizeProvider.fontSize - 1.5,
-                      color: AppTheme.getTextSecondary(context),
-                      height: 1.5,
-                      fontWeight: FontWeight.w400,
-                    ),
+                  child: Icon(
+                    tip.icon,
+                    color: tip.color,
+                    size: 22,
                   ),
                 ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Consumer<FontSizeProvider>(
+                        builder: (context, fontSizeProvider, _) => Text(
+                          tip.title,
+                          style: TextStyle(
+                            fontSize: fontSizeProvider.fontSize + 1,
+                            fontWeight: FontWeight.w700,
+                            color: isLight
+                                ? AppTheme.textPrimaryLight
+                                : AppTheme.textPrimaryDark,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Consumer<FontSizeProvider>(
+                        builder: (context, fontSizeProvider, _) => Text(
+                          tip.description,
+                          style: TextStyle(
+                            fontSize: fontSizeProvider.fontSize - 1.5,
+                            color: AppTheme.getTextSecondary(context),
+                            height: 1.5,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (callback != null)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Icon(
+                      Icons.touch_app_rounded,
+                      color: tip.color,
+                      size: 18,
+                    ),
+                  ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

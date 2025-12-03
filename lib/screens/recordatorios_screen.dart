@@ -176,11 +176,35 @@ class _AlertsScreenState extends State<AlertsScreen>
     });
   }
 
+  void _activateSelectionMode() {
+    setState(() {
+      selectionMode = true;
+    });
+    
+    _showCuteMessage('Modo selección activado', Icons.check_box);
+  }
+
+  void _showFirstAlertWithHighlight() {
+    final provider = context.read<RecordatorioProvider>();
+    final alerts = _getAlerts(provider);
+    
+    if (alerts.isEmpty) {
+      _showCuteMessage('Agrega recordatorios primero', Icons.add_alert);
+      return;
+    }
+
+    _showCuteMessage('Toca en un recordatorio para verr su frecuencia', Icons.touch_app_rounded);
+  }
+
+  void _showPriorityFilter() {
+    _showCuteMessage('Usa los filtros de prioridad', Icons.filter_list);
+  }
+
   Future<void> _checkAndShowTutorial() async {
     print('Verificando si se debe mostrar tutorial de deslizamiento...');
     final prefs = await SharedPreferences.getInstance();
     final hasSeenTutorial = prefs.getBool('has_seen_swipe_tutorial') ?? false;
-    print('suario ha visto tutorial antes: $hasSeenTutorial');
+    print('Usuario ha visto tutorial antes: $hasSeenTutorial');
 
     if (!hasSeenTutorial) {
       // Esperar un momento para que se carguen las alertas
@@ -1206,7 +1230,11 @@ class _AlertsScreenState extends State<AlertsScreen>
                                     });
                                   },
                                 ),
-                                const TipsRecordatorios(),
+                                TipsRecordatorios(
+                                  onCreateRecordatorio: () => _openAlertDialog(),
+                                  onRepetitiveRecordatorio: () => _showFirstAlertWithHighlight(),
+                                  onManagePriorities: () => _showPriorityFilter(),
+                                ),
                                 // Filtros de prioridad (solo en modo fecha)
                                 if (!groupByPriority) _buildPriorityFilters(),
                                 if (alerts.isEmpty)
@@ -1352,7 +1380,11 @@ class _AlertsScreenState extends State<AlertsScreen>
                                     });
                                   },
                                 ),
-                                const TipsRecordatorios(),
+                                TipsRecordatorios(
+                                  onCreateRecordatorio: () => _openAlertDialog(),
+                                  onRepetitiveRecordatorio: () => _showFirstAlertWithHighlight(),
+                                  onManagePriorities: () => _showPriorityFilter(),
+                                ),
                                 if (pasadas.isNotEmpty)
                                   CollapsibleSection(
                                     title: 'Historial',
