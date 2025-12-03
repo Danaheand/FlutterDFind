@@ -162,7 +162,7 @@ class _TipsSectionState extends State<TipsSection> {
                         const SizedBox(height: 2),
                         Consumer<FontSizeProvider>(
                           builder: (context, fontSizeProvider, _) => Text(
-                            'Gestiona tu lista de compras fácilmente',
+                            'Gestiona tus pendientes fácilmente',
                             style: TextStyle(
                               fontSize: fontSizeProvider.fontSize - 2,
                               color: AppTheme.getTextSecondary(context),
