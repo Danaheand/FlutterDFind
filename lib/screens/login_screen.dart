@@ -68,17 +68,37 @@ class _LoginScreenState extends State<AppLoginScreen> {
         if (!mounted) return;
 
         final errorText = (result['error'] ?? '').toString();
-        // No mostrar el SnackBar de error de credenciales
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   SnackBar(
-        //     content: Text(errorText),
-        //     duration: const Duration(seconds: 4),
-        //     backgroundColor: const Color.fromARGB(255, 54, 114, 244),
-        //   ),
-        // );
-
         final lower = errorText.toLowerCase();
-        if (lower.contains('verificar') || lower.contains('no verificado')) {
+
+        // Verificar si el usuario no existe
+        if (lower.contains('no existe') || 
+            lower.contains('no encontrado') || 
+            lower.contains('usuario no') ||
+            lower.contains('correo no')) {
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Usuario no registrado'),
+              content: const Text(
+                'El correo que ingresaste no está registrado en la aplicación.\n\n'
+                '¿Quieres crear una cuenta nueva?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    Navigator.of(context).pushNamed('/register');
+                  },
+                  child: const Text('Registrarse'),
+                ),
+              ],
+            ),
+          );
+        } else if (lower.contains('verificar') || lower.contains('no verificado')) {
           final email = _userCtrl.text.trim();
 
           showDialog(

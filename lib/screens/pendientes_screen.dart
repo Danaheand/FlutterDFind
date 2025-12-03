@@ -628,14 +628,14 @@ class _InventoryScreenState extends State<InventoryScreen>
         child: Column(
           children: [
             Icon(
-              Icons.shopping_cart_outlined,
+              Icons.check_box,
               size: 48,
               color: AppTheme.getTextSecondary(context),
             ),
             const SizedBox(height: 8),
             Consumer<FontSizeProvider>(
               builder: (context, fontSizeProvider, _) => Text(
-                '¡Tu lista de compras está vacía!',
+                '¡Tu lista de pendientes está vacía!',
                 style: TextStyle(
                   fontSize: fontSizeProvider.fontSize,
                   color: AppTheme.getTextSecondary(context),
