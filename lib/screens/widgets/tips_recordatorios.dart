@@ -51,12 +51,6 @@ class _TipsRecordatoriosState extends State<TipsRecordatorios> {
         color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
       ),
       TipItem(
-        icon: Icons.repeat_rounded,
-        title: 'Frecuencia de Recordatorio',
-        description: 'Configura alertas que se repitan en días específicos',
-        color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
-      ),
-      TipItem(
         icon: Icons.priority_high,
         title: 'Gestiona prioridades',
         description:
