@@ -436,11 +436,19 @@ class _InventoryScreenState extends State<InventoryScreen>
 
   void _activateSelectionMode() {
     setState(() {
-      _selectionMode = true;
+      _selectionMode = !_selectionMode;
+      if (!_selectionMode) {
+        // Si se desactiva, limpiar la selección
+        _selectedPlaces.clear();
+      }
     });
     
-    // Mostrar mensaje
-    _showCuteMessage('Modo selección activado', Icons.check_box);
+    // Mostrar mensaje según el estado
+    if (_selectionMode) {
+      _showCuteMessage('Modo selección activado', Icons.check_box);
+    } else {
+      _showCuteMessage('Modo selección desactivado', Icons.deselect);
+    }
   }
 
   void _showFirstPlaceWithHighlight() {
