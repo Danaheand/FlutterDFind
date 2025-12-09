@@ -46,6 +46,11 @@ class _AlertsScreenState extends State<AlertsScreen>
   bool _showTutorial = false;
   AnimationController? _tutorialController;
   Animation<double>? _slideAnimation;
+  
+  // Animación para destaque de filtros de prioridad
+  AnimationController? _priorityHighlightController;
+  Animation<double>? _priorityHighlightAnimation;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -86,6 +91,8 @@ class _AlertsScreenState extends State<AlertsScreen>
   void dispose() {
     AlertsScreen.onAlertDeleted = null;
     _tutorialController?.dispose();
+    _priorityHighlightController?.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -193,6 +200,38 @@ class _AlertsScreenState extends State<AlertsScreen>
 
   void _showPriorityFilter() {
     _showCuteMessage('Usa los filtros de prioridad', Icons.filter_list);
+    
+    // Inicializar la animación de destaque si no existe
+    _priorityHighlightController ??= AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    
+    _priorityHighlightAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _priorityHighlightController!, curve: Curves.easeInOut),
+    );
+    
+    // Hacer scroll hacia los filtros después de un pequeño delay
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent * 0.4,
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.easeInOutCubic,
+        );
+      }
+    });
+    
+    // Iniciar la animación de destaque
+    _priorityHighlightController?.forward().then((_) {
+      if (mounted) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) {
+            _priorityHighlightController?.reverse();
+          }
+        });
+      }
+    });
   }
 
   Future<void> _checkAndShowTutorial() async {
@@ -436,12 +475,35 @@ class _AlertsScreenState extends State<AlertsScreen>
   Widget _buildPriorityFilters() {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey.shade900 : Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
-      ),
+    return AnimatedBuilder(
+      animation: _priorityHighlightAnimation ?? AlwaysStoppedAnimation(0.0),
+      builder: (context, child) {
+        final highlightValue = (_priorityHighlightAnimation?.value ?? 0.0);
+        
+        return Transform.scale(
+          scale: 1.0 + (highlightValue * 0.05), // Zoom suave
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: isDarkMode ? Colors.grey.shade900 : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: highlightValue > 0
+                  ? [
+                      BoxShadow(
+                        color: (Theme.of(context).brightness == Brightness.light
+                                ? const Color(0xFF6A4C93)
+                                : const Color(0xFF9D84B7))
+                            .withOpacity(0.3 * highlightValue),
+                        blurRadius: 12 + (highlightValue * 8),
+                        spreadRadius: 2 + (highlightValue * 4),
+                      ),
+                    ]
+                  : [],
+            ),
+            child: child,
+          ),
+        );
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1212,6 +1274,7 @@ class _AlertsScreenState extends State<AlertsScreen>
                     children: [
                       tabIndex == 0
                           ? ListView(
+                              controller: _scrollController,
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               children: [
                                 AlertTabBar(
