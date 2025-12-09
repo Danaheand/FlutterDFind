@@ -317,6 +317,57 @@ class ApiService {
   }
 
   // Método para probar conectividad
+  // Método para verificar si un usuario existe por email
+  static Future<Map<String, dynamic>> getUserByEmail(String correo) async {
+    try {
+      print('🔍 Verificando si usuario existe: $correo');
+      print('🌐 URL: $baseUrl/Users?correo=$correo');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/Users?correo=$correo'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(timeout);
+
+      print('📨 Status: ${response.statusCode}');
+      print('📄 Response: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        return {
+          'success': true,
+          'data': responseData,
+        };
+      } else if (response.statusCode == 404) {
+        return {
+          'success': false,
+          'error': 'El usuario no existe.',
+        };
+      } else {
+        String errorMessage = 'Error al verificar usuario';
+        try {
+          final errorData = jsonDecode(response.body);
+          errorMessage = errorData['message'] ?? errorMessage;
+        } catch (e) {
+          errorMessage = 'Error ${response.statusCode}: $errorMessage';
+        }
+
+        return {
+          'success': false,
+          'error': errorMessage,
+        };
+      }
+    } catch (e) {
+      print('❌ Error getUserByEmail: $e');
+      return {
+        'success': false,
+        'error': 'Error de conexión: $e',
+      };
+    }
+  }
+
   static Future<bool> testConnection() async {
     try {
       final response = await http.get(

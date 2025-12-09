@@ -53,11 +53,13 @@ class _TipsRecordatoriosState extends State<TipsRecordatorios> {
       TipItem(
         icon: Icons.priority_high,
         title: 'Filtrar por prioridades',
+
         description:
             'Filtra todos tus recordatorio por prioridades (Todas, Alta, Media, Baja)',
         color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
       ),
     ];
+    
 
     return _buildContainer(isLight, tips);
   }

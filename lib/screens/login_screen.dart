@@ -19,6 +19,7 @@ class _LoginScreenState extends State<AppLoginScreen> {
   bool _obscure = true;
   bool _error = false;
   bool _isLoading = false;
+  String _errorMessage = ''; // Nueva variable para guardar el mensaje de error
 
   @override
   void dispose() {
@@ -30,6 +31,7 @@ class _LoginScreenState extends State<AppLoginScreen> {
   Future<void> _login() async {
     setState(() {
       _error = false;
+      _errorMessage = '';
       _isLoading = true;
     });
     if (!(_formKey.currentState?.validate() ?? false)) {
@@ -47,6 +49,21 @@ class _LoginScreenState extends State<AppLoginScreen> {
       final email = _userCtrl.text.trim();
       final password = _passCtrl.text.trim();
 
+      // Primero verificar si el usuario existe
+      print('Verificando si el usuario existe...');
+      final userCheckResult = await ApiService.getUserByEmail(email);
+      
+      if (userCheckResult['success'] != true) {
+        // El usuario NO existe
+        setState(() {
+          _error = true;
+          _errorMessage = 'Usuario no existe';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // El usuario existe, ahora intentar login
       print('Iniciando login...');
       final result = await ApiService.loginUser(
         correo: email,
@@ -60,8 +77,10 @@ class _LoginScreenState extends State<AppLoginScreen> {
         setState(() => _isLoading = false);
         Navigator.of(context).pushReplacementNamed('/main');
       } else {
+        // El usuario existe pero la contraseña es incorrecta
         setState(() {
           _error = true;
+          _errorMessage = 'Contraseña incorrecta';
           _isLoading = false;
         });
 
@@ -70,35 +89,8 @@ class _LoginScreenState extends State<AppLoginScreen> {
         final errorText = (result['error'] ?? '').toString();
         final lower = errorText.toLowerCase();
 
-        // Verificar si el usuario no existe
-        if (lower.contains('no existe') || 
-            lower.contains('no encontrado') || 
-            lower.contains('usuario no') ||
-            lower.contains('correo no')) {
-          showDialog(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              title: const Text('Usuario no registrado'),
-              content: const Text(
-                'El correo que ingresaste no está registrado en la aplicación.\n\n'
-                '¿Quieres crear una cuenta nueva?',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(ctx).pop(),
-                  child: const Text('Cancelar'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(ctx).pop();
-                    Navigator.of(context).pushNamed('/register');
-                  },
-                  child: const Text('Registrarse'),
-                ),
-              ],
-            ),
-          );
-        } else if (lower.contains('verificar') || lower.contains('no verificado')) {
+        // Verificar si es error de verificación
+        if (lower.contains('verificar') || lower.contains('no verificado')) {
           final email = _userCtrl.text.trim();
 
           showDialog(
@@ -175,17 +167,9 @@ class _LoginScreenState extends State<AppLoginScreen> {
       print('Stack trace: $st');
       setState(() {
         _error = true;
+        _errorMessage = '$e';
         _isLoading = false;
       });
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$e'),
-          duration: const Duration(seconds: 6),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
 
@@ -356,7 +340,9 @@ class _LoginScreenState extends State<AppLoginScreen> {
                               child: Align(
                                 alignment: Alignment.centerLeft,
                                 child: Text(
-                                  'Usuario o contraseña incorrectos',
+                                  (_errorMessage?.isNotEmpty ?? false)
+                                      ? _errorMessage!
+                                      : 'Error en el inicio de sesión',
                                   style: TextStyle(
                                     color: theme.brightness == Brightness.light
                                         ? Colors.red[700]
