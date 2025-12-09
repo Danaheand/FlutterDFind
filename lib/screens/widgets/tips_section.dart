@@ -54,12 +54,6 @@ class _TipsSectionState extends State<TipsSection> {
         color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
       ),
       TipItem(
-        icon: Icons.store,
-        title: 'Organiza por lugar',
-        description: 'Los artículos se agrupan automáticamente por tienda',
-        color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
-      ),
-      TipItem(
         icon: Icons.check_box_outline_blank,
         title: 'Eliminar categorías',
         description:
