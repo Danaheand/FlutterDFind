@@ -719,6 +719,9 @@ class _InventoryScreenState extends State<InventoryScreen>
   }
 
   Widget _buildPlaceGroup(String place, List<ShoppingItem> items) {
+    // Ordenar items alfabéticamente (case-insensitive)
+    items.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    
     return Consumer<PendientesStateProvider>(
       builder: (context, pendientesState, _) {
         final isExpanded = pendientesState.isExpanded(place);
