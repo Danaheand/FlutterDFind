@@ -52,9 +52,9 @@ class _TipsRecordatoriosState extends State<TipsRecordatorios> {
       ),
       TipItem(
         icon: Icons.priority_high,
-        title: 'Gestiona prioridades',
+        title: 'Filtrar por prioridades',
         description:
-            'Asigna prioridades (Alta, Media, Baja) a tus recordatorios',
+            'Filtra todos tus recordatorio por prioridades (Todas, Alta, Media, Baja)',
         color: isLight ? AppTheme.primaryLight : AppTheme.primaryDark,
       ),
     ];
@@ -197,7 +197,7 @@ class _TipsRecordatoriosState extends State<TipsRecordatorios> {
       callback = widget.onCreateRecordatorio;
     } else if (tip.title == 'Frecuencia de Recordatorio') {
       callback = widget.onRepetitiveRecordatorio;
-    } else if (tip.title == 'Gestiona prioridades') {
+    } else if (tip.title == 'Filtrar por prioridades') {
       callback = widget.onManagePriorities;
     }
 
