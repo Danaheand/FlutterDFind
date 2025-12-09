@@ -302,6 +302,7 @@ class AlertEditDialogState extends State<AlertEditDialog> {
                           helpText: 'Selecciona la hora del Recordatorio',
                           cancelText: 'Cancelar',
                           confirmText: 'Aceptar',
+                          initialEntryMode: TimePickerEntryMode.input,
                         );
                         if (picked != null) {
                           setState(() {
