@@ -1208,9 +1208,9 @@ class _AlertsScreenState extends State<AlertsScreen>
           if (selectionMode)
             TextButton.icon(
               icon: Icon(Icons.select_all,
-                  color: AppTheme.getTextSecondary(context)),
+                  color: const Color.fromARGB(255, 242, 240, 245)),
               label: Text('Seleccionar todo',
-                  style: TextStyle(color: AppTheme.getTextSecondary(context))),
+                  style: TextStyle(color: const Color.fromARGB(255, 245, 245, 245), fontWeight: FontWeight.w600)),
               onPressed: _selectAll,
             ),
           if (alerts.isNotEmpty)
