@@ -27,6 +27,7 @@ class AlertEditDialogState extends State<AlertEditDialog> {
   String? titleError;
   String? dateError;
   String? timeError;
+  bool _showRepetitionError = false; // Variable para mostrar error solo al guardar
 
   @override
   void initState() {
@@ -425,19 +426,29 @@ class AlertEditDialogState extends State<AlertEditDialog> {
                 Text('Selecciona los días que se repetirá:',
                     style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 12),
-                _buildWeekdaySelector(),
-                const SizedBox(height: 8),
-                Text(
-                  selectedWeekdays.isEmpty
-                      ? 'Selecciona al menos un día'
-                      : 'Se repetirá: ${_getSelectedDaysText()}',
-                  style: TextStyle(
-                    color: selectedWeekdays.isEmpty
-                        ? Colors.red
-                        : AppTheme.primaryLight,
-                    fontSize: 12,
+                if (_showRepetitionError && selectedWeekdays.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      'Selecciona al menos un día',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
-                ),
+                _buildWeekdaySelector(),
+                if (selectedWeekdays.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Se repetirá: ${_getSelectedDaysText()}',
+                    style: TextStyle(
+                      color: AppTheme.primaryLight,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ],
             ],
           ),
@@ -470,14 +481,7 @@ class AlertEditDialogState extends State<AlertEditDialog> {
 
             // Validar que si es repetitivo, tenga al menos un día seleccionado
             if (repetitive && selectedWeekdays.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                      'Debes seleccionar al menos un día para la repetición'),
-                  backgroundColor: Colors.red,
-                  duration: Duration(seconds: 3),
-                ),
-              );
+              setState(() => _showRepetitionError = true);
               hasErrors = true;
             }
 

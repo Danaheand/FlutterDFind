@@ -82,6 +82,7 @@ class _RecordatorioDialogState extends State<RecordatorioDialog> {
   bool repetitive = false;
   String? repeatFrequency;
   List<int> selectedWeekdays = [];
+  bool _showRepetitionError = false; // Variable para mostrar error solo al guardar
 
   Color? customColor;
   final _picker = ImagePicker();
@@ -491,17 +492,29 @@ class _RecordatorioDialogState extends State<RecordatorioDialog> {
                 Text('Selecciona los días que se repetirá:',
                     style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 12),
-                _buildWeekdaySelector(),
-                const SizedBox(height: 8),
-                Text(
-                  selectedWeekdays.isEmpty
-                      ? 'Selecciona al menos un día'
-                      : 'Se repetirá: ${_getSelectedDaysText()}',
-                  style: TextStyle(
-                    color: selectedWeekdays.isEmpty ? Colors.red : Colors.green,
-                    fontSize: 12,
+                if (_showRepetitionError && selectedWeekdays.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      'Selecciona al menos un día',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
-                ),
+                _buildWeekdaySelector(),
+                if (selectedWeekdays.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Se repetirá: ${_getSelectedDaysText()}',
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ],
             ],
           ),
@@ -528,14 +541,7 @@ class _RecordatorioDialogState extends State<RecordatorioDialog> {
 
             // Validar que si es repetitivo, tenga al menos un día seleccionado
             if (repetitive && selectedWeekdays.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                      'Debes seleccionar al menos un día para la repetición'),
-                  backgroundColor: Colors.red,
-                  duration: Duration(seconds: 3),
-                ),
-              );
+              setState(() => _showRepetitionError = true);
               return;
             }
 
