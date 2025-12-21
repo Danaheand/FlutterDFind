@@ -46,7 +46,7 @@ class _AlertsScreenState extends State<AlertsScreen>
   bool _showTutorial = false;
   AnimationController? _tutorialController;
   Animation<double>? _slideAnimation;
-  
+
   // Animación para destaque de filtros de prioridad
   AnimationController? _priorityHighlightController;
   Animation<double>? _priorityHighlightAnimation;
@@ -187,7 +187,7 @@ class _AlertsScreenState extends State<AlertsScreen>
     setState(() {
       selectionMode = true;
     });
-    
+
     _showCuteMessage('Modo selección activado', Icons.check_box);
   }
 
@@ -200,17 +200,18 @@ class _AlertsScreenState extends State<AlertsScreen>
 
   void _showPriorityFilter() {
     _showCuteMessage('Usa los filtros de prioridad', Icons.filter_list);
-    
+
     // Inicializar la animación de destaque si no existe
     _priorityHighlightController ??= AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     _priorityHighlightAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _priorityHighlightController!, curve: Curves.easeInOut),
+      CurvedAnimation(
+          parent: _priorityHighlightController!, curve: Curves.easeInOut),
     );
-    
+
     // Hacer scroll hacia los filtros después de un pequeño delay
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
@@ -221,7 +222,7 @@ class _AlertsScreenState extends State<AlertsScreen>
         );
       }
     });
-    
+
     // Iniciar la animación de destaque
     _priorityHighlightController?.forward().then((_) {
       if (mounted) {
@@ -479,7 +480,7 @@ class _AlertsScreenState extends State<AlertsScreen>
       animation: _priorityHighlightAnimation ?? AlwaysStoppedAnimation(0.0),
       builder: (context, child) {
         final highlightValue = (_priorityHighlightAnimation?.value ?? 0.0);
-        
+
         return Transform.scale(
           scale: 1.0 + (highlightValue * 0.05), // Zoom suave
           child: Container(
@@ -678,6 +679,7 @@ class _AlertsScreenState extends State<AlertsScreen>
           backgroundColor:
               alert.active ? Colors.orange.shade600 : AppTheme.primaryLight,
         );
+        await provider.cargarRecordatorios();
       }
     } on RecordatorioException catch (e) {
       if (mounted) {
@@ -1210,7 +1212,9 @@ class _AlertsScreenState extends State<AlertsScreen>
               icon: Icon(Icons.select_all,
                   color: const Color.fromARGB(255, 242, 240, 245)),
               label: Text('Seleccionar todo',
-                  style: TextStyle(color: const Color.fromARGB(255, 245, 245, 245), fontWeight: FontWeight.w600)),
+                  style: TextStyle(
+                      color: const Color.fromARGB(255, 245, 245, 245),
+                      fontWeight: FontWeight.w600)),
               onPressed: _selectAll,
             ),
           if (alerts.isNotEmpty)
@@ -1289,9 +1293,12 @@ class _AlertsScreenState extends State<AlertsScreen>
                                   },
                                 ),
                                 TipsRecordatorios(
-                                  onCreateRecordatorio: () => _openAlertDialog(),
-                                  onRepetitiveRecordatorio: () => _showFirstAlertWithHighlight(),
-                                  onManagePriorities: () => _showPriorityFilter(),
+                                  onCreateRecordatorio: () =>
+                                      _openAlertDialog(),
+                                  onRepetitiveRecordatorio: () =>
+                                      _showFirstAlertWithHighlight(),
+                                  onManagePriorities: () =>
+                                      _showPriorityFilter(),
                                 ),
                                 // Filtros de prioridad (solo en modo fecha)
                                 if (!groupByPriority) _buildPriorityFilters(),
@@ -1439,9 +1446,12 @@ class _AlertsScreenState extends State<AlertsScreen>
                                   },
                                 ),
                                 TipsRecordatorios(
-                                  onCreateRecordatorio: () => _openAlertDialog(),
-                                  onRepetitiveRecordatorio: () => _showFirstAlertWithHighlight(),
-                                  onManagePriorities: () => _showPriorityFilter(),
+                                  onCreateRecordatorio: () =>
+                                      _openAlertDialog(),
+                                  onRepetitiveRecordatorio: () =>
+                                      _showFirstAlertWithHighlight(),
+                                  onManagePriorities: () =>
+                                      _showPriorityFilter(),
                                 ),
                                 if (pasadas.isNotEmpty)
                                   CollapsibleSection(
